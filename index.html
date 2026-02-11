@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ホットリスト</title>
+  <title>HotList 30</title>
   <style>
     /* ===== リセット & ベース ===== */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -48,10 +48,10 @@
     .header-title {
       grid-column: 1 / -1;
       text-align: center;
-      font-size: 1.7rem;
+      font-size: 2.55rem;
       font-weight: 800;
       letter-spacing: 0.06em;
-      background: linear-gradient(135deg, #f7971e, #ff4e50, #c471ed, #4f8ef7);
+      background: linear-gradient(135deg, #ff9a00, #ff6a00, #ff4e00);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -402,6 +402,28 @@
     /* ===== FAB非表示（ヘッダーボタンに統一） ===== */
     .fab { display: none; }
 
+    /* ===== ハイライトカード（条件①） ===== */
+    .card-highlight1 {
+      border: 1.5px solid rgba(100,200,255,0.5) !important;
+      box-shadow: 0 0 12px rgba(100,200,255,0.15), var(--shadow) !important;
+      animation: glow1 2.5s ease-in-out infinite;
+    }
+    @keyframes glow1 {
+      0%,100% { box-shadow: 0 0 8px rgba(100,200,255,0.15), var(--shadow); }
+      50%      { box-shadow: 0 0 18px rgba(100,200,255,0.35), var(--shadow); }
+    }
+
+    /* ===== ハイライトカード（条件②：さらに光る） ===== */
+    .card-highlight2 {
+      border: 1.5px solid rgba(255,165,0,0.7) !important;
+      box-shadow: 0 0 16px rgba(255,140,0,0.3), var(--shadow) !important;
+      animation: glow2 1.8s ease-in-out infinite;
+    }
+    @keyframes glow2 {
+      0%,100% { box-shadow: 0 0 10px rgba(255,140,0,0.25), var(--shadow); }
+      50%      { box-shadow: 0 0 26px rgba(255,140,0,0.55), 0 0 6px rgba(255,200,0,0.3), var(--shadow); }
+    }
+
     /* ===== 共有パネル ===== */
     .share-actions {
       display: flex;
@@ -498,7 +520,42 @@
 
         <div class="form-group">
           <label>年齢</label>
-          <input type="number" id="f_age" placeholder="例：28" min="0" max="120">
+          <select id="f_age">
+            <option value="">-</option>
+            <option value="18">18歳</option>
+            <option value="19">19歳</option>
+            <option value="20">20歳</option>
+            <option value="21">21歳</option>
+            <option value="22">22歳</option>
+            <option value="23">23歳</option>
+            <option value="24" selected>24歳</option>
+            <option value="25">25歳</option>
+            <option value="26">26歳</option>
+            <option value="27">27歳</option>
+            <option value="28">28歳</option>
+            <option value="29">29歳</option>
+            <option value="30">30歳</option>
+            <option value="31">31歳</option>
+            <option value="32">32歳</option>
+            <option value="33">33歳</option>
+            <option value="34">34歳</option>
+            <option value="35">35歳</option>
+            <option value="36">36歳</option>
+            <option value="37">37歳</option>
+            <option value="38">38歳</option>
+            <option value="39">39歳</option>
+            <option value="40">40歳</option>
+            <option value="41">41歳</option>
+            <option value="42">42歳</option>
+            <option value="43">43歳</option>
+            <option value="44">44歳</option>
+            <option value="45">45歳</option>
+            <option value="46">46歳</option>
+            <option value="47">47歳</option>
+            <option value="48">48歳</option>
+            <option value="49">49歳</option>
+            <option value="50">50歳</option>
+          </select>
         </div>
 
         <div class="form-group">
@@ -554,13 +611,23 @@
         </div>
 
         <div class="form-group">
-          <label>現住所</label>
-          <input type="text" id="f_address" placeholder="例：福岡市">
+          <label>現住所（都道府県）</label>
+          <input type="text" id="f_address" placeholder="例：福岡" value="福岡">
         </div>
 
         <div class="form-group">
-          <label>出身地</label>
-          <input type="text" id="f_hometown" placeholder="例：筑紫野市">
+          <label>現住所（市）</label>
+          <input type="text" id="f_address_city" placeholder="例：福岡市">
+        </div>
+
+        <div class="form-group">
+          <label>出身地（都道府県）</label>
+          <input type="text" id="f_hometown" placeholder="例：福岡" value="福岡">
+        </div>
+
+        <div class="form-group">
+          <label>出身地（市）</label>
+          <input type="text" id="f_hometown_city" placeholder="例：筑紫野市">
         </div>
 
         <div class="form-group">
@@ -622,9 +689,10 @@
       JSONファイルをエクスポートして他の端末・メンバーと共有できます。<br>インポートで既存データに<strong style="color:var(--text)">追加</strong>されます。
     </p>
     <div class="share-actions">
-      <button class="btn btn-primary" onclick="exportData()">エクスポート</button>
+      <button class="btn btn-primary" onclick="shareUrl()">このURLを共有</button>
+      <button class="btn btn-outline" onclick="exportData()">JSONエクスポート</button>
       <label class="btn btn-outline" style="cursor:pointer;">
-        インポート
+        JSONインポート
         <input type="file" accept=".json" style="display:none" onchange="importData(event)">
       </label>
       <button class="btn btn-danger btn-sm" onclick="clearAll()">全データ削除</button>
@@ -659,12 +727,16 @@ function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2);
 }
 
-// ===== カラー（アバター用） =====
-const COLORS = ['#e53935','#d81b60','#8e24aa','#5e35b1','#1e88e5','#00897b','#43a047','#f57c00','#6d4c41'];
-function getColor(name) {
+// ===== カラー（アバター用：性別対応） =====
+const COLORS_MALE   = ['#0097a7','#00838f','#006064','#00acc1','#26c6da','#00bcd4','#0288d1','#0277bd'];
+const COLORS_FEMALE = ['#e91e8c','#c2185b','#ad1457','#f06292','#ec407a','#e91e63','#d81b60','#f48fb1'];
+const COLORS_OTHER  = ['#8e24aa','#7b1fa2','#6a1b9a','#9c27b0','#ab47bc','#7e57c2','#5e35b1','#4527a0'];
+function getColor(name, gender) {
   let h = 0;
-  for (let c of (name || 'A')) h = (h * 31 + c.charCodeAt(0)) % COLORS.length;
-  return COLORS[h];
+  for (let c of (name || 'A')) h = (h * 31 + c.charCodeAt(0)) & 0xff;
+  if (gender === '女性') return COLORS_FEMALE[h % COLORS_FEMALE.length];
+  if (gender === '男性') return COLORS_MALE[h % COLORS_MALE.length];
+  return COLORS_OTHER[h % COLORS_OTHER.length];
 }
 
 // ===== タイプ略称 =====
@@ -672,10 +744,24 @@ const TYPE_SHORT = { 'プロモーター': 'P', 'コントローラー': 'C', '�
 
 // ===== 立場表示 =====
 function positionLabel(p) {
-  if (p === '↑') return '<span class="pos-badge pos-up">UP</span>';
-  if (p === '↓') return '<span class="pos-badge pos-down">DOWN</span>';
-  if (p === 'ー') return '<span class="pos-badge pos-eq">EQUAL</span>';
+  if (p === '↑') return '<span class="pos-badge pos-up">↑</span>';
+  if (p === '↓') return '<span class="pos-badge pos-down">↓</span>';
+  if (p === 'ー') return '<span class="pos-badge pos-eq">ー</span>';
   return '';
+}
+
+// ===== ハイライト判定 =====
+function getHighlightClass(p) {
+  const age = parseInt(p.age, 10);
+  const ageOk = !isNaN(age) && age >= 20 && age <= 26;
+  const livingOk = p.living === '一人暮らし';
+  const addressOk = (p.address || '').includes('福岡');
+  const hometownOk = (p.hometown || '').includes('福岡');
+  if (!ageOk || !livingOk || !addressOk || !hometownOk) return '';
+  // 条件②：さらに信用度S/A かつ 立場↑
+  if ((p.trust === 'S' || p.trust === 'A') && p.position === '↑') return 'card-highlight2';
+  // 条件①
+  return 'card-highlight1';
 }
 
 // ===== リスト描画 =====
@@ -685,7 +771,7 @@ function renderList() {
   const ftp = document.getElementById('filterType').value;
 
   const filtered = people.filter(p => {
-    const matchQ = !q || [p.name, p.job, p.relation, p.needs, p.address, p.memo]
+    const matchQ = !q || [p.name, p.job, p.relation, p.needs, p.address, p.address_city, p.hometown, p.hometown_city, p.memo]
       .some(v => (v||'').toLowerCase().includes(q));
     const matchT = !ft || p.trust === ft;
     const matchTP = !ftp || p.type === ftp;
@@ -707,11 +793,14 @@ function renderList() {
 
   container.innerHTML = filtered.map(p => {
     const initial = (p.name||'?')[0];
-    const color = getColor(p.name);
+    const color = getColor(p.name, p.gender);
     const typeShort = TYPE_SHORT[p.type] || '';
     const typeCls = typeShort ? `type-${typeShort}` : '';
+    const hlClass = getHighlightClass(p);
+    const addressFull = [p.address, p.address_city].filter(Boolean).join(' ');
+    const hometownFull = [p.hometown, p.hometown_city].filter(Boolean).join(' ');
     return `
-    <div class="person-card" id="card-${p.id}">
+    <div class="person-card ${hlClass}" id="card-${p.id}">
       <div class="card-header" onclick="toggleCard('${p.id}')">
         <div class="avatar" style="background:${color}">${initial}</div>
         <div class="card-info">
@@ -731,8 +820,8 @@ function renderList() {
       <div class="card-detail" id="detail-${p.id}">
         <div class="detail-grid">
           ${p.needs ? detailItem('ニーズ', escHtml(p.needs)) : ''}
-          ${p.address ? detailItem('現住所', escHtml(p.address)) : ''}
-          ${p.hometown ? detailItem('出身地', escHtml(p.hometown)) : ''}
+          ${addressFull ? detailItem('現住所', escHtml(addressFull)) : ''}
+          ${hometownFull ? detailItem('出身地', escHtml(hometownFull)) : ''}
           ${p.living ? detailItem('住まい', escHtml(p.living)) : ''}
           ${p.partner ? detailItem('パートナー', escHtml(p.partner)) : ''}
           ${p.insta ? `<div class="detail-item"><div class="detail-label">インスタ</div><div class="detail-value"><a href="${escHtml(p.insta)}" target="_blank" rel="noopener">Instagram</a></div></div>` : ''}
@@ -765,12 +854,24 @@ function escHtml(s) {
   return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// ===== フィールド定義 =====
+const FIELDS = ['name','age','gender','insta','relation','job','trust','position','needs',
+                'address','address_city','hometown','hometown_city','living','partner','type','memo'];
+
 // ===== モーダル操作 =====
 function openAddModal() {
   editingId = null;
   document.getElementById('modalTitle').textContent = '新規追加';
   document.getElementById('personForm').reset();
+  // 初期値を設定（reset後に上書き）
+  document.getElementById('f_age').value = '24';
+  document.getElementById('f_address').value = '福岡';
+  document.getElementById('f_address_city').value = '';
+  document.getElementById('f_hometown').value = '福岡';
+  document.getElementById('f_hometown_city').value = '';
   document.getElementById('editModal').classList.add('open');
+  // スクロールを先頭に戻す
+  setTimeout(() => { document.getElementById('editModal').scrollTop = 0; }, 0);
 }
 
 function openEditModal(id) {
@@ -778,12 +879,12 @@ function openEditModal(id) {
   if (!p) return;
   editingId = id;
   document.getElementById('modalTitle').textContent = '編集：' + p.name;
-  const fields = ['name','age','gender','insta','relation','job','trust','position','needs','address','hometown','living','partner','type','memo'];
-  fields.forEach(f => {
+  FIELDS.forEach(f => {
     const el = document.getElementById('f_' + f);
     if (el) el.value = p[f] || '';
   });
   document.getElementById('editModal').classList.add('open');
+  setTimeout(() => { document.getElementById('editModal').scrollTop = 0; }, 0);
 }
 
 function closeEditModal() {
@@ -792,9 +893,8 @@ function closeEditModal() {
 
 function savePerson(e) {
   e.preventDefault();
-  const fields = ['name','age','gender','insta','relation','job','trust','position','needs','address','hometown','living','partner','type','memo'];
   const data = {};
-  fields.forEach(f => {
+  FIELDS.forEach(f => {
     const el = document.getElementById('f_' + f);
     data[f] = el ? el.value.trim() : '';
   });
@@ -810,7 +910,7 @@ function savePerson(e) {
   save();
   closeEditModal();
   renderList();
-  showToast(editingId ? '更新しました' : '追加しました ✓');
+  showToast(editingId ? '更新しました' : '追加しました');
 }
 
 // ===== 削除 =====
@@ -844,9 +944,33 @@ function openShareModal() {
   }).filter(Boolean).join('　');
   stats.textContent = `登録数：${s}人　${trust ? '信用度 → ' + trust : ''}`;
   document.getElementById('shareModal').classList.add('open');
+  setTimeout(() => { document.getElementById('shareModal').scrollTop = 0; }, 0);
 }
 function closeShareModal() {
   document.getElementById('shareModal').classList.remove('open');
+}
+
+// URLをクリップボードにコピーして共有（iPhoneのWeb Share APIにも対応）
+async function shareUrl() {
+  const url = location.href;
+  try {
+    if (navigator.share) {
+      await navigator.share({ title: 'Hot List', url });
+      showToast('共有しました');
+    } else {
+      await navigator.clipboard.writeText(url);
+      showToast('URLをコピーしました');
+    }
+  } catch(e) {
+    // フォールバック：手動コピー用テキストエリア
+    const ta = document.createElement('textarea');
+    ta.value = url;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('URLをコピーしました');
+  }
 }
 
 function exportData() {
