@@ -8,24 +8,29 @@
     /* ===== リセット & ベース ===== */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --primary: #4f8ef7;
-      --primary-dark: #2d6fe0;
+      --primary: #c084fc;
+      --primary-dark: #a855f7;
       --danger: #ff5252;
       --success: #4caf50;
       --warning: #ffb300;
-      --bg: #0f1117;
-      --bg2: #1a1d27;
-      --surface: #1e2130;
-      --surface2: #252a3a;
-      --border: #2e3348;
-      --text: #e8eaf6;
-      --text-muted: #7b82a0;
+      --bg: #0a0010;
+      --bg2: #0e0018;
+      --surface: #130020;
+      --surface2: #1a0030;
+      --border: #2d1050;
+      --text: #f0e6ff;
+      --text-muted: #9370b8;
       --radius: 12px;
-      --shadow: 0 2px 16px rgba(0,0,0,0.4);
+      --shadow: 0 2px 20px rgba(80,0,120,0.35);
     }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif;
-      background: var(--bg);
+      background:
+        radial-gradient(ellipse at 20% 20%, rgba(120,0,180,0.18) 0%, transparent 55%),
+        radial-gradient(ellipse at 80% 80%, rgba(60,0,100,0.22) 0%, transparent 55%),
+        radial-gradient(ellipse at 50% 50%, rgba(90,0,150,0.10) 0%, transparent 70%),
+        linear-gradient(160deg, #0a0010 0%, #0e0018 40%, #130020 70%, #0a0010 100%);
+      background-attachment: fixed;
       color: var(--text);
       min-height: 100vh;
     }
@@ -65,8 +70,8 @@
       justify-content: space-between;
     }
     .header-count {
-      background: rgba(79,142,247,0.25);
-      border: 1px solid rgba(79,142,247,0.4);
+      background: rgba(192,132,252,0.15);
+      border: 1px solid rgba(192,132,252,0.35);
       border-radius: 20px;
       padding: 4px 12px;
       font-size: 0.9rem;
@@ -145,7 +150,7 @@
     .btn-success { background: var(--success); color: #fff; }
     .btn-danger  { background: var(--danger); color: #fff; }
     .btn-outline {
-      background: transparent;
+      background: rgba(192,132,252,0.08);
       color: var(--primary);
       border: 2px solid var(--primary);
     }
@@ -424,12 +429,45 @@
       50%      { box-shadow: 0 0 26px rgba(255,140,0,0.55), 0 0 6px rgba(255,200,0,0.3), var(--shadow); }
     }
 
+    /* ===== 最終連絡日バッジ ===== */
+    .lc-badge {
+      display: inline-block;
+      padding: 2px 9px;
+      border-radius: 5px;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+    .lc-fresh  { background: rgba(76,175,80,0.15);  color: #69f08a; border: 1px solid rgba(76,175,80,0.4); }
+    .lc-recent { background: rgba(79,142,247,0.15); color: #7eb8ff; border: 1px solid rgba(79,142,247,0.4); }
+    .lc-mid    { background: rgba(255,179,0,0.15);  color: #ffd04a; border: 1px solid rgba(255,179,0,0.4); }
+    .lc-old    { background: rgba(255,82,82,0.15);  color: #ff8a80; border: 1px solid rgba(255,82,82,0.4); }
+    .lc-dead   { background: rgba(100,100,120,0.15);color: #888899; border: 1px solid rgba(100,100,120,0.4); }
+
     /* ===== 共有パネル ===== */
+    .share-section { padding: 4px 0; }
+    .share-section-title {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 6px;
+      letter-spacing: 0.02em;
+    }
+    .share-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+      margin-bottom: 4px;
+    }
+    .share-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 14px 0;
+    }
     .share-actions {
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
-      margin-top: 10px;
+      margin-top: 8px;
     }
 
     /* ===== Toast ===== */
@@ -665,6 +703,19 @@
         </div>
 
         <div class="form-group full">
+          <label>最終連絡日</label>
+          <select id="f_lastcontact">
+            <option value="">-</option>
+            <option value="1週間以内">1週間以内</option>
+            <option value="1ヶ月以内">1ヶ月以内</option>
+            <option value="3ヶ月以内">3ヶ月以内</option>
+            <option value="半年以内">半年以内</option>
+            <option value="1年以内">1年以内</option>
+            <option value="3年以上前">3年以上前</option>
+          </select>
+        </div>
+
+        <div class="form-group full">
           <label>備考</label>
           <textarea id="f_memo" placeholder="自由記述"></textarea>
         </div>
@@ -678,26 +729,75 @@
   </div>
 </div>
 
-<!-- ===== 共有モーダル ===== */
+<!-- ===== 共有モーダル ===== -->
 <div class="modal-overlay" id="shareModal">
   <div class="modal">
     <div class="modal-title">
-      <span>データの共有・バックアップ</span>
+      <span>共有・バックアップ</span>
       <button class="modal-close" onclick="closeShareModal()">✕</button>
     </div>
-    <p style="font-size:0.92rem;color:var(--text-muted);margin-bottom:12px;">
-      JSONファイルをエクスポートして他の端末・メンバーと共有できます。<br>インポートで既存データに<strong style="color:var(--text)">追加</strong>されます。
-    </p>
-    <div class="share-actions">
-      <button class="btn btn-primary" onclick="shareUrl()">このURLを共有</button>
-      <button class="btn btn-outline" onclick="exportData()">JSONエクスポート</button>
-      <label class="btn btn-outline" style="cursor:pointer;">
-        JSONインポート
-        <input type="file" accept=".json" style="display:none" onchange="importData(event)">
-      </label>
-      <button class="btn btn-danger btn-sm" onclick="clearAll()">全データ削除</button>
+
+    <!-- セクション①：URLを共有 -->
+    <div class="share-section">
+      <div class="share-section-title">アプリのURLを共有</div>
+      <p class="share-desc">メンバーにこのアプリのURLを送ります（データは各自の端末に保存）</p>
+      <div class="share-actions">
+        <button class="btn btn-primary" onclick="shareUrl()">URLを共有・コピー</button>
+      </div>
+      <div id="shareUrlDisplay" style="margin-top:10px;"></div>
     </div>
-    <div id="shareStats" style="margin-top:14px;font-size:0.83rem;color:var(--text-muted);"></div>
+
+    <div class="share-divider"></div>
+
+    <!-- セクション②：データ共有（JSON） -->
+    <div class="share-section">
+      <div class="share-section-title">データを共有（JSON）</div>
+      <p class="share-desc">データをJSONでエクスポートしてLINEやメールで送付。受け取った側はインポートで取り込み可能。</p>
+      <div class="share-actions">
+        <button class="btn btn-outline" onclick="exportData()">JSONエクスポート</button>
+        <label class="btn btn-outline" style="cursor:pointer;">
+          JSONインポート
+          <input type="file" accept=".json" style="display:none" onchange="importData(event)">
+        </label>
+      </div>
+    </div>
+
+    <div class="share-divider"></div>
+
+    <!-- セクション③：Googleスプレッドシート -->
+    <div class="share-section">
+      <div class="share-section-title">Googleスプレッドシートにバックアップ</div>
+      <p class="share-desc">スプレッドシートのURL（GAS WebアプリURL）を設定するとデータを送信できます。</p>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
+        <input type="url" id="gasUrlInput" placeholder="https://script.google.com/macros/s/..." style="font-size:0.88rem;padding:10px 12px;">
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary" onclick="saveToSheet()">スプレッドシートに送信</button>
+          <button class="btn btn-outline btn-sm" onclick="saveGasUrl()">URL保存</button>
+        </div>
+        <p class="share-desc" style="margin-top:4px;">※ 設定方法は下の手順を参照してください</p>
+        <details style="margin-top:4px;">
+          <summary style="font-size:0.82rem;color:var(--text-muted);cursor:pointer;">Googleスプレッドシート設定手順を見る</summary>
+          <div style="font-size:0.8rem;color:var(--text-muted);margin-top:8px;line-height:1.7;background:var(--bg2);padding:10px;border-radius:8px;">
+            1. Googleスプレッドシートを新規作成<br>
+            2. メニュー「拡張機能」→「Apps Script」を開く<br>
+            3. 下のコードを貼り付けて保存<br>
+            4. 「デプロイ」→「新しいデプロイ」→種類「ウェブアプリ」<br>
+            5. アクセス権「全員」に設定してデプロイ<br>
+            6. 表示されたURLをここに貼り付けて「URL保存」
+            <div style="margin-top:8px;">
+              <button class="btn btn-outline btn-sm" onclick="copyGasCode()">GASコードをコピー</button>
+            </div>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <div class="share-divider"></div>
+
+    <div class="share-section">
+      <div id="shareStats" style="font-size:0.83rem;color:var(--text-muted);"></div>
+      <button class="btn btn-danger btn-sm" style="margin-top:10px;" onclick="clearAll()">全データ削除</button>
+    </div>
   </div>
 </div>
 
@@ -748,6 +848,15 @@ function positionLabel(p) {
   if (p === '↓') return '<span class="pos-badge pos-down">↓</span>';
   if (p === 'ー') return '<span class="pos-badge pos-eq">ー</span>';
   return '';
+}
+
+// ===== 最終連絡日クラス判定 =====
+function lastcontactClass(v) {
+  if (v === '1週間以内') return 'fresh';
+  if (v === '1ヶ月以内') return 'recent';
+  if (v === '3ヶ月以内' || v === '半年以内') return 'mid';
+  if (v === '1年以内') return 'old';
+  return 'dead'; // 3年以上前
 }
 
 // ===== ハイライト判定 =====
@@ -824,6 +933,7 @@ function renderList() {
           ${hometownFull ? detailItem('出身地', escHtml(hometownFull)) : ''}
           ${p.living ? detailItem('住まい', escHtml(p.living)) : ''}
           ${p.partner ? detailItem('パートナー', escHtml(p.partner)) : ''}
+          ${p.lastcontact ? detailItem('最終連絡', `<span class="lc-badge lc-${lastcontactClass(p.lastcontact)}">${escHtml(p.lastcontact)}</span>`) : ''}
           ${p.insta ? `<div class="detail-item"><div class="detail-label">インスタ</div><div class="detail-value"><a href="${escHtml(p.insta)}" target="_blank" rel="noopener">Instagram</a></div></div>` : ''}
           ${p.memo ? `<div class="detail-item full">${detailItemRaw('備考', escHtml(p.memo))}</div>` : ''}
         </div>
@@ -856,7 +966,7 @@ function escHtml(s) {
 
 // ===== フィールド定義 =====
 const FIELDS = ['name','age','gender','insta','relation','job','trust','position','needs',
-                'address','address_city','hometown','hometown_city','living','partner','type','memo'];
+                'address','address_city','hometown','hometown_city','living','partner','type','lastcontact','memo'];
 
 // ===== モーダル操作 =====
 function openAddModal() {
@@ -943,6 +1053,9 @@ function openShareModal() {
     return n > 0 ? `${t}:${n}人` : null;
   }).filter(Boolean).join('　');
   stats.textContent = `登録数：${s}人　${trust ? '信用度 → ' + trust : ''}`;
+  // 保存済みGAS URLを復元
+  const savedGasUrl = localStorage.getItem('hotlist_gasUrl') || '';
+  document.getElementById('gasUrlInput').value = savedGasUrl;
   document.getElementById('shareModal').classList.add('open');
   setTimeout(() => { document.getElementById('shareModal').scrollTop = 0; }, 0);
 }
@@ -950,27 +1063,85 @@ function closeShareModal() {
   document.getElementById('shareModal').classList.remove('open');
 }
 
-// URLをクリップボードにコピーして共有（iPhoneのWeb Share APIにも対応）
+// URLを共有（iPhone: ネイティブ共有シート / PC: クリップボードコピー）
 async function shareUrl() {
   const url = location.href;
+  const display = document.getElementById('shareUrlDisplay');
+  // URL表示エリアに表示
+  display.innerHTML = `<div style="font-size:0.8rem;color:var(--text-muted);word-break:break-all;background:var(--bg2);padding:8px 10px;border-radius:8px;border:1px solid var(--border);margin-top:4px;">${url}</div>`;
   try {
     if (navigator.share) {
       await navigator.share({ title: 'Hot List', url });
       showToast('共有しました');
-    } else {
-      await navigator.clipboard.writeText(url);
-      showToast('URLをコピーしました');
+      return;
     }
-  } catch(e) {
-    // フォールバック：手動コピー用テキストエリア
-    const ta = document.createElement('textarea');
-    ta.value = url;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
+  } catch(e) { /* キャンセルは無視 */ }
+  // クリップボードコピー
+  try {
+    await navigator.clipboard.writeText(url);
     showToast('URLをコピーしました');
+    return;
+  } catch(e) {}
+  // フォールバック
+  const ta = document.createElement('textarea');
+  ta.value = url;
+  ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.focus(); ta.select();
+  try { document.execCommand('copy'); showToast('URLをコピーしました'); } catch(e) {}
+  document.body.removeChild(ta);
+}
+
+// GAS URL保存
+function saveGasUrl() {
+  const url = document.getElementById('gasUrlInput').value.trim();
+  if (!url) { showToast('URLを入力してください'); return; }
+  localStorage.setItem('hotlist_gasUrl', url);
+  showToast('GAS URLを保存しました');
+}
+
+// Googleスプレッドシートへ送信
+async function saveToSheet() {
+  const gasUrl = document.getElementById('gasUrlInput').value.trim()
+                 || localStorage.getItem('hotlist_gasUrl') || '';
+  if (!gasUrl) { showToast('GAS URLを設定してください'); return; }
+  showToast('送信中...');
+  try {
+    const resp = await fetch(gasUrl, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data: people, exportedAt: new Date().toISOString() })
+    });
+    showToast('スプレッドシートに送信しました');
+  } catch(e) {
+    showToast('送信失敗：GAS URLを確認してください');
   }
+}
+
+// GASコードをコピー
+function copyGasCode() {
+  const code = `function doPost(e) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  const json = JSON.parse(e.postData.contents);
+  const people = json.data;
+  const headers = ['name','age','gender','insta','relation','job','trust','position',
+    'needs','address','address_city','hometown','hometown_city',
+    'living','partner','type','lastcontact','memo','id','createdAt'];
+  if (sheet.getLastRow() === 0) sheet.appendRow(headers);
+  people.forEach(p => {
+    sheet.appendRow(headers.map(h => p[h] || ''));
+  });
+  return ContentService.createTextOutput('ok');
+}`;
+  const ta = document.createElement('textarea');
+  ta.value = code;
+  ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.focus(); ta.select();
+  try { document.execCommand('copy'); showToast('GASコードをコピーしました'); } catch(e) {}
+  document.body.removeChild(ta);
+  try { navigator.clipboard.writeText(code).then(() => showToast('GASコードをコピーしました')); } catch(e) {}
 }
 
 function exportData() {
