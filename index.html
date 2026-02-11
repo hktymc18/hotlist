@@ -13,24 +13,19 @@
       --danger: #ff5252;
       --success: #4caf50;
       --warning: #ffb300;
-      --bg: #0a0010;
-      --bg2: #0e0018;
-      --surface: #130020;
-      --surface2: #1a0030;
-      --border: #2d1050;
+      --bg: #141416;
+      --bg2: #1c1c1f;
+      --surface: #222226;
+      --surface2: #2a2a2e;
+      --border: #38383f;
       --text: #f0e6ff;
       --text-muted: #9370b8;
       --radius: 12px;
-      --shadow: 0 2px 20px rgba(80,0,120,0.35);
+      --shadow: 0 2px 20px rgba(0,0,0,0.45);
     }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif;
-      background:
-        radial-gradient(ellipse at 20% 20%, rgba(120,0,180,0.18) 0%, transparent 55%),
-        radial-gradient(ellipse at 80% 80%, rgba(60,0,100,0.22) 0%, transparent 55%),
-        radial-gradient(ellipse at 50% 50%, rgba(90,0,150,0.10) 0%, transparent 70%),
-        linear-gradient(160deg, #0a0010 0%, #0e0018 40%, #130020 70%, #0a0010 100%);
-      background-attachment: fixed;
+      background: var(--bg);
       color: var(--text);
       min-height: 100vh;
     }
