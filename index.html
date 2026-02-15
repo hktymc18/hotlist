@@ -220,12 +220,17 @@
 <!-- ===== ログイン画面 ===== -->
 <div id="loginScreen">
   <div class="login-title">Hot List</div>
-  <p class="login-subtitle">Googleアカウントでログインして<br>ホットリストを管理しましょう</p>
-  <button class="btn-google" onclick="signInWithGoogle()">
-    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
-    Googleでログイン
-  </button>
-  <p style="font-size:0.78rem;color:var(--text-muted);margin-top:8px;">※ ログイン済みのメンバーのみアクセス可能</p>
+  <p class="login-subtitle">メールアドレスとパスワードでログイン</p>
+  <div style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px;">
+    <input id="authEmail" type="email" placeholder="メールアドレス" autocomplete="email"
+      style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
+    <input id="authPassword" type="password" placeholder="パスワード" autocomplete="current-password"
+      style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
+    <button onclick="signInEmail()" style="padding:14px;border-radius:12px;border:none;background:var(--primary);color:#111;font-size:1rem;font-weight:700;cursor:pointer;">ログイン</button>
+    <button onclick="signUpEmail()" style="padding:14px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:1rem;font-weight:600;cursor:pointer;">新規登録</button>
+    <button onclick="resetPassword()" style="padding:8px;border:none;background:transparent;color:var(--text-muted);font-size:0.85rem;cursor:pointer;">パスワードを忘れた方はこちら</button>
+    <p id="authError" style="color:#ff5252;font-size:0.85rem;text-align:center;min-height:20px;"></p>
+  </div>
 </div>
 
 <!-- ===== メイン画面（ログイン後） ===== -->
@@ -387,7 +392,7 @@
 <!-- ===== Firebase SDK ===== -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut }
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import { getFirestore, collection, doc, getDocs, getDoc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, query, where, serverTimestamp }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
@@ -418,21 +423,61 @@ let viewingUserName = '';
 const FIELDS = ['name','age','gender','insta','relation','job','trust','position','needs',
                 'address','address_city','hometown','hometown_city','living','partner','type','lastcontact','memo'];
 
-// ===== Googleログイン (Popup方式) =====
-window.signInWithGoogle = async () => {
+// ===== メール認証エラーメッセージ =====
+function authErrMsg(code) {
+  const map = {
+    'auth/invalid-email': 'メールアドレスの形式が正しくありません',
+    'auth/user-not-found': 'アカウントが見つかりません',
+    'auth/wrong-password': 'パスワードが間違っています',
+    'auth/email-already-in-use': 'このメールアドレスはすでに登録されています',
+    'auth/weak-password': 'パスワードは6文字以上にしてください',
+    'auth/invalid-credential': 'メールアドレスまたはパスワードが間違っています',
+    'auth/too-many-requests': 'ログイン試行が多すぎます。しばらく待ってから再試行してください',
+  };
+  return map[code] || 'エラーが発生しました: ' + code;
+}
+
+// ===== ログイン =====
+window.signInEmail = async () => {
+  const email = document.getElementById('authEmail').value.trim();
+  const pass  = document.getElementById('authPassword').value;
+  const errEl = document.getElementById('authError');
+  errEl.textContent = '';
+  if (!email || !pass) { errEl.textContent = 'メールアドレスとパスワードを入力してください'; return; }
   try {
-    const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
-    await signInWithPopup(auth, provider);
+    await signInWithEmailAndPassword(auth, email, pass);
   } catch(e) {
-    console.error(e);
-    if (e.code === 'auth/popup-blocked') {
-      showToast('ポップアップがブロックされました。ブラウザの設定でポップアップを許可してください');
-    } else if (e.code === 'auth/popup-closed-by-user') {
-      // ユーザーが閉じた場合は何もしない
-    } else {
-      showToast('ログインに失敗しました: ' + e.code);
-    }
+    errEl.textContent = authErrMsg(e.code);
+  }
+};
+
+// ===== 新規登録 =====
+window.signUpEmail = async () => {
+  const email = document.getElementById('authEmail').value.trim();
+  const pass  = document.getElementById('authPassword').value;
+  const errEl = document.getElementById('authError');
+  errEl.textContent = '';
+  if (!email || !pass) { errEl.textContent = 'メールアドレスとパスワードを入力してください'; return; }
+  try {
+    await createUserWithEmailAndPassword(auth, email, pass);
+    showToast('登録完了！ようこそ');
+  } catch(e) {
+    errEl.textContent = authErrMsg(e.code);
+  }
+};
+
+// ===== パスワードリセット =====
+window.resetPassword = async () => {
+  const email = document.getElementById('authEmail').value.trim();
+  const errEl = document.getElementById('authError');
+  if (!email) { errEl.textContent = 'メールアドレスを入力してください'; return; }
+  try {
+    await sendPasswordResetEmail(auth, email);
+    errEl.style.color = '#4caf50';
+    errEl.textContent = 'パスワードリセットメールを送信しました';
+  } catch(e) {
+    errEl.style.color = '#ff5252';
+    errEl.textContent = authErrMsg(e.code);
   }
 };
 
