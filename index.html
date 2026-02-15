@@ -237,6 +237,9 @@
 <div id="mainScreen" style="display:none;">
   <header>
     <div class="header-title">Hot List</div>
+    <div id="writerBanner" style="display:none;padding:4px 16px 6px;font-size:0.82rem;color:var(--text-muted);">
+      記入者：<span id="writerName" style="color:var(--primary);font-weight:600;"></span>
+    </div>
     <div class="header-row">
       <div class="header-left">
         <span class="header-count" id="countBadge">0人</span>
@@ -320,6 +323,7 @@
         <div class="form-group full"><label>４つのタイプ</label><select id="f_type"><option value="">-</option><option value="プロモーター">プロモーター</option><option value="コントローラー">コントローラー</option><option value="アナライザー">アナライザー</option><option value="サポーター">サポーター</option></select></div>
         <div class="form-group full"><label>最終連絡日</label><select id="f_lastcontact"><option value="">-</option><option value="1週間以内">1週間以内</option><option value="1ヶ月以内">1ヶ月以内</option><option value="3ヶ月以内">3ヶ月以内</option><option value="半年以内">半年以内</option><option value="1年以内">1年以内</option><option value="3年以上前">3年以上前</option></select></div>
         <div class="form-group full"><label>備考</label><textarea id="f_memo" placeholder="自由記述"></textarea></div>
+        <div class="form-group full"><label>記入者</label><input type="text" id="f_writer" placeholder="例：山田 太郎"></div>
       </div>
       <div class="form-actions">
         <button type="button" class="btn btn-outline" onclick="closeEditModal()">キャンセル</button>
@@ -421,7 +425,7 @@ let viewingUserId = null; // 他人のリストを閲覧中のUID
 let viewingUserName = '';
 
 const FIELDS = ['name','age','gender','insta','relation','job','trust','position','needs',
-                'address','address_city','hometown','hometown_city','living','partner','type','lastcontact','memo'];
+                'address','address_city','hometown','hometown_city','living','partner','type','lastcontact','memo','writer'];
 
 // ===== メール認証エラーメッセージ =====
 function authErrMsg(code) {
@@ -565,14 +569,22 @@ window.switchToList = (uid, name) => {
   loadMyList(uid);
   showToast(`${name} のリストを表示中`);
   // ヘッダー表示を更新
-  document.getElementById('userNameDisplay').textContent =
-    uid === currentUser.uid ? (currentUser.displayName || '') : `${name} のリスト`;
+  document.getElementById('userNameDisplay').textContent = '';
+  const banner = document.getElementById('writerBanner');
+  const writerNameEl = document.getElementById('writerName');
+  if (uid !== currentUser.uid) {
+    writerNameEl.textContent = name;
+    banner.style.display = 'block';
+  } else {
+    banner.style.display = 'none';
+  }
 };
 
 // ===== 自分のリストに戻る =====
 function backToMyList() {
   loadMyList(currentUser.uid);
   document.getElementById('userNameDisplay').textContent = currentUser.displayName || '';
+  document.getElementById('writerBanner').style.display = 'none';
   showToast('自分のリストに戻りました');
 }
 window.backToMyList = backToMyList;
@@ -726,6 +738,7 @@ window.renderList = function() {
           ${p.lastcontact?detailItem('最終連絡',`<span class="lc-badge lc-${lastcontactClass(p.lastcontact)}">${escHtml(p.lastcontact)}</span>`):''}
           ${p.insta?`<div class="detail-item"><div class="detail-label">インスタ</div><div class="detail-value"><a href="${escHtml(p.insta)}" target="_blank" rel="noopener">Instagram</a></div></div>`:''}
           ${p.memo?`<div class="detail-item full"><div class="detail-label">備考</div><div class="detail-value">${escHtml(p.memo)}</div></div>`:''}
+          ${p.writer?detailItem('記入者',`<span style="color:var(--primary);font-weight:600;">${escHtml(p.writer)}</span>`):''}
         </div>
         ${canEdit?`<div class="card-actions">
           <button class="btn btn-outline btn-sm" onclick="openEditModal('${p.id}')">編集</button>
@@ -758,6 +771,7 @@ window.openAddModal = () => {
   document.getElementById('f_age').value = '24';
   document.getElementById('f_address').value = '福岡';
   document.getElementById('f_hometown').value = '福岡';
+  document.getElementById('f_writer').value = currentUser?.displayName || currentUser?.email || '';
   document.getElementById('editModal').classList.add('open');
   setTimeout(()=>{ document.getElementById('editModal').scrollTop=0; },0);
 };
@@ -785,7 +799,9 @@ window.savePerson = async (e) => {
       await updateDoc(doc(db,'users',currentUser.uid,'people',editingId), { ...data, updatedAt: serverTimestamp() });
       showToast('更新しました');
     } else {
-      await addDoc(collection(db,'users',currentUser.uid,'people'), { ...data, createdAt: serverTimestamp() });
+      // 新規追加時に記入者を自動セット
+      const writerName = currentUser.displayName || currentUser.email || '';
+      await addDoc(collection(db,'users',currentUser.uid,'people'), { ...data, writer: data.writer || writerName, createdAt: serverTimestamp() });
       showToast('追加しました');
     }
     closeEditModal();
