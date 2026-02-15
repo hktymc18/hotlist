@@ -3,16 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HotList 30</title>
+  <title>Hot List</title>
   <style>
-    /* ===== リセット & ベース ===== */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --primary: #7eb8ff;
       --primary-dark: #5a9fe8;
       --danger: #ff5252;
       --success: #4caf50;
-      --warning: #ffb300;
       --bg: #141416;
       --bg2: #1c1c1f;
       --surface: #222226;
@@ -23,517 +21,255 @@
       --radius: 12px;
       --shadow: 0 2px 20px rgba(0,0,0,0.45);
     }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ===== ログイン画面 ===== */
+    #loginScreen {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 100vh; padding: 24px; gap: 24px;
     }
+    .login-title {
+      font-size: 3rem; font-weight: 800; letter-spacing: 0.06em;
+      background: linear-gradient(135deg, #ff9a00, #ff6a00, #ff4e00);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .login-subtitle { font-size: 0.95rem; color: var(--text-muted); text-align: center; line-height: 1.6; }
+    .btn-google {
+      display: flex; align-items: center; gap: 12px; padding: 14px 28px;
+      background: #fff; color: #333; border: none; border-radius: 12px;
+      font-size: 1rem; font-weight: 600; cursor: pointer;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3); transition: transform 0.15s;
+    }
+    .btn-google:active { transform: scale(0.97); }
+    .btn-google img { width: 22px; height: 22px; }
 
     /* ===== ヘッダー ===== */
     header {
-      background: var(--bg2);
-      color: #fff;
-      padding: 14px 18px;
-      display: grid;
-      grid-template-columns: 1fr auto auto;
-      align-items: center;
-      gap: 10px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      border-bottom: 1px solid var(--border);
-      box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+      background: var(--bg2); color: #fff; padding: 12px 16px;
+      display: grid; grid-template-columns: 1fr auto auto;
+      align-items: center; gap: 8px; position: sticky; top: 0; z-index: 100;
+      border-bottom: 1px solid var(--border); box-shadow: 0 2px 12px rgba(0,0,0,0.4);
     }
     .header-title {
-      grid-column: 1 / -1;
-      text-align: center;
-      font-size: 2.55rem;
-      font-weight: 800;
+      grid-column: 1 / -1; text-align: center; font-size: 2.55rem; font-weight: 800;
       letter-spacing: 0.06em;
       background: linear-gradient(135deg, #ff9a00, #ff6a00, #ff4e00);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      line-height: 1.2;
-      padding: 4px 0;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      line-height: 1.2; padding: 2px 0;
     }
     .header-row {
-      grid-column: 1 / -1;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 8px;
     }
+    .header-left { display: flex; align-items: center; gap: 8px; }
     .header-count {
-      background: rgba(126,184,255,0.12);
-      border: 1px solid rgba(126,184,255,0.3);
-      border-radius: 20px;
-      padding: 4px 12px;
-      font-size: 0.9rem;
-      color: var(--primary);
-      font-weight: 600;
+      background: rgba(126,184,255,0.12); border: 1px solid rgba(126,184,255,0.3);
+      border-radius: 20px; padding: 3px 10px; font-size: 0.85rem; color: var(--primary); font-weight: 600;
     }
+    .user-avatar {
+      width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
+      border: 2px solid var(--border); object-fit: cover;
+    }
+    .user-name { font-size: 0.8rem; color: var(--text-muted); max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .btn-add-header {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 16px;
-      background: linear-gradient(135deg, #f7971e, #ff4e50);
-      color: #fff;
-      border: none;
-      border-radius: 22px;
-      font-size: 0.95rem;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 2px 10px rgba(255,78,80,0.35);
-      transition: transform 0.15s, box-shadow 0.15s;
-      white-space: nowrap;
+      display: inline-flex; align-items: center; gap: 5px; padding: 7px 14px;
+      background: linear-gradient(135deg, #f7971e, #ff4e50); color: #fff; border: none;
+      border-radius: 22px; font-size: 0.9rem; font-weight: 700; cursor: pointer;
+      box-shadow: 0 2px 10px rgba(255,78,80,0.35); transition: transform 0.15s; white-space: nowrap;
     }
-    .btn-add-header:active { transform: scale(0.96); box-shadow: none; }
+    .btn-add-header:active { transform: scale(0.96); }
 
     /* ===== ツールバー ===== */
     .toolbar {
-      padding: 14px 16px;
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      align-items: center;
-      background: var(--bg2);
-      border-bottom: 1px solid var(--border);
+      padding: 12px 14px; display: flex; gap: 8px; flex-wrap: wrap;
+      align-items: center; background: var(--bg2); border-bottom: 1px solid var(--border);
     }
     .toolbar input[type="text"] {
-      flex: 1;
-      min-width: 150px;
-      padding: 15px 16px;
-      border: 2px solid var(--border);
-      border-radius: 12px;
-      font-size: 1.1rem;
-      outline: none;
-      transition: border-color 0.2s;
-      background: var(--surface);
-      color: var(--text);
+      flex: 1; min-width: 140px; padding: 13px 14px; border: 2px solid var(--border);
+      border-radius: 12px; font-size: 1.05rem; outline: none; transition: border-color 0.2s;
+      background: var(--surface); color: var(--text);
     }
     .toolbar input[type="text"]::placeholder { color: var(--text-muted); }
     .toolbar input[type="text"]:focus { border-color: var(--primary); }
     .toolbar select {
-      padding: 15px 12px;
-      border: 2px solid var(--border);
-      border-radius: 12px;
-      font-size: 1.05rem;
-      background: var(--surface);
-      color: var(--text);
-      outline: none;
+      padding: 13px 10px; border: 2px solid var(--border); border-radius: 12px;
+      font-size: 1rem; background: var(--surface); color: var(--text); outline: none;
     }
 
-    /* ===== ボタン ===== */
+    /* ===== ボタン共通 ===== */
     .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 10px 16px;
-      border: none;
-      border-radius: 10px;
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: opacity 0.15s, transform 0.1s;
-      white-space: nowrap;
+      display: inline-flex; align-items: center; gap: 4px; padding: 10px 16px;
+      border: none; border-radius: 10px; font-size: 0.95rem; font-weight: 600;
+      cursor: pointer; transition: opacity 0.15s, transform 0.1s; white-space: nowrap;
     }
     .btn:active { transform: scale(0.97); }
-    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary { background: var(--primary); color: #1a1a2e; }
     .btn-primary:hover { background: var(--primary-dark); }
-    .btn-success { background: var(--success); color: #fff; }
-    .btn-danger  { background: var(--danger); color: #fff; }
-    .btn-outline {
-      background: rgba(126,184,255,0.07);
-      color: var(--primary);
-      border: 2px solid rgba(126,184,255,0.5);
-    }
-    .btn-sm { padding: 7px 12px; font-size: 0.85rem; }
-    .btn-icon { padding: 7px; border-radius: 8px; }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-outline { background: rgba(126,184,255,0.07); color: var(--primary); border: 2px solid rgba(126,184,255,0.5); }
+    .btn-sm { padding: 6px 12px; font-size: 0.82rem; }
 
-    /* ===== リストビュー（カード） ===== */
-    .list-container {
-      padding: 14px 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .person-card {
-      background: var(--surface);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-      border: 1px solid var(--border);
-    }
-    .card-header {
-      padding: 14px 16px 12px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      cursor: pointer;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .avatar {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: #fff;
-      flex-shrink: 0;
-    }
+    /* ===== カード ===== */
+    .list-container { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+    .person-card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; border: 1px solid var(--border); }
+    .card-header { padding: 13px 14px 11px; display: flex; align-items: center; gap: 11px; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
+    .avatar { width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; font-weight: 700; color: #fff; flex-shrink: 0; }
     .card-info { flex: 1; min-width: 0; }
-    .card-name {
-      font-size: 1.08rem;
-      font-weight: 700;
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-    .card-sub {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      margin-top: 3px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .card-badges {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 5px;
-      flex-shrink: 0;
-    }
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 28px;
-      padding: 3px 9px;
-      border-radius: 6px;
-      font-size: 0.82rem;
-      font-weight: 800;
-      letter-spacing: 0.04em;
-    }
-    /* 信用度バッジ：ランク文字のみ・スタイリッシュ */
+    .card-name { font-size: 1.05rem; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .card-sub { font-size: 0.83rem; color: var(--text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-badges { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+    .badge { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; padding: 3px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 800; letter-spacing: 0.04em; }
     .trust-S { background: linear-gradient(135deg,#1b4d28,#2a6b38); color: #6ef093; border: 1px solid #3a8a4a; box-shadow: 0 0 6px rgba(110,240,147,0.2); }
     .trust-A { background: linear-gradient(135deg,#0e1e40,#1a3060); color: #6ab4fa; border: 1px solid #2a50a0; box-shadow: 0 0 6px rgba(100,180,250,0.2); }
     .trust-B { background: linear-gradient(135deg,#2e1e00,#4a3200); color: #ffd04a; border: 1px solid #6a4800; box-shadow: 0 0 6px rgba(255,200,50,0.2); }
-    .trust-C { background: linear-gradient(135deg,#2e0808,#4a1010); color: #ff7a70; border: 1px solid #7a2020; box-shadow: 0 0 6px rgba(255,100,80,0.2); }
+    .trust-C { background: linear-gradient(135deg,#2e0808,#4a1010); color: #ff7a70; border: 1px solid #7a2020; }
     .trust-D { background: linear-gradient(135deg,#1a1a22,#252530); color: #888899; border: 1px solid #3a3a4a; }
-    /* タイプバッジ */
     .type-P { background: #2a1a20; color: #f48fb1; border: 1px solid #4a2a35; }
     .type-C { background: #161a28; color: #9fa8da; border: 1px solid #28304a; }
     .type-A { background: #0e1e1c; color: #80cbc4; border: 1px solid #1e3835; }
     .type-S { background: #201800; color: #ffcc80; border: 1px solid #3a2a00; }
-
-    /* 立場バッジ（スタイリッシュ・絵文字なし） */
-    .pos-badge {
-      display: inline-block;
-      padding: 2px 7px;
-      border-radius: 4px;
-      font-size: 0.62rem;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      vertical-align: middle;
-    }
+    .pos-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.6rem; font-weight: 800; letter-spacing: 0.06em; vertical-align: middle; }
     .pos-up   { background: rgba(79,200,120,0.15); color: #4fc878; border: 1px solid rgba(79,200,120,0.4); }
     .pos-down { background: rgba(255,82,82,0.15);  color: #ff7070; border: 1px solid rgba(255,82,82,0.4); }
     .pos-eq   { background: rgba(150,150,200,0.15); color: #aab0cc; border: 1px solid rgba(150,150,200,0.4); }
-
-    /* カード詳細（展開） */
-    .card-detail {
-      display: none;
-      padding: 0 16px 16px;
-      border-top: 1px solid var(--border);
-      background: var(--surface2);
-    }
-    .card-detail.open { display: block; }
-    .detail-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 12px;
-    }
-    .detail-item { }
-    .detail-item.full { grid-column: 1 / -1; }
-    .detail-label {
-      font-size: 0.72rem;
-      color: var(--text-muted);
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 3px;
-    }
-    .detail-value {
-      font-size: 0.95rem;
-      font-weight: 500;
-      color: var(--text);
-      word-break: break-all;
-    }
-    .detail-value a {
-      color: var(--primary);
-      text-decoration: none;
-    }
-    .card-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 14px;
-      padding-top: 12px;
-      border-top: 1px solid var(--border);
-    }
-    .chevron {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      transition: transform 0.2s;
-    }
+    .chevron { font-size: 0.82rem; color: var(--text-muted); transition: transform 0.2s; }
     .chevron.open { transform: rotate(180deg); }
 
-    /* ===== モーダル ===== */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.7);
-      z-index: 200;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      padding: 12px 12px 40px;
-    }
-    .modal-overlay.open { display: block; }
-    .modal {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      width: 100%;
-      max-width: 520px;
-      padding: 20px;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.6);
-      margin: 0 auto;
-    }
-    /* フォームモーダルはスクロール可能なコンテナ内に収める */
-    #editModal .modal {
-      max-height: none;
-    }
-    #editModal .modal form {
-      overflow-y: visible;
-    }
-    .modal-title {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      background: var(--surface);
-      z-index: 1;
-      padding-bottom: 12px;
-      border-bottom: 1px solid var(--border);
-    }
-    .modal-close {
-      background: none;
-      border: none;
-      font-size: 1.5rem;
-      cursor: pointer;
-      color: var(--text-muted);
-      padding: 4px 8px;
-      line-height: 1;
-      border-radius: 6px;
-    }
+    /* ===== カード詳細 ===== */
+    .card-detail { display: none; padding: 0 14px 14px; border-top: 1px solid var(--border); background: var(--surface2); }
+    .card-detail.open { display: block; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+    .detail-item.full { grid-column: 1 / -1; }
+    .detail-label { font-size: 0.7rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+    .detail-value { font-size: 0.92rem; font-weight: 500; color: var(--text); word-break: break-all; }
+    .detail-value a { color: var(--primary); text-decoration: none; }
+    .card-actions { display: flex; gap: 8px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); }
 
-    /* フォーム */
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
-    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    /* ===== ハイライト ===== */
+    .card-highlight1 { border: 1.5px solid rgba(100,200,255,0.5) !important; animation: glow1 2.5s ease-in-out infinite; }
+    @keyframes glow1 { 0%,100%{box-shadow:0 0 8px rgba(100,200,255,0.15),var(--shadow);}50%{box-shadow:0 0 18px rgba(100,200,255,0.35),var(--shadow);} }
+    .card-highlight2 { border: 1.5px solid rgba(255,165,0,0.7) !important; animation: glow2 1.8s ease-in-out infinite; }
+    @keyframes glow2 { 0%,100%{box-shadow:0 0 10px rgba(255,140,0,0.25),var(--shadow);}50%{box-shadow:0 0 26px rgba(255,140,0,0.55),0 0 6px rgba(255,200,0,0.3),var(--shadow);} }
+
+    /* ===== 最終連絡バッジ ===== */
+    .lc-badge { display: inline-block; padding: 2px 8px; border-radius: 5px; font-size: 0.8rem; font-weight: 700; }
+    .lc-fresh  { background: rgba(76,175,80,0.15);   color: #69f08a; border: 1px solid rgba(76,175,80,0.4); }
+    .lc-recent { background: rgba(79,142,247,0.15);  color: #7eb8ff; border: 1px solid rgba(79,142,247,0.4); }
+    .lc-mid    { background: rgba(255,179,0,0.15);   color: #ffd04a; border: 1px solid rgba(255,179,0,0.4); }
+    .lc-old    { background: rgba(255,82,82,0.15);   color: #ff8a80; border: 1px solid rgba(255,82,82,0.4); }
+    .lc-dead   { background: rgba(100,100,120,0.15); color: #888899; border: 1px solid rgba(100,100,120,0.4); }
+
+    /* ===== モーダル ===== */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.72); z-index: 200; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 12px 12px 60px; }
+    .modal-overlay.open { display: block; }
+    .modal { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); width: 100%; max-width: 520px; padding: 20px; box-shadow: 0 8px 40px rgba(0,0,0,0.6); margin: 0 auto; }
+    .modal-title { font-size: 1.08rem; font-weight: 700; color: var(--text); margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--surface); z-index: 1; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .modal-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--text-muted); padding: 4px 8px; line-height: 1; border-radius: 6px; }
+
+    /* ===== フォーム ===== */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
     .form-group.full { grid-column: 1 / -1; }
-    label {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--text-muted);
-    }
-    input, select, textarea {
-      width: 100%;
-      padding: 14px 15px;
-      border: 2px solid var(--border);
-      border-radius: 10px;
-      font-size: 1.05rem;
-      font-family: inherit;
-      outline: none;
-      transition: border-color 0.2s;
-      background: var(--bg2);
-      color: var(--text);
-    }
+    label { font-size: 0.88rem; font-weight: 600; color: var(--text-muted); }
+    input, select, textarea { width: 100%; padding: 13px 14px; border: 2px solid var(--border); border-radius: 10px; font-size: 1.02rem; font-family: inherit; outline: none; transition: border-color 0.2s; background: var(--bg2); color: var(--text); }
     input::placeholder { color: var(--text-muted); }
     input:focus, select:focus, textarea:focus { border-color: var(--primary); }
-    textarea { resize: vertical; min-height: 80px; }
+    textarea { resize: vertical; min-height: 78px; }
     select option { background: var(--surface); color: var(--text); }
-    .form-actions {
-      display: flex;
-      gap: 10px;
-      justify-content: flex-end;
-      margin-top: 18px;
-      padding-top: 14px;
-      border-top: 1px solid var(--border);
-    }
-
-    /* ===== 空状態 ===== */
-    .empty-state {
-      text-align: center;
-      padding: 60px 24px;
-      color: var(--text-muted);
-    }
-    .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
-    .empty-state p { font-size: 1rem; margin-top: 8px; }
-
-    /* ===== FAB非表示（ヘッダーボタンに統一） ===== */
-    .fab { display: none; }
-
-    /* ===== ハイライトカード（条件①） ===== */
-    .card-highlight1 {
-      border: 1.5px solid rgba(100,200,255,0.5) !important;
-      box-shadow: 0 0 12px rgba(100,200,255,0.15), var(--shadow) !important;
-      animation: glow1 2.5s ease-in-out infinite;
-    }
-    @keyframes glow1 {
-      0%,100% { box-shadow: 0 0 8px rgba(100,200,255,0.15), var(--shadow); }
-      50%      { box-shadow: 0 0 18px rgba(100,200,255,0.35), var(--shadow); }
-    }
-
-    /* ===== ハイライトカード（条件②：さらに光る） ===== */
-    .card-highlight2 {
-      border: 1.5px solid rgba(255,165,0,0.7) !important;
-      box-shadow: 0 0 16px rgba(255,140,0,0.3), var(--shadow) !important;
-      animation: glow2 1.8s ease-in-out infinite;
-    }
-    @keyframes glow2 {
-      0%,100% { box-shadow: 0 0 10px rgba(255,140,0,0.25), var(--shadow); }
-      50%      { box-shadow: 0 0 26px rgba(255,140,0,0.55), 0 0 6px rgba(255,200,0,0.3), var(--shadow); }
-    }
-
-    /* ===== 最終連絡日バッジ ===== */
-    .lc-badge {
-      display: inline-block;
-      padding: 2px 9px;
-      border-radius: 5px;
-      font-size: 0.82rem;
-      font-weight: 700;
-    }
-    .lc-fresh  { background: rgba(76,175,80,0.15);  color: #69f08a; border: 1px solid rgba(76,175,80,0.4); }
-    .lc-recent { background: rgba(79,142,247,0.15); color: #7eb8ff; border: 1px solid rgba(79,142,247,0.4); }
-    .lc-mid    { background: rgba(255,179,0,0.15);  color: #ffd04a; border: 1px solid rgba(255,179,0,0.4); }
-    .lc-old    { background: rgba(255,82,82,0.15);  color: #ff8a80; border: 1px solid rgba(255,82,82,0.4); }
-    .lc-dead   { background: rgba(100,100,120,0.15);color: #888899; border: 1px solid rgba(100,100,120,0.4); }
+    .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
 
     /* ===== 共有パネル ===== */
     .share-section { padding: 4px 0; }
-    .share-section-title {
-      font-size: 0.92rem;
-      font-weight: 700;
-      color: var(--primary);
-      margin-bottom: 6px;
-      letter-spacing: 0.02em;
-    }
-    .share-desc {
-      font-size: 0.82rem;
-      color: var(--text-muted);
-      line-height: 1.55;
-      margin-bottom: 4px;
-    }
-    .share-divider {
-      height: 1px;
-      background: var(--border);
-      margin: 14px 0;
-    }
-    .share-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      margin-top: 8px;
-    }
+    .share-section-title { font-size: 0.9rem; font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+    .share-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.55; margin-bottom: 4px; }
+    .share-divider { height: 1px; background: var(--border); margin: 14px 0; }
+    .share-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+
+    /* ===== 共有権限リスト ===== */
+    .share-member-list { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+    .share-member-item { display: flex; align-items: center; justify-content: space-between; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 0.85rem; }
+    .share-member-email { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .share-member-owner { font-size: 0.75rem; color: var(--primary); font-weight: 600; }
+
+    /* ===== 空状態 ===== */
+    .empty-state { text-align: center; padding: 60px 24px; color: var(--text-muted); }
+    .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+    .empty-state p { font-size: 0.95rem; margin-top: 8px; }
 
     /* ===== Toast ===== */
-    .toast {
-      position: fixed;
-      bottom: 90px;
-      left: 50%;
-      transform: translateX(-50%) translateY(20px);
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 12px 22px;
-      border-radius: 24px;
-      font-size: 0.95rem;
-      z-index: 300;
-      opacity: 0;
-      transition: opacity 0.25s, transform 0.25s;
-      white-space: nowrap;
-      pointer-events: none;
-    }
+    .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 11px 22px; border-radius: 24px; font-size: 0.92rem; z-index: 300; opacity: 0; transition: opacity 0.25s, transform 0.25s; white-space: nowrap; pointer-events: none; }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-    /* ===== レスポンシブ ===== */
+    /* ===== ローディング ===== */
+    .loading { display: flex; align-items: center; justify-content: center; min-height: 200px; color: var(--text-muted); font-size: 0.9rem; gap: 10px; }
+    .spinner { width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .fab { display: none; }
+
     @media (max-width: 480px) {
       .form-grid { grid-template-columns: 1fr; }
       .detail-grid { grid-template-columns: 1fr; }
       .form-group.full { grid-column: 1; }
-      .modal-overlay { padding: 8px 8px 60px; }
-      .modal { padding: 16px; }
+      .modal-overlay { padding: 8px 8px 70px; }
+      .modal { padding: 14px; }
     }
   </style>
 </head>
 <body>
 
-<!-- ヘッダー -->
-<header>
-  <div class="header-title">Hot List</div>
-  <div class="header-row">
-    <span class="header-count" id="countBadge">0人</span>
-    <button class="btn-add-header" onclick="openAddModal()">＋ 追加</button>
-  </div>
-</header>
-
-<!-- ツールバー -->
-<div class="toolbar">
-  <input type="text" id="searchInput" placeholder="名前・仕事・関係性で検索" oninput="renderList()">
-  <select id="filterTrust" onchange="renderList()">
-    <option value="">信用度 全て</option>
-    <option value="S">S ランク</option>
-    <option value="A">A ランク</option>
-    <option value="B">B ランク</option>
-    <option value="C">C ランク</option>
-    <option value="D">D ランク</option>
-  </select>
-  <select id="filterType" onchange="renderList()">
-    <option value="">タイプ 全て</option>
-    <option value="プロモーター">プロモーター</option>
-    <option value="コントローラー">コントローラー</option>
-    <option value="アナライザー">アナライザー</option>
-    <option value="サポーター">サポーター</option>
-  </select>
-  <button class="btn btn-outline btn-sm" onclick="openShareModal()">共有</button>
+<!-- ===== ログイン画面 ===== -->
+<div id="loginScreen">
+  <div class="login-title">Hot List</div>
+  <p class="login-subtitle">Googleアカウントでログインして<br>ホットリストを管理しましょう</p>
+  <button class="btn-google" onclick="signInWithGoogle()">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+    Googleでログイン
+  </button>
+  <p style="font-size:0.78rem;color:var(--text-muted);margin-top:8px;">※ ログイン済みのメンバーのみアクセス可能</p>
 </div>
 
-<!-- リスト -->
-<div class="list-container" id="listContainer"></div>
+<!-- ===== メイン画面（ログイン後） ===== -->
+<div id="mainScreen" style="display:none;">
+  <header>
+    <div class="header-title">Hot List</div>
+    <div class="header-row">
+      <div class="header-left">
+        <span class="header-count" id="countBadge">0人</span>
+        <span class="user-name" id="userNameDisplay"></span>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="btn btn-outline btn-sm" onclick="openShareModal()">共有</button>
+        <button class="btn-add-header" onclick="openAddModal()">＋ 追加</button>
+        <img id="userAvatar" class="user-avatar" src="" alt="" onclick="confirmSignOut()" title="ログアウト" style="display:none;">
+      </div>
+    </div>
+  </header>
 
-<!-- FAB（非表示） -->
-<button class="fab" onclick="openAddModal()" title="追加">＋</button>
+  <div class="toolbar">
+    <input type="text" id="searchInput" placeholder="名前・仕事・関係性で検索" oninput="renderList()">
+    <select id="filterTrust" onchange="renderList()">
+      <option value="">信用度 全て</option>
+      <option value="S">S ランク</option>
+      <option value="A">A ランク</option>
+      <option value="B">B ランク</option>
+      <option value="C">C ランク</option>
+      <option value="D">D ランク</option>
+    </select>
+    <select id="filterType" onchange="renderList()">
+      <option value="">タイプ 全て</option>
+      <option value="プロモーター">プロモーター</option>
+      <option value="コントローラー">コントローラー</option>
+      <option value="アナライザー">アナライザー</option>
+      <option value="サポーター">サポーター</option>
+    </select>
+  </div>
 
-<!-- Toast -->
+  <div class="list-container" id="listContainer">
+    <div class="loading"><div class="spinner"></div>読み込み中...</div>
+  </div>
+</div>
+
+<button class="fab">＋</button>
 <div class="toast" id="toast"></div>
 
 <!-- ===== 追加/編集モーダル ===== -->
@@ -545,176 +281,40 @@
     </div>
     <form id="personForm" onsubmit="savePerson(event)">
       <div class="form-grid">
-
-        <div class="form-group full">
-          <label>名前 *</label>
-          <input type="text" id="f_name" required placeholder="例：田中 太郎">
-        </div>
-
+        <div class="form-group full"><label>名前 *</label><input type="text" id="f_name" required placeholder="例：田中 太郎"></div>
         <div class="form-group">
           <label>年齢</label>
           <select id="f_age">
             <option value="">-</option>
-            <option value="18">18歳</option>
-            <option value="19">19歳</option>
-            <option value="20">20歳</option>
-            <option value="21">21歳</option>
-            <option value="22">22歳</option>
-            <option value="23">23歳</option>
-            <option value="24" selected>24歳</option>
-            <option value="25">25歳</option>
-            <option value="26">26歳</option>
-            <option value="27">27歳</option>
-            <option value="28">28歳</option>
-            <option value="29">29歳</option>
-            <option value="30">30歳</option>
-            <option value="31">31歳</option>
-            <option value="32">32歳</option>
-            <option value="33">33歳</option>
-            <option value="34">34歳</option>
-            <option value="35">35歳</option>
-            <option value="36">36歳</option>
-            <option value="37">37歳</option>
-            <option value="38">38歳</option>
-            <option value="39">39歳</option>
-            <option value="40">40歳</option>
-            <option value="41">41歳</option>
-            <option value="42">42歳</option>
-            <option value="43">43歳</option>
-            <option value="44">44歳</option>
-            <option value="45">45歳</option>
-            <option value="46">46歳</option>
-            <option value="47">47歳</option>
-            <option value="48">48歳</option>
-            <option value="49">49歳</option>
-            <option value="50">50歳</option>
+            <option value="18">18歳</option><option value="19">19歳</option><option value="20">20歳</option>
+            <option value="21">21歳</option><option value="22">22歳</option><option value="23">23歳</option>
+            <option value="24" selected>24歳</option><option value="25">25歳</option><option value="26">26歳</option>
+            <option value="27">27歳</option><option value="28">28歳</option><option value="29">29歳</option>
+            <option value="30">30歳</option><option value="31">31歳</option><option value="32">32歳</option>
+            <option value="33">33歳</option><option value="34">34歳</option><option value="35">35歳</option>
+            <option value="36">36歳</option><option value="37">37歳</option><option value="38">38歳</option>
+            <option value="39">39歳</option><option value="40">40歳</option><option value="41">41歳</option>
+            <option value="42">42歳</option><option value="43">43歳</option><option value="44">44歳</option>
+            <option value="45">45歳</option><option value="46">46歳</option><option value="47">47歳</option>
+            <option value="48">48歳</option><option value="49">49歳</option><option value="50">50歳</option>
           </select>
         </div>
-
-        <div class="form-group">
-          <label>性別</label>
-          <select id="f_gender">
-            <option value="">-</option>
-            <option value="男性">男性</option>
-            <option value="女性">女性</option>
-            <option value="その他">その他</option>
-          </select>
-        </div>
-
-        <div class="form-group full">
-          <label>インスタ URL</label>
-          <input type="url" id="f_insta" placeholder="https://www.instagram.com/...">
-        </div>
-
-        <div class="form-group full">
-          <label>関係性</label>
-          <input type="text" id="f_relation" placeholder="例：中学の野球部の同級生">
-        </div>
-
-        <div class="form-group full">
-          <label>仕事（社名）</label>
-          <input type="text" id="f_job" placeholder="例：営業 / 株式会社〇〇">
-        </div>
-
-        <div class="form-group">
-          <label>信用度</label>
-          <select id="f_trust">
-            <option value="">-</option>
-            <option value="S">S（100%）</option>
-            <option value="A">A（80%以上）</option>
-            <option value="B">B（50%以上）</option>
-            <option value="C">C（それ以下）</option>
-            <option value="D">D（全くなし）</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>立場</label>
-          <select id="f_position">
-            <option value="">-</option>
-            <option value="↑">↑ 自分が上</option>
-            <option value="↓">↓ 自分が下</option>
-            <option value="ー">ー 同じ</option>
-          </select>
-        </div>
-
-        <div class="form-group full">
-          <label>ニーズ</label>
-          <input type="text" id="f_needs" placeholder="例：お金を稼ぎたい、仕事を辞めたい">
-        </div>
-
-        <div class="form-group">
-          <label>現住所（都道府県）</label>
-          <input type="text" id="f_address" placeholder="例：福岡" value="福岡">
-        </div>
-
-        <div class="form-group">
-          <label>現住所（市）</label>
-          <input type="text" id="f_address_city" placeholder="例：福岡市">
-        </div>
-
-        <div class="form-group">
-          <label>出身地（都道府県）</label>
-          <input type="text" id="f_hometown" placeholder="例：福岡" value="福岡">
-        </div>
-
-        <div class="form-group">
-          <label>出身地（市）</label>
-          <input type="text" id="f_hometown_city" placeholder="例：筑紫野市">
-        </div>
-
-        <div class="form-group">
-          <label>住まい</label>
-          <select id="f_living">
-            <option value="">-</option>
-            <option value="一人暮らし">一人暮らし</option>
-            <option value="実家">実家</option>
-            <option value="同棲">同棲</option>
-            <option value="半同棲">半同棲</option>
-            <option value="シェアハウス">シェアハウス</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>パートナー</label>
-          <select id="f_partner">
-            <option value="">-</option>
-            <option value="有り">有り</option>
-            <option value="無し">無し</option>
-            <option value="結婚">結婚</option>
-            <option value="子供あり">子供あり</option>
-          </select>
-        </div>
-
-        <div class="form-group full">
-          <label>４つのタイプ</label>
-          <select id="f_type">
-            <option value="">-</option>
-            <option value="プロモーター">プロモーター</option>
-            <option value="コントローラー">コントローラー</option>
-            <option value="アナライザー">アナライザー</option>
-            <option value="サポーター">サポーター</option>
-          </select>
-        </div>
-
-        <div class="form-group full">
-          <label>最終連絡日</label>
-          <select id="f_lastcontact">
-            <option value="">-</option>
-            <option value="1週間以内">1週間以内</option>
-            <option value="1ヶ月以内">1ヶ月以内</option>
-            <option value="3ヶ月以内">3ヶ月以内</option>
-            <option value="半年以内">半年以内</option>
-            <option value="1年以内">1年以内</option>
-            <option value="3年以上前">3年以上前</option>
-          </select>
-        </div>
-
-        <div class="form-group full">
-          <label>備考</label>
-          <textarea id="f_memo" placeholder="自由記述"></textarea>
-        </div>
-
+        <div class="form-group"><label>性別</label><select id="f_gender"><option value="">-</option><option value="男性">男性</option><option value="女性">女性</option><option value="その他">その他</option></select></div>
+        <div class="form-group full"><label>インスタ URL</label><input type="url" id="f_insta" placeholder="https://www.instagram.com/..."></div>
+        <div class="form-group full"><label>関係性</label><input type="text" id="f_relation" placeholder="例：中学の野球部の同級生"></div>
+        <div class="form-group full"><label>仕事（社名）</label><input type="text" id="f_job" placeholder="例：営業 / 株式会社〇〇"></div>
+        <div class="form-group"><label>信用度</label><select id="f_trust"><option value="">-</option><option value="S">S（100%）</option><option value="A">A（80%以上）</option><option value="B">B（50%以上）</option><option value="C">C（それ以下）</option><option value="D">D（全くなし）</option></select></div>
+        <div class="form-group"><label>立場</label><select id="f_position"><option value="">-</option><option value="↑">↑ 自分が上</option><option value="↓">↓ 自分が下</option><option value="ー">ー 同じ</option></select></div>
+        <div class="form-group full"><label>ニーズ</label><input type="text" id="f_needs" placeholder="例：お金を稼ぎたい、仕事を辞めたい"></div>
+        <div class="form-group"><label>現住所（都道府県）</label><input type="text" id="f_address" placeholder="例：福岡"></div>
+        <div class="form-group"><label>現住所（市）</label><input type="text" id="f_address_city" placeholder="例：福岡市"></div>
+        <div class="form-group"><label>出身地（都道府県）</label><input type="text" id="f_hometown" placeholder="例：福岡"></div>
+        <div class="form-group"><label>出身地（市）</label><input type="text" id="f_hometown_city" placeholder="例：筑紫野市"></div>
+        <div class="form-group"><label>住まい</label><select id="f_living"><option value="">-</option><option value="一人暮らし">一人暮らし</option><option value="実家">実家</option><option value="同棲">同棲</option><option value="半同棲">半同棲</option><option value="シェアハウス">シェアハウス</option></select></div>
+        <div class="form-group"><label>パートナー</label><select id="f_partner"><option value="">-</option><option value="有り">有り</option><option value="無し">無し</option><option value="結婚">結婚</option><option value="子供あり">子供あり</option></select></div>
+        <div class="form-group full"><label>４つのタイプ</label><select id="f_type"><option value="">-</option><option value="プロモーター">プロモーター</option><option value="コントローラー">コントローラー</option><option value="アナライザー">アナライザー</option><option value="サポーター">サポーター</option></select></div>
+        <div class="form-group full"><label>最終連絡日</label><select id="f_lastcontact"><option value="">-</option><option value="1週間以内">1週間以内</option><option value="1ヶ月以内">1ヶ月以内</option><option value="3ヶ月以内">3ヶ月以内</option><option value="半年以内">半年以内</option><option value="1年以内">1年以内</option><option value="3年以上前">3年以上前</option></select></div>
+        <div class="form-group full"><label>備考</label><textarea id="f_memo" placeholder="自由記述"></textarea></div>
       </div>
       <div class="form-actions">
         <button type="button" class="btn btn-outline" onclick="closeEditModal()">キャンセル</button>
@@ -724,74 +324,50 @@
   </div>
 </div>
 
-<!-- ===== 共有モーダル ===== -->
+<!-- ===== 共有管理モーダル ===== -->
 <div class="modal-overlay" id="shareModal">
   <div class="modal">
     <div class="modal-title">
-      <span>共有・バックアップ</span>
+      <span>共有・アクセス管理</span>
       <button class="modal-close" onclick="closeShareModal()">✕</button>
     </div>
 
-    <!-- セクション①：URLを共有 -->
     <div class="share-section">
-      <div class="share-section-title">アプリのURLを共有</div>
-      <p class="share-desc">メンバーにこのアプリのURLを送ります（データは各自の端末に保存）</p>
+      <div class="share-section-title">自分のリストを共有する</div>
+      <p class="share-desc">共有したい相手のGmailアドレスを入力してください。そのメンバーだけが自分のリストを閲覧できます。</p>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <input type="email" id="shareEmailInput" placeholder="例：friend@gmail.com" style="flex:1;font-size:0.92rem;padding:10px 12px;">
+        <button class="btn btn-primary btn-sm" onclick="addShareMember()">追加</button>
+      </div>
+      <div class="share-member-list" id="shareMemberList"></div>
+    </div>
+
+    <div class="share-divider"></div>
+
+    <div class="share-section">
+      <div class="share-section-title">閲覧できるリスト</div>
+      <p class="share-desc">他のメンバーから共有されているリストです。</p>
+      <div id="sharedWithMeList" style="margin-top:8px;font-size:0.85rem;color:var(--text-muted);">読み込み中...</div>
+    </div>
+
+    <div class="share-divider"></div>
+
+    <div class="share-section">
+      <div class="share-section-title">バックアップ（JSON）</div>
       <div class="share-actions">
-        <button class="btn btn-primary" onclick="shareUrl()">URLを共有・コピー</button>
-      </div>
-      <div id="shareUrlDisplay" style="margin-top:10px;"></div>
-    </div>
-
-    <div class="share-divider"></div>
-
-    <!-- セクション②：データ共有（JSON） -->
-    <div class="share-section">
-      <div class="share-section-title">データを共有（JSON）</div>
-      <p class="share-desc">データをJSONでエクスポートしてLINEやメールで送付。受け取った側はインポートで取り込み可能。</p>
-      <div class="share-actions">
-        <button class="btn btn-outline" onclick="exportData()">JSONエクスポート</button>
-        <label class="btn btn-outline" style="cursor:pointer;">
-          JSONインポート
-          <input type="file" accept=".json" style="display:none" onchange="importData(event)">
-        </label>
-      </div>
-    </div>
-
-    <div class="share-divider"></div>
-
-    <!-- セクション③：Googleスプレッドシート -->
-    <div class="share-section">
-      <div class="share-section-title">Googleスプレッドシートにバックアップ</div>
-      <p class="share-desc">スプレッドシートのURL（GAS WebアプリURL）を設定するとデータを送信できます。</p>
-      <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
-        <input type="url" id="gasUrlInput" placeholder="https://script.google.com/macros/s/..." style="font-size:0.88rem;padding:10px 12px;">
-        <div style="display:flex;gap:8px;">
-          <button class="btn btn-primary" onclick="saveToSheet()">スプレッドシートに送信</button>
-          <button class="btn btn-outline btn-sm" onclick="saveGasUrl()">URL保存</button>
-        </div>
-        <p class="share-desc" style="margin-top:4px;">※ 設定方法は下の手順を参照してください</p>
-        <details style="margin-top:4px;">
-          <summary style="font-size:0.82rem;color:var(--text-muted);cursor:pointer;">Googleスプレッドシート設定手順を見る</summary>
-          <div style="font-size:0.8rem;color:var(--text-muted);margin-top:8px;line-height:1.7;background:var(--bg2);padding:10px;border-radius:8px;">
-            1. Googleスプレッドシートを新規作成<br>
-            2. メニュー「拡張機能」→「Apps Script」を開く<br>
-            3. 下のコードを貼り付けて保存<br>
-            4. 「デプロイ」→「新しいデプロイ」→種類「ウェブアプリ」<br>
-            5. アクセス権「全員」に設定してデプロイ<br>
-            6. 表示されたURLをここに貼り付けて「URL保存」
-            <div style="margin-top:8px;">
-              <button class="btn btn-outline btn-sm" onclick="copyGasCode()">GASコードをコピー</button>
-            </div>
-          </div>
-        </details>
+        <button class="btn btn-outline btn-sm" onclick="exportData()">エクスポート</button>
+        <label class="btn btn-outline btn-sm" style="cursor:pointer;">インポート<input type="file" accept=".json" style="display:none" onchange="importData(event)"></label>
       </div>
     </div>
 
     <div class="share-divider"></div>
 
     <div class="share-section">
-      <div id="shareStats" style="font-size:0.83rem;color:var(--text-muted);"></div>
-      <button class="btn btn-danger btn-sm" style="margin-top:10px;" onclick="clearAll()">全データ削除</button>
+      <div id="shareStats" style="font-size:0.82rem;color:var(--text-muted);"></div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+        <button class="btn btn-outline btn-sm" onclick="confirmSignOut()">ログアウト</button>
+        <button class="btn btn-danger btn-sm" onclick="clearAll()">全データ削除</button>
+      </div>
     </div>
   </div>
 </div>
@@ -800,7 +376,7 @@
 <div class="modal-overlay" id="deleteModal">
   <div class="modal">
     <div class="modal-title">削除の確認</div>
-    <p id="deleteConfirmText" style="font-size:0.9rem;margin-bottom:16px;"></p>
+    <p id="deleteConfirmText" style="font-size:0.9rem;margin-bottom:16px;color:var(--text);"></p>
     <div class="form-actions">
       <button class="btn btn-outline" onclick="closeDeleteModal()">キャンセル</button>
       <button class="btn btn-danger" onclick="confirmDelete()">削除する</button>
@@ -808,418 +384,469 @@
   </div>
 </div>
 
-<script>
-// ===== データ管理 =====
-let people = JSON.parse(localStorage.getItem('hotlist_v1') || '[]');
+<!-- ===== Firebase SDK ===== -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, collection, doc, getDocs, getDoc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, query, where, serverTimestamp }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+// ===== Firebase設定 =====
+const firebaseConfig = {
+  apiKey: "AIzaSyBHLz19p4wsSi043V0hhE-Crjwv6VBKBro",
+  authDomain: "hotlist-21865.firebaseapp.com",
+  projectId: "hotlist-21865",
+  storageBucket: "hotlist-21865.firebasestorage.app",
+  messagingSenderId: "565556414915",
+  appId: "1:565556414915:web:f8c3489260e8d9d6e49576"
+};
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+// ===== 状態 =====
+let currentUser = null;
+let people = [];
 let editingId = null;
 let deleteTargetId = null;
+let unsubscribeSnapshot = null;
+let viewingUserId = null; // 他人のリストを閲覧中のUID
+let viewingUserName = '';
 
-function save() {
-  localStorage.setItem('hotlist_v1', JSON.stringify(people));
+const FIELDS = ['name','age','gender','insta','relation','job','trust','position','needs',
+                'address','address_city','hometown','hometown_city','living','partner','type','lastcontact','memo'];
+
+// ===== Googleログイン =====
+window.signInWithGoogle = async () => {
+  try {
+    const provider = new GoogleAuthProvider();
+    await signInWithPopup(auth, provider);
+  } catch(e) {
+    showToast('ログインに失敗しました');
+  }
+};
+
+// ===== 認証状態監視 =====
+onAuthStateChanged(auth, async user => {
+  if (user) {
+    currentUser = user;
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('mainScreen').style.display = 'block';
+    // アバター
+    if (user.photoURL) {
+      const av = document.getElementById('userAvatar');
+      av.src = user.photoURL;
+      av.style.display = 'block';
+    }
+    document.getElementById('userNameDisplay').textContent = user.displayName || '';
+    // ユーザードキュメント登録
+    await setDoc(doc(db, 'users', user.uid), {
+      email: user.email,
+      displayName: user.displayName || '',
+      photoURL: user.photoURL || '',
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+    // 自分のデータをリアルタイム購読
+    loadMyList();
+    // 共有されているリストを表示
+    loadSharedWithMe();
+  } else {
+    currentUser = null;
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('mainScreen').style.display = 'none';
+    if (unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
+  }
+});
+
+// ===== 自分のリスト購読 =====
+function loadMyList(uid) {
+  if (unsubscribeSnapshot) { unsubscribeSnapshot(); }
+  const targetUid = uid || currentUser.uid;
+  viewingUserId = targetUid;
+  const colRef = collection(db, 'users', targetUid, 'people');
+  unsubscribeSnapshot = onSnapshot(colRef, snapshot => {
+    people = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    people.sort((a, b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+    renderList();
+  });
 }
 
-function generateId() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2);
+// ===== 共有されているリストを読み込み =====
+async function loadSharedWithMe() {
+  if (!currentUser) return;
+  const el = document.getElementById('sharedWithMeList');
+  try {
+    // 自分のemailが sharedWith に含まれているユーザーを検索
+    const usersSnap = await getDocs(collection(db, 'users'));
+    const shared = [];
+    for (const userDoc of usersSnap.docs) {
+      if (userDoc.id === currentUser.uid) continue;
+      const shareDoc = await getDoc(doc(db, 'users', userDoc.id, 'settings', 'share'));
+      if (shareDoc.exists()) {
+        const sw = shareDoc.data().sharedWith || [];
+        if (sw.includes(currentUser.email)) {
+          shared.push({ uid: userDoc.id, name: userDoc.data().displayName || userDoc.data().email });
+        }
+      }
+    }
+    if (shared.length === 0) {
+      el.textContent = 'まだ共有されているリストはありません';
+      return;
+    }
+    el.innerHTML = shared.map(s => `
+      <div class="share-member-item" style="cursor:pointer;" onclick="switchToList('${s.uid}','${escHtml(s.name)}')">
+        <span class="share-member-email">${escHtml(s.name)}</span>
+        <span style="font-size:0.75rem;color:var(--primary);">閲覧する →</span>
+      </div>`).join('');
+  } catch(e) {
+    el.textContent = '読み込みに失敗しました';
+  }
 }
 
-// ===== カラー（アバター用：性別対応） =====
+// ===== 他のユーザーのリストに切り替え =====
+window.switchToList = (uid, name) => {
+  viewingUserName = name;
+  closeShareModal();
+  loadMyList(uid);
+  showToast(`${name} のリストを表示中`);
+  // ヘッダー表示を更新
+  document.getElementById('userNameDisplay').textContent =
+    uid === currentUser.uid ? (currentUser.displayName || '') : `${name} のリスト`;
+};
+
+// ===== 自分のリストに戻る =====
+function backToMyList() {
+  loadMyList(currentUser.uid);
+  document.getElementById('userNameDisplay').textContent = currentUser.displayName || '';
+  showToast('自分のリストに戻りました');
+}
+window.backToMyList = backToMyList;
+
+// ===== 共有メンバー管理 =====
+window.addShareMember = async () => {
+  const email = document.getElementById('shareEmailInput').value.trim().toLowerCase();
+  if (!email || !email.includes('@')) { showToast('正しいメールアドレスを入力してください'); return; }
+  if (email === currentUser.email) { showToast('自分自身は追加できません'); return; }
+  try {
+    const shareRef = doc(db, 'users', currentUser.uid, 'settings', 'share');
+    const shareDoc = await getDoc(shareRef);
+    const current = shareDoc.exists() ? (shareDoc.data().sharedWith || []) : [];
+    if (current.includes(email)) { showToast('すでに追加済みです'); return; }
+    await setDoc(shareRef, { sharedWith: [...current, email] }, { merge: true });
+    document.getElementById('shareEmailInput').value = '';
+    showToast(`${email} に共有しました`);
+    renderShareMemberList();
+  } catch(e) {
+    showToast('追加に失敗しました');
+  }
+};
+
+async function renderShareMemberList() {
+  if (!currentUser) return;
+  const el = document.getElementById('shareMemberList');
+  const shareDoc = await getDoc(doc(db, 'users', currentUser.uid, 'settings', 'share'));
+  const members = shareDoc.exists() ? (shareDoc.data().sharedWith || []) : [];
+  if (members.length === 0) {
+    el.innerHTML = '<div style="font-size:0.82rem;color:var(--text-muted);margin-top:6px;">まだ共有していません</div>';
+    return;
+  }
+  el.innerHTML = members.map(email => `
+    <div class="share-member-item">
+      <span class="share-member-email">${escHtml(email)}</span>
+      <button class="btn btn-danger btn-sm" onclick="removeShareMember('${escHtml(email)}')">削除</button>
+    </div>`).join('');
+}
+
+window.removeShareMember = async (email) => {
+  try {
+    const shareRef = doc(db, 'users', currentUser.uid, 'settings', 'share');
+    const shareDoc = await getDoc(shareRef);
+    const current = shareDoc.exists() ? (shareDoc.data().sharedWith || []) : [];
+    await setDoc(shareRef, { sharedWith: current.filter(e => e !== email) }, { merge: true });
+    showToast(`${email} の共有を解除しました`);
+    renderShareMemberList();
+  } catch(e) {
+    showToast('削除に失敗しました');
+  }
+};
+
+// ===== カラー =====
 const COLORS_MALE   = ['#0097a7','#00838f','#006064','#00acc1','#26c6da','#00bcd4','#0288d1','#0277bd'];
 const COLORS_FEMALE = ['#e91e8c','#c2185b','#ad1457','#f06292','#ec407a','#e91e63','#d81b60','#f48fb1'];
-const COLORS_OTHER  = ['#8e24aa','#7b1fa2','#6a1b9a','#9c27b0','#ab47bc','#7e57c2','#5e35b1','#4527a0'];
+const COLORS_OTHER  = ['#7e57c2','#5e35b1','#4527a0','#6a1b9a','#7b1fa2','#8e24aa','#9c27b0','#ab47bc'];
 function getColor(name, gender) {
   let h = 0;
-  for (let c of (name || 'A')) h = (h * 31 + c.charCodeAt(0)) & 0xff;
+  for (let c of (name||'A')) h = (h*31 + c.charCodeAt(0)) & 0xff;
   if (gender === '女性') return COLORS_FEMALE[h % COLORS_FEMALE.length];
   if (gender === '男性') return COLORS_MALE[h % COLORS_MALE.length];
   return COLORS_OTHER[h % COLORS_OTHER.length];
 }
 
-// ===== タイプ略称 =====
-const TYPE_SHORT = { 'プロモーター': 'P', 'コントローラー': 'C', 'アナライザー': 'A', 'サポーター': 'S' };
+const TYPE_SHORT = { 'プロモーター':'P','コントローラー':'C','アナライザー':'A','サポーター':'S' };
 
-// ===== 立場表示 =====
 function positionLabel(p) {
-  if (p === '↑') return '<span class="pos-badge pos-up">↑</span>';
-  if (p === '↓') return '<span class="pos-badge pos-down">↓</span>';
-  if (p === 'ー') return '<span class="pos-badge pos-eq">ー</span>';
+  if (p==='↑') return '<span class="pos-badge pos-up">↑</span>';
+  if (p==='↓') return '<span class="pos-badge pos-down">↓</span>';
+  if (p==='ー') return '<span class="pos-badge pos-eq">ー</span>';
   return '';
 }
 
-// ===== 最終連絡日クラス判定 =====
 function lastcontactClass(v) {
-  if (v === '1週間以内') return 'fresh';
-  if (v === '1ヶ月以内') return 'recent';
-  if (v === '3ヶ月以内' || v === '半年以内') return 'mid';
-  if (v === '1年以内') return 'old';
-  return 'dead'; // 3年以上前
+  if (v==='1週間以内') return 'fresh';
+  if (v==='1ヶ月以内') return 'recent';
+  if (v==='3ヶ月以内'||v==='半年以内') return 'mid';
+  if (v==='1年以内') return 'old';
+  return 'dead';
 }
 
-// ===== ハイライト判定 =====
 function getHighlightClass(p) {
-  const age = parseInt(p.age, 10);
-  const ageOk = !isNaN(age) && age >= 20 && age <= 26;
-  const livingOk = p.living === '一人暮らし';
-  const addressOk = (p.address || '').includes('福岡');
-  const hometownOk = (p.hometown || '').includes('福岡');
-  if (!ageOk || !livingOk || !addressOk || !hometownOk) return '';
-  // 条件②：さらに信用度S/A かつ 立場↑
-  if ((p.trust === 'S' || p.trust === 'A') && p.position === '↑') return 'card-highlight2';
-  // 条件①
+  const age = parseInt(p.age,10);
+  const ageOk = !isNaN(age) && age>=20 && age<=26;
+  const livingOk = p.living==='一人暮らし';
+  const addressOk = (p.address||'').includes('福岡');
+  const hometownOk = (p.hometown||'').includes('福岡');
+  if (!ageOk||!livingOk||!addressOk||!hometownOk) return '';
+  if ((p.trust==='S'||p.trust==='A') && p.position==='↑') return 'card-highlight2';
   return 'card-highlight1';
 }
 
 // ===== リスト描画 =====
-function renderList() {
-  const q = document.getElementById('searchInput').value.toLowerCase();
-  const ft = document.getElementById('filterTrust').value;
-  const ftp = document.getElementById('filterType').value;
+window.renderList = function() {
+  const q   = (document.getElementById('searchInput')?.value||'').toLowerCase();
+  const ft  = document.getElementById('filterTrust')?.value||'';
+  const ftp = document.getElementById('filterType')?.value||'';
+  const isReadOnly = viewingUserId !== currentUser?.uid;
 
   const filtered = people.filter(p => {
-    const matchQ = !q || [p.name, p.job, p.relation, p.needs, p.address, p.address_city, p.hometown, p.hometown_city, p.memo]
-      .some(v => (v||'').toLowerCase().includes(q));
-    const matchT = !ft || p.trust === ft;
-    const matchTP = !ftp || p.type === ftp;
+    const matchQ = !q || [p.name,p.job,p.relation,p.needs,p.address,p.address_city,p.hometown,p.hometown_city,p.memo]
+      .some(v=>(v||'').toLowerCase().includes(q));
+    const matchT  = !ft  || p.trust===ft;
+    const matchTP = !ftp || p.type===ftp;
     return matchQ && matchT && matchTP;
   });
 
   document.getElementById('countBadge').textContent = `${filtered.length}人`;
   const container = document.getElementById('listContainer');
 
-  if (filtered.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <div class="icon">📋</div>
-        <strong>${people.length === 0 ? 'まだ登録がありません' : '該当者なし'}</strong>
-        <p>${people.length === 0 ? '右上の「＋ 追加」から登録してください' : 'フィルターや検索条件を変えてみてください'}</p>
-      </div>`;
+  if (filtered.length===0) {
+    container.innerHTML = `<div class="empty-state"><div class="icon">📋</div>
+      <strong>${people.length===0?'まだ登録がありません':'該当者なし'}</strong>
+      <p>${people.length===0?'右上の「＋ 追加」から登録してください':'フィルターや検索条件を変えてみてください'}</p>
+      ${isReadOnly?'<button class="btn btn-outline btn-sm" style="margin-top:16px;" onclick="backToMyList()">← 自分のリストに戻る</button>':''}
+    </div>`;
     return;
   }
 
-  container.innerHTML = filtered.map(p => {
+  container.innerHTML = (isReadOnly ? `<div style="padding:10px 0 4px;"><button class="btn btn-outline btn-sm" onclick="backToMyList()">← 自分のリストに戻る</button></div>` : '')
+    + filtered.map(p => {
     const initial = (p.name||'?')[0];
     const color = getColor(p.name, p.gender);
-    const typeShort = TYPE_SHORT[p.type] || '';
+    const typeShort = TYPE_SHORT[p.type]||'';
     const typeCls = typeShort ? `type-${typeShort}` : '';
     const hlClass = getHighlightClass(p);
-    const addressFull = [p.address, p.address_city].filter(Boolean).join(' ');
-    const hometownFull = [p.hometown, p.hometown_city].filter(Boolean).join(' ');
-    return `
-    <div class="person-card ${hlClass}" id="card-${p.id}">
+    const addressFull = [p.address,p.address_city].filter(Boolean).join(' ');
+    const hometownFull = [p.hometown,p.hometown_city].filter(Boolean).join(' ');
+    const canEdit = !isReadOnly;
+    return `<div class="person-card ${hlClass}" id="card-${p.id}">
       <div class="card-header" onclick="toggleCard('${p.id}')">
         <div class="avatar" style="background:${color}">${initial}</div>
         <div class="card-info">
-          <div class="card-name">
-            ${escHtml(p.name)}
-            ${p.position ? `<span class="position-badge">${positionLabel(p.position)}</span>` : ''}
-          </div>
-          <div class="card-sub">${[p.age ? p.age+'歳' : '', p.gender, p.job].filter(Boolean).join(' · ')}</div>
-          <div class="card-sub">${p.relation || ''}</div>
+          <div class="card-name">${escHtml(p.name)}${p.position?`<span>${positionLabel(p.position)}</span>`:''}</div>
+          <div class="card-sub">${[p.age?p.age+'歳':'',p.gender,p.job].filter(Boolean).join(' · ')}</div>
+          <div class="card-sub">${p.relation||''}</div>
         </div>
         <div class="card-badges">
-          ${p.trust ? `<span class="badge trust-${p.trust}">${p.trust}</span>` : ''}
-          ${typeShort ? `<span class="badge ${typeCls}">${p.type}</span>` : ''}
+          ${p.trust?`<span class="badge trust-${p.trust}">${p.trust}</span>`:''}
+          ${typeShort?`<span class="badge ${typeCls}">${p.type}</span>`:''}
           <span class="chevron" id="chev-${p.id}">▼</span>
         </div>
       </div>
       <div class="card-detail" id="detail-${p.id}">
         <div class="detail-grid">
-          ${p.needs ? detailItem('ニーズ', escHtml(p.needs)) : ''}
-          ${addressFull ? detailItem('現住所', escHtml(addressFull)) : ''}
-          ${hometownFull ? detailItem('出身地', escHtml(hometownFull)) : ''}
-          ${p.living ? detailItem('住まい', escHtml(p.living)) : ''}
-          ${p.partner ? detailItem('パートナー', escHtml(p.partner)) : ''}
-          ${p.lastcontact ? detailItem('最終連絡', `<span class="lc-badge lc-${lastcontactClass(p.lastcontact)}">${escHtml(p.lastcontact)}</span>`) : ''}
-          ${p.insta ? `<div class="detail-item"><div class="detail-label">インスタ</div><div class="detail-value"><a href="${escHtml(p.insta)}" target="_blank" rel="noopener">Instagram</a></div></div>` : ''}
-          ${p.memo ? `<div class="detail-item full">${detailItemRaw('備考', escHtml(p.memo))}</div>` : ''}
+          ${p.needs?detailItem('ニーズ',escHtml(p.needs)):''}
+          ${addressFull?detailItem('現住所',escHtml(addressFull)):''}
+          ${hometownFull?detailItem('出身地',escHtml(hometownFull)):''}
+          ${p.living?detailItem('住まい',escHtml(p.living)):''}
+          ${p.partner?detailItem('パートナー',escHtml(p.partner)):''}
+          ${p.lastcontact?detailItem('最終連絡',`<span class="lc-badge lc-${lastcontactClass(p.lastcontact)}">${escHtml(p.lastcontact)}</span>`):''}
+          ${p.insta?`<div class="detail-item"><div class="detail-label">インスタ</div><div class="detail-value"><a href="${escHtml(p.insta)}" target="_blank" rel="noopener">Instagram</a></div></div>`:''}
+          ${p.memo?`<div class="detail-item full"><div class="detail-label">備考</div><div class="detail-value">${escHtml(p.memo)}</div></div>`:''}
         </div>
-        <div class="card-actions">
+        ${canEdit?`<div class="card-actions">
           <button class="btn btn-outline btn-sm" onclick="openEditModal('${p.id}')">編集</button>
           <button class="btn btn-danger btn-sm" onclick="askDelete('${p.id}')">削除</button>
-        </div>
+        </div>`:''}
       </div>
     </div>`;
   }).join('');
-}
+};
 
-function detailItem(label, value) {
+function detailItem(label,value) {
   return `<div class="detail-item"><div class="detail-label">${label}</div><div class="detail-value">${value}</div></div>`;
 }
-function detailItemRaw(label, value) {
-  return `<div class="detail-label">${label}</div><div class="detail-value">${value}</div>`;
-}
 
-function toggleCard(id) {
-  const detail = document.getElementById('detail-' + id);
-  const chev   = document.getElementById('chev-' + id);
-  detail.classList.toggle('open');
-  chev.classList.toggle('open');
-}
+window.toggleCard = (id) => {
+  document.getElementById('detail-'+id).classList.toggle('open');
+  document.getElementById('chev-'+id).classList.toggle('open');
+};
 
 function escHtml(s) {
   return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// ===== フィールド定義 =====
-const FIELDS = ['name','age','gender','insta','relation','job','trust','position','needs',
-                'address','address_city','hometown','hometown_city','living','partner','type','lastcontact','memo'];
-
 // ===== モーダル操作 =====
-function openAddModal() {
+window.openAddModal = () => {
+  if (viewingUserId !== currentUser?.uid) { showToast('他のメンバーのリストには追加できません'); return; }
   editingId = null;
   document.getElementById('modalTitle').textContent = '新規追加';
   document.getElementById('personForm').reset();
-  // 初期値を設定（reset後に上書き）
   document.getElementById('f_age').value = '24';
   document.getElementById('f_address').value = '福岡';
-  document.getElementById('f_address_city').value = '';
   document.getElementById('f_hometown').value = '福岡';
-  document.getElementById('f_hometown_city').value = '';
   document.getElementById('editModal').classList.add('open');
-  // スクロールを先頭に戻す
-  setTimeout(() => { document.getElementById('editModal').scrollTop = 0; }, 0);
-}
+  setTimeout(()=>{ document.getElementById('editModal').scrollTop=0; },0);
+};
 
-function openEditModal(id) {
-  const p = people.find(x => x.id === id);
+window.openEditModal = (id) => {
+  const p = people.find(x=>x.id===id);
   if (!p) return;
   editingId = id;
-  document.getElementById('modalTitle').textContent = '編集：' + p.name;
-  FIELDS.forEach(f => {
-    const el = document.getElementById('f_' + f);
-    if (el) el.value = p[f] || '';
-  });
+  document.getElementById('modalTitle').textContent = '編集：'+p.name;
+  FIELDS.forEach(f=>{ const el=document.getElementById('f_'+f); if(el) el.value=p[f]||''; });
   document.getElementById('editModal').classList.add('open');
-  setTimeout(() => { document.getElementById('editModal').scrollTop = 0; }, 0);
-}
+  setTimeout(()=>{ document.getElementById('editModal').scrollTop=0; },0);
+};
 
-function closeEditModal() {
-  document.getElementById('editModal').classList.remove('open');
-}
+window.closeEditModal = () => document.getElementById('editModal').classList.remove('open');
 
-function savePerson(e) {
+window.savePerson = async (e) => {
   e.preventDefault();
+  if (!currentUser) return;
   const data = {};
-  FIELDS.forEach(f => {
-    const el = document.getElementById('f_' + f);
-    data[f] = el ? el.value.trim() : '';
-  });
+  FIELDS.forEach(f=>{ const el=document.getElementById('f_'+f); data[f]=el?el.value.trim():''; });
 
-  if (editingId) {
-    const idx = people.findIndex(x => x.id === editingId);
-    if (idx !== -1) people[idx] = { ...people[idx], ...data };
-  } else {
-    data.id = generateId();
-    data.createdAt = new Date().toISOString();
-    people.unshift(data);
+  try {
+    if (editingId) {
+      await updateDoc(doc(db,'users',currentUser.uid,'people',editingId), { ...data, updatedAt: serverTimestamp() });
+      showToast('更新しました');
+    } else {
+      await addDoc(collection(db,'users',currentUser.uid,'people'), { ...data, createdAt: serverTimestamp() });
+      showToast('追加しました');
+    }
+    closeEditModal();
+  } catch(err) {
+    showToast('保存に失敗しました: '+err.message);
   }
-  save();
-  closeEditModal();
-  renderList();
-  showToast(editingId ? '更新しました' : '追加しました');
-}
+};
 
 // ===== 削除 =====
-function askDelete(id) {
-  const p = people.find(x => x.id === id);
+window.askDelete = (id) => {
+  const p = people.find(x=>x.id===id);
   if (!p) return;
   deleteTargetId = id;
   document.getElementById('deleteConfirmText').textContent = `「${p.name}」を削除しますか？この操作は取り消せません。`;
   document.getElementById('deleteModal').classList.add('open');
-}
-function closeDeleteModal() {
-  document.getElementById('deleteModal').classList.remove('open');
-  deleteTargetId = null;
-}
-function confirmDelete() {
-  if (!deleteTargetId) return;
-  people = people.filter(x => x.id !== deleteTargetId);
-  save();
-  renderList();
+};
+window.closeDeleteModal = () => { document.getElementById('deleteModal').classList.remove('open'); deleteTargetId=null; };
+window.confirmDelete = async () => {
+  if (!deleteTargetId||!currentUser) return;
+  try {
+    await deleteDoc(doc(db,'users',currentUser.uid,'people',deleteTargetId));
+    showToast('削除しました');
+  } catch(e) { showToast('削除に失敗しました'); }
   closeDeleteModal();
-  showToast('削除しました');
-}
+};
 
-// ===== 共有 =====
-function openShareModal() {
-  const stats = document.getElementById('shareStats');
+// ===== 共有モーダル =====
+window.openShareModal = async () => {
   const s = people.length;
-  const trust = ['S','A','B','C','D'].map(t => {
-    const n = people.filter(p => p.trust === t).length;
-    return n > 0 ? `${t}:${n}人` : null;
-  }).filter(Boolean).join('　');
-  stats.textContent = `登録数：${s}人　${trust ? '信用度 → ' + trust : ''}`;
-  // 保存済みGAS URLを復元
-  const savedGasUrl = localStorage.getItem('hotlist_gasUrl') || '';
-  document.getElementById('gasUrlInput').value = savedGasUrl;
+  const trust = ['S','A','B','C','D'].map(t=>{ const n=people.filter(p=>p.trust===t).length; return n>0?`${t}:${n}人`:null; }).filter(Boolean).join('　');
+  document.getElementById('shareStats').textContent = `登録数：${s}人　${trust?'信用度 → '+trust:''}`;
   document.getElementById('shareModal').classList.add('open');
-  setTimeout(() => { document.getElementById('shareModal').scrollTop = 0; }, 0);
-}
-function closeShareModal() {
-  document.getElementById('shareModal').classList.remove('open');
-}
+  setTimeout(()=>{ document.getElementById('shareModal').scrollTop=0; },0);
+  renderShareMemberList();
+  loadSharedWithMe();
+};
+window.closeShareModal = () => document.getElementById('shareModal').classList.remove('open');
 
-// URLを共有（iPhone: ネイティブ共有シート / PC: クリップボードコピー）
-async function shareUrl() {
-  const url = location.href;
-  const display = document.getElementById('shareUrlDisplay');
-  // URL表示エリアに表示
-  display.innerHTML = `<div style="font-size:0.8rem;color:var(--text-muted);word-break:break-all;background:var(--bg2);padding:8px 10px;border-radius:8px;border:1px solid var(--border);margin-top:4px;">${url}</div>`;
-  try {
-    if (navigator.share) {
-      await navigator.share({ title: 'Hot List', url });
-      showToast('共有しました');
-      return;
-    }
-  } catch(e) { /* キャンセルは無視 */ }
-  // クリップボードコピー
-  try {
-    await navigator.clipboard.writeText(url);
-    showToast('URLをコピーしました');
-    return;
-  } catch(e) {}
-  // フォールバック
-  const ta = document.createElement('textarea');
-  ta.value = url;
-  ta.style.position = 'fixed'; ta.style.opacity = '0';
-  document.body.appendChild(ta);
-  ta.focus(); ta.select();
-  try { document.execCommand('copy'); showToast('URLをコピーしました'); } catch(e) {}
-  document.body.removeChild(ta);
-}
-
-// GAS URL保存
-function saveGasUrl() {
-  const url = document.getElementById('gasUrlInput').value.trim();
-  if (!url) { showToast('URLを入力してください'); return; }
-  localStorage.setItem('hotlist_gasUrl', url);
-  showToast('GAS URLを保存しました');
-}
-
-// Googleスプレッドシートへ送信
-async function saveToSheet() {
-  const gasUrl = document.getElementById('gasUrlInput').value.trim()
-                 || localStorage.getItem('hotlist_gasUrl') || '';
-  if (!gasUrl) { showToast('GAS URLを設定してください'); return; }
-  showToast('送信中...');
-  try {
-    const resp = await fetch(gasUrl, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ data: people, exportedAt: new Date().toISOString() })
-    });
-    showToast('スプレッドシートに送信しました');
-  } catch(e) {
-    showToast('送信失敗：GAS URLを確認してください');
-  }
-}
-
-// GASコードをコピー
-function copyGasCode() {
-  const code = `function doPost(e) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  const json = JSON.parse(e.postData.contents);
-  const people = json.data;
-  const headers = ['name','age','gender','insta','relation','job','trust','position',
-    'needs','address','address_city','hometown','hometown_city',
-    'living','partner','type','lastcontact','memo','id','createdAt'];
-  if (sheet.getLastRow() === 0) sheet.appendRow(headers);
-  people.forEach(p => {
-    sheet.appendRow(headers.map(h => p[h] || ''));
-  });
-  return ContentService.createTextOutput('ok');
-}`;
-  const ta = document.createElement('textarea');
-  ta.value = code;
-  ta.style.position = 'fixed'; ta.style.opacity = '0';
-  document.body.appendChild(ta);
-  ta.focus(); ta.select();
-  try { document.execCommand('copy'); showToast('GASコードをコピーしました'); } catch(e) {}
-  document.body.removeChild(ta);
-  try { navigator.clipboard.writeText(code).then(() => showToast('GASコードをコピーしました')); } catch(e) {}
-}
-
-function exportData() {
-  const blob = new Blob([JSON.stringify(people, null, 2)], { type: 'application/json' });
+// ===== エクスポート / インポート =====
+window.exportData = () => {
+  const blob = new Blob([JSON.stringify(people,null,2)],{type:'application/json'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url;
-  const d = new Date();
-  a.download = `hotlist_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.json`;
+  a.href=url;
+  const d=new Date();
+  a.download=`hotlist_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.json`;
   a.click();
   URL.revokeObjectURL(url);
   showToast('エクスポートしました');
-}
+};
 
-function importData(e) {
+window.importData = async (e) => {
+  if (!currentUser) return;
   const file = e.target.files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = ev => {
+  reader.onload = async ev => {
     try {
       const imported = JSON.parse(ev.target.result);
       if (!Array.isArray(imported)) throw new Error('形式エラー');
-      // 重複IDを除いて追加
-      const existingIds = new Set(people.map(p => p.id));
-      const toAdd = imported.filter(p => p.id && !existingIds.has(p.id));
-      people = [...toAdd, ...people];
-      save();
-      renderList();
+      let count=0;
+      for (const p of imported) {
+        const data={};
+        FIELDS.forEach(f=>{ data[f]=p[f]||''; });
+        await addDoc(collection(db,'users',currentUser.uid,'people'),{...data,createdAt:serverTimestamp()});
+        count++;
+      }
+      showToast(`${count}件インポートしました`);
       closeShareModal();
-      showToast(`${toAdd.length}件インポートしました`);
-    } catch {
-      showToast('インポート失敗：正しいJSONファイルを選んでください');
-    }
-    e.target.value = '';
+    } catch(err) { showToast('インポート失敗：正しいJSONファイルを選んでください'); }
+    e.target.value='';
   };
   reader.readAsText(file);
-}
+};
 
-function clearAll() {
-  if (!confirm('全データを削除しますか？この操作は取り消せません。')) return;
-  people = [];
-  save();
-  renderList();
-  closeShareModal();
-  showToast('全データを削除しました');
-}
+// ===== 全削除 =====
+window.clearAll = async () => {
+  if (!currentUser) return;
+  if (!confirm('自分のデータを全て削除しますか？この操作は取り消せません。')) return;
+  try {
+    const snap = await getDocs(collection(db,'users',currentUser.uid,'people'));
+    for (const d of snap.docs) await deleteDoc(d.ref);
+    showToast('全データを削除しました');
+    closeShareModal();
+  } catch(e) { showToast('削除に失敗しました'); }
+};
+
+// ===== ログアウト =====
+window.confirmSignOut = async () => {
+  if (!confirm('ログアウトしますか？')) return;
+  if (unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot=null; }
+  await signOut(auth);
+};
 
 // ===== Toast =====
 let toastTimer;
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
+window.showToast = (msg) => {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
-}
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2400);
+};
 
 // ===== モーダル外クリックで閉じる =====
-['editModal','shareModal','deleteModal'].forEach(id => {
-  document.getElementById(id).addEventListener('click', function(e) {
-    if (e.target === this) {
-      if (id === 'editModal') closeEditModal();
-      else if (id === 'shareModal') closeShareModal();
-      else if (id === 'deleteModal') closeDeleteModal();
+['editModal','shareModal','deleteModal'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',function(e){
+    if(e.target===this){
+      if(id==='editModal') closeEditModal();
+      else if(id==='shareModal') closeShareModal();
+      else if(id==='deleteModal') closeDeleteModal();
     }
   });
 });
 
-// ===== 初期描画 =====
-// DOMが完全に読み込まれてから実行（iPhoneのホーム画面アプリ起動時の対策）
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', renderList);
-} else {
-  renderList();
-}
-
-// アプリがバックグラウンドから復帰した時も再描画（iPhoneのホーム画面アプリ対策）
-document.addEventListener('visibilitychange', function() {
-  if (document.visibilityState === 'visible') {
-    people = JSON.parse(localStorage.getItem('hotlist_v1') || '[]');
-    renderList();
-  }
-});
 </script>
 </body>
 </html>
