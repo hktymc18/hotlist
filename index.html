@@ -387,7 +387,7 @@
 <!-- ===== Firebase SDK ===== -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut }
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import { getFirestore, collection, doc, getDocs, getDoc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, query, where, serverTimestamp }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
@@ -395,7 +395,7 @@ import { getFirestore, collection, doc, getDocs, getDoc, setDoc, addDoc, updateD
 // ===== Firebase設定 =====
 const firebaseConfig = {
   apiKey: "AIzaSyBHLz19p4wsSi043V0hhE-Crjwv6VBKBro",
-  authDomain: "hktymc18.github.io",
+  authDomain: "hotlist-21865.firebaseapp.com",
   projectId: "hotlist-21865",
   storageBucket: "hotlist-21865.firebasestorage.app",
   messagingSenderId: "565556414915",
@@ -418,30 +418,23 @@ let viewingUserName = '';
 const FIELDS = ['name','age','gender','insta','relation','job','trust','position','needs',
                 'address','address_city','hometown','hometown_city','living','partner','type','lastcontact','memo'];
 
-// ===== Googleログイン =====
+// ===== Googleログイン (Popup方式) =====
 window.signInWithGoogle = async () => {
   try {
     const provider = new GoogleAuthProvider();
-    // iPhoneのSafariではpopupがブロックされるのでredirectを使用
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-    if (isSafari) {
-      await signInWithRedirect(auth, provider);
-    } else {
-      await signInWithPopup(auth, provider);
-    }
+    provider.setCustomParameters({ prompt: 'select_account' });
+    await signInWithPopup(auth, provider);
   } catch(e) {
     console.error(e);
-    showToast('ログインに失敗しました: ' + e.message);
+    if (e.code === 'auth/popup-blocked') {
+      showToast('ポップアップがブロックされました。ブラウザの設定でポップアップを許可してください');
+    } else if (e.code === 'auth/popup-closed-by-user') {
+      // ユーザーが閉じた場合は何もしない
+    } else {
+      showToast('ログインに失敗しました: ' + e.code);
+    }
   }
 };
-
-// ===== リダイレクト結果を受け取る =====
-getRedirectResult(auth).catch(e => {
-  if (e && e.code !== 'auth/no-redirect-operation') {
-    console.error('Redirect error:', e);
-    showToast('ログインに失敗しました');
-  }
-});
 
 // ===== 認証状態監視 =====
 onAuthStateChanged(auth, async user => {
