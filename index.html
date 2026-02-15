@@ -233,6 +233,20 @@
   </div>
 </div>
 
+<!-- ===== 名前入力画面（初回登録時） ===== -->
+<div id="nameScreen" style="display:none;">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;gap:20px;">
+    <div class="login-title">Hot List</div>
+    <p class="login-subtitle">あなたの名前を登録してください<br><span style="font-size:0.82rem;">記入者として全データに紐づきます</span></p>
+    <div style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px;">
+      <input id="registerName" type="text" placeholder="例：山田 太郎" autocomplete="name"
+        style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
+      <button onclick="saveName()" style="padding:14px;border-radius:12px;border:none;background:var(--primary);color:#111;font-size:1rem;font-weight:700;cursor:pointer;">登録して始める</button>
+      <p id="nameError" style="color:#ff5252;font-size:0.85rem;text-align:center;min-height:20px;"></p>
+    </div>
+  </div>
+</div>
+
 <!-- ===== メイン画面（ログイン後） ===== -->
 <div id="mainScreen" style="display:none;">
   <header>
@@ -464,7 +478,7 @@ window.signUpEmail = async () => {
   if (!email || !pass) { errEl.textContent = 'メールアドレスとパスワードを入力してください'; return; }
   try {
     await createUserWithEmailAndPassword(auth, email, pass);
-    showToast('登録完了！ようこそ');
+    // onAuthStateChangedが発火して名前入力画面に自動遷移
   } catch(e) {
     errEl.textContent = authErrMsg(e.code);
   }
@@ -485,37 +499,65 @@ window.resetPassword = async () => {
   }
 };
 
+// ===== 画面切り替えヘルパー =====
+function showScreen(name) {
+  ['loginScreen','nameScreen','mainScreen'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+  document.getElementById(name).style.display = (name === 'loginScreen') ? 'flex' : 'block';
+}
+
 // ===== 認証状態監視 =====
 onAuthStateChanged(auth, async user => {
   if (user) {
     currentUser = user;
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('mainScreen').style.display = 'block';
-    // アバター
-    if (user.photoURL) {
-      const av = document.getElementById('userAvatar');
-      av.src = user.photoURL;
-      av.style.display = 'block';
+    // Firestoreからユーザー情報を取得
+    const userDocRef = doc(db, 'users', user.uid);
+    const userSnap = await getDoc(userDocRef);
+    const savedName = userSnap.exists() ? (userSnap.data().displayName || '') : '';
+
+    if (!savedName) {
+      // 名前未登録 → 名前入力画面へ
+      showScreen('nameScreen');
+    } else {
+      // 名前登録済み → メイン画面へ
+      currentUser = { ...user, displayName: savedName };
+      enterMainScreen(savedName);
     }
-    document.getElementById('userNameDisplay').textContent = user.displayName || '';
-    // ユーザードキュメント登録
-    await setDoc(doc(db, 'users', user.uid), {
-      email: user.email,
-      displayName: user.displayName || '',
-      photoURL: user.photoURL || '',
-      updatedAt: serverTimestamp()
-    }, { merge: true });
-    // 自分のデータをリアルタイム購読
-    loadMyList();
-    // 共有されているリストを表示
-    loadSharedWithMe();
   } else {
     currentUser = null;
-    document.getElementById('loginScreen').style.display = 'flex';
-    document.getElementById('mainScreen').style.display = 'none';
+    showScreen('loginScreen');
     if (unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
   }
 });
+
+// ===== メイン画面に入る =====
+function enterMainScreen(displayName) {
+  showScreen('mainScreen');
+  document.getElementById('userNameDisplay').textContent = displayName;
+  document.getElementById('writerBanner').style.display = 'none';
+  loadMyList();
+  loadSharedWithMe();
+}
+
+// ===== 名前を保存 =====
+window.saveName = async () => {
+  const name = document.getElementById('registerName').value.trim();
+  const errEl = document.getElementById('nameError');
+  if (!name) { errEl.textContent = '名前を入力してください'; return; }
+  try {
+    await setDoc(doc(db, 'users', currentUser.uid), {
+      email: currentUser.email,
+      displayName: name,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+    currentUser = { ...currentUser, displayName: name };
+    enterMainScreen(name);
+    showToast('登録完了！ようこそ ' + name + ' さん');
+  } catch(e) {
+    errEl.textContent = '保存に失敗しました: ' + e.message;
+  }
+};
 
 // ===== 自分のリスト購読 =====
 function loadMyList(uid) {
