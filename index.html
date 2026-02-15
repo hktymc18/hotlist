@@ -80,11 +80,11 @@
 
     /* ===== ツールバー ===== */
     .toolbar {
-      padding: 12px 14px; display: flex; gap: 8px; flex-wrap: wrap;
-      align-items: center; background: var(--bg2); border-bottom: 1px solid var(--border);
+      padding: 12px 14px; display: flex; gap: 8px; flex-direction: column;
+      background: var(--bg2); border-bottom: 1px solid var(--border);
     }
     .toolbar input[type="text"] {
-      flex: 1; min-width: 140px; padding: 13px 14px; border: 2px solid var(--border);
+      width: 100%; padding: 13px 14px; border: 2px solid var(--border);
       border-radius: 12px; font-size: 1.05rem; outline: none; transition: border-color 0.2s;
       background: var(--surface); color: var(--text);
     }
@@ -94,6 +94,7 @@
       padding: 13px 10px; border: 2px solid var(--border); border-radius: 12px;
       font-size: 1rem; background: var(--surface); color: var(--text); outline: none;
     }
+    .search-widget { width: 100%; }
 
     /* ===== ボタン共通 ===== */
     .btn {
@@ -237,7 +238,7 @@
 <div id="nameScreen" style="display:none;">
   <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;gap:20px;">
     <div class="login-title">Hot List</div>
-    <p class="login-subtitle">あなたの名前を登録してください<br><span style="font-size:0.82rem;">記入者として全データに紐づきます</span></p>
+    <p class="login-subtitle">あなたの名前を登録してください</p>
     <div style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px;">
       <input id="registerName" type="text" placeholder="例：山田 太郎" autocomplete="name"
         style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
@@ -268,22 +269,42 @@
   </header>
 
   <div class="toolbar">
-    <input type="text" id="searchInput" placeholder="名前・仕事・関係性で検索" oninput="renderList()">
-    <select id="filterTrust" onchange="renderList()">
-      <option value="">信用度 全て</option>
-      <option value="S">S ランク</option>
-      <option value="A">A ランク</option>
-      <option value="B">B ランク</option>
-      <option value="C">C ランク</option>
-      <option value="D">D ランク</option>
+    <!-- カテゴリー選択 -->
+    <select id="searchCategory" onchange="onSearchCategoryChange()" style="width:100%;">
+      <option value="free">🔍 フリーワード検索</option>
+      <option value="age">年齢</option>
+      <option value="gender">性別</option>
+      <option value="trust">信用度</option>
+      <option value="position">立場</option>
+      <option value="relation">関係性</option>
+      <option value="job">職業</option>
+      <option value="living">住まい</option>
+      <option value="partner">パートナー</option>
+      <option value="type">タイプ</option>
+      <option value="lastcontact">最終連絡</option>
+      <option value="address">現住所（都道府県）</option>
+      <option value="hometown">出身地（都道府県）</option>
     </select>
-    <select id="filterType" onchange="renderList()">
-      <option value="">タイプ 全て</option>
-      <option value="プロモーター">プロモーター</option>
-      <option value="コントローラー">コントローラー</option>
-      <option value="アナライザー">アナライザー</option>
-      <option value="サポーター">サポーター</option>
-    </select>
+    <!-- フリーワード -->
+    <div id="searchWidget_free" class="search-widget">
+      <input type="text" id="searchInput" placeholder="名前・仕事・関係性・住所など" oninput="renderList()">
+    </div>
+    <!-- 年齢 from-to -->
+    <div id="searchWidget_age" class="search-widget" style="display:none;">
+      <div style="display:flex;align-items:center;gap:8px;width:100%;">
+        <select id="searchAgeFrom" onchange="renderList()" style="flex:1;">
+          <option value="">下限なし</option>
+        </select>
+        <span style="color:var(--text-muted);font-size:0.9rem;">〜</span>
+        <select id="searchAgeTo" onchange="renderList()" style="flex:1;">
+          <option value="">上限なし</option>
+        </select>
+      </div>
+    </div>
+    <!-- ホイール選択系 -->
+    <div id="searchWidget_select" class="search-widget" style="display:none;">
+      <select id="searchSelectValue" onchange="renderList()" style="width:100%;"></select>
+    </div>
   </div>
 
   <div class="list-container" id="listContainer">
@@ -719,19 +740,84 @@ function getHighlightClass(p) {
   return 'card-highlight1';
 }
 
+// ===== 年齢セレクト初期化 =====
+function initAgeSelects() {
+  const from = document.getElementById('searchAgeFrom');
+  const to   = document.getElementById('searchAgeTo');
+  if (!from || !to) return;
+  from.innerHTML = '<option value="">下限なし</option>';
+  to.innerHTML   = '<option value="">上限なし</option>';
+  for (let i = 18; i <= 50; i++) {
+    from.innerHTML += `<option value="${i}">${i}歳</option>`;
+    to.innerHTML   += `<option value="${i}">${i}歳</option>`;
+  }
+}
+
+// ===== カテゴリー変更時の処理 =====
+window.onSearchCategoryChange = function() {
+  const cat = document.getElementById('searchCategory').value;
+  document.getElementById('searchWidget_free').style.display   = 'none';
+  document.getElementById('searchWidget_age').style.display    = 'none';
+  document.getElementById('searchWidget_select').style.display = 'none';
+
+  if (cat === 'free') {
+    document.getElementById('searchWidget_free').style.display = 'block';
+  } else if (cat === 'age') {
+    initAgeSelects();
+    document.getElementById('searchWidget_age').style.display = 'block';
+  } else {
+    const fixedOptions = {
+      gender:      ['男性','女性','その他'],
+      trust:       ['S','A','B','C','D'],
+      position:    ['↑','↓','ー'],
+      living:      ['一人暮らし','実家','同棲','その他'],
+      partner:     ['いる','いない'],
+      type:        ['プロモーター','コントローラー','アナライザー','サポーター'],
+      lastcontact: ['1週間以内','1ヶ月以内','3ヶ月以内','半年以内','1年以内','3年以上前'],
+    };
+    const sel = document.getElementById('searchSelectValue');
+    let opts = fixedOptions[cat];
+    // job・relation・address・hometownは登録データから動的生成
+    if (!opts) {
+      opts = [...new Set(people.map(p => p[cat]).filter(Boolean))].sort();
+    }
+    sel.innerHTML = '<option value="">すべて</option>'
+      + opts.map(o => `<option value="${o}">${o}</option>`).join('');
+    document.getElementById('searchWidget_select').style.display = 'block';
+  }
+  renderList();
+};
+
 // ===== リスト描画 =====
 window.renderList = function() {
-  const q   = (document.getElementById('searchInput')?.value||'').toLowerCase();
-  const ft  = document.getElementById('filterTrust')?.value||'';
-  const ftp = document.getElementById('filterType')?.value||'';
+  const category = document.getElementById('searchCategory')?.value || 'free';
   const isReadOnly = viewingUserId !== currentUser?.uid;
 
   const filtered = people.filter(p => {
-    const matchQ = !q || [p.name,p.job,p.relation,p.needs,p.address,p.address_city,p.hometown,p.hometown_city,p.memo]
-      .some(v=>(v||'').toLowerCase().includes(q));
-    const matchT  = !ft  || p.trust===ft;
-    const matchTP = !ftp || p.type===ftp;
-    return matchQ && matchT && matchTP;
+    if (category === 'free') {
+      const q = (document.getElementById('searchInput')?.value||'').toLowerCase();
+      return !q || [p.name,p.job,p.relation,p.needs,p.address,p.address_city,p.hometown,p.hometown_city,p.memo,p.writer]
+        .some(v=>(v||'').toLowerCase().includes(q));
+    }
+    if (category === 'age') {
+      const age = parseInt(p.age, 10);
+      if (isNaN(age)) return false;
+      const from = parseInt(document.getElementById('searchAgeFrom')?.value||'', 10);
+      const to   = parseInt(document.getElementById('searchAgeTo')?.value||'', 10);
+      if (!isNaN(from) && age < from) return false;
+      if (!isNaN(to)   && age > to)   return false;
+      return true;
+    }
+    // ホイール選択系
+    const val = document.getElementById('searchSelectValue')?.value || '';
+    if (!val) return true;
+    const fieldMap = {
+      gender: p.gender, trust: p.trust, position: p.position,
+      relation: p.relation, job: p.job, living: p.living,
+      partner: p.partner, type: p.type, lastcontact: p.lastcontact,
+      address: p.address, hometown: p.hometown,
+    };
+    return (fieldMap[category]||'') === val;
   });
 
   document.getElementById('countBadge').textContent = `${filtered.length}人`;
