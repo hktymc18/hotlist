@@ -242,7 +242,33 @@
     <div style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px;">
       <input id="registerName" type="text" placeholder="例：山田 太郎" autocomplete="name"
         style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
-      <button onclick="saveName()" style="padding:14px;border-radius:12px;border:none;background:var(--primary);color:#111;font-size:1rem;font-weight:700;cursor:pointer;">登録して始める</button>
+
+      <!-- プライバシーポリシー -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;font-size:0.8rem;color:var(--text-muted);line-height:1.7;max-height:160px;overflow-y:auto;">
+        <div style="font-weight:700;color:var(--text);margin-bottom:6px;">個人情報保護方針</div>
+        本サービス（Hot List）は、チームメンバー間での情報管理を目的としたツールです。以下の方針に基づき、個人情報を取り扱います。<br><br>
+        <strong>1. 収集する情報</strong><br>
+        本サービスでは、氏名・年齢・性別・連絡先・SNSアカウントなどの個人情報を収集します。<br><br>
+        <strong>2. 利用目的</strong><br>
+        収集した情報は、チーム内での関係管理・連絡調整のみに使用します。第三者への提供や商業目的での利用は行いません。<br><br>
+        <strong>3. 管理・保管</strong><br>
+        データはFirebase（Google LLC）のセキュアなサーバーに保存されます。不正アクセス防止のため適切な対策を講じます。<br><br>
+        <strong>4. 共有の範囲</strong><br>
+        入力したデータは、明示的に共有を許可したメンバーのみが閲覧できます。<br><br>
+        <strong>5. データの削除</strong><br>
+        退会または本人からの申請があった場合、速やかにデータを削除します。<br><br>
+        本方針に同意の上、ご利用ください。
+      </div>
+
+      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:0.88rem;color:var(--text);">
+        <input type="checkbox" id="privacyCheck" onchange="const b=document.getElementById('startBtn');b.disabled=!this.checked;b.style.opacity=this.checked?'1':'0.4';"
+          style="width:18px;height:18px;margin-top:2px;accent-color:var(--primary);flex-shrink:0;">
+        <span>個人情報保護方針に同意します</span>
+      </label>
+
+      <button id="startBtn" onclick="saveName()" disabled
+        style="padding:14px;border-radius:12px;border:none;background:var(--primary);color:#111;font-size:1rem;font-weight:700;cursor:pointer;opacity:0.4;transition:opacity 0.2s;"
+        onmouseenter="" onfocus="">登録して始める</button>
       <p id="nameError" style="color:#ff5252;font-size:0.85rem;text-align:center;min-height:20px;"></p>
     </div>
   </div>
@@ -269,41 +295,80 @@
   </header>
 
   <div class="toolbar">
-    <!-- カテゴリー選択 -->
-    <select id="searchCategory" onchange="onSearchCategoryChange()" style="width:100%;">
-      <option value="free">🔍 フリーワード検索</option>
-      <option value="age">年齢</option>
-      <option value="gender">性別</option>
-      <option value="trust">信用度</option>
-      <option value="position">立場</option>
-      <option value="relation">関係性</option>
-      <option value="job">職業</option>
-      <option value="living">住まい</option>
-      <option value="partner">パートナー</option>
-      <option value="type">タイプ</option>
-      <option value="lastcontact">最終連絡</option>
-      <option value="address">現住所（都道府県）</option>
-      <option value="hometown">出身地（都道府県）</option>
-    </select>
-    <!-- フリーワード -->
-    <div id="searchWidget_free" class="search-widget">
-      <input type="text" id="searchInput" placeholder="名前・仕事・関係性・住所など" oninput="renderList()">
+    <!-- 条件1 -->
+    <div style="display:flex;align-items:center;gap:6px;width:100%;">
+      <span style="font-size:0.78rem;color:var(--text-muted);white-space:nowrap;">条件1</span>
+      <select id="searchCategory" onchange="onSearchCategoryChange(1)" style="flex:1;">
+        <option value="free">フリーワード</option>
+        <option value="age">年齢</option>
+        <option value="gender">性別</option>
+        <option value="trust">信用度</option>
+        <option value="position">立場</option>
+        <option value="relation">関係性</option>
+        <option value="job">職業</option>
+        <option value="living">住まい</option>
+        <option value="partner">パートナー</option>
+        <option value="type">タイプ</option>
+        <option value="lastcontact">最終連絡</option>
+        <option value="address">現住所（都道府県）</option>
+        <option value="hometown">出身地（都道府県）</option>
+      </select>
     </div>
-    <!-- 年齢 from-to -->
-    <div id="searchWidget_age" class="search-widget" style="display:none;">
+    <div id="searchWidget1_free" class="search-widget">
+      <input type="text" id="searchInput1" placeholder="名前・仕事・関係性・住所など" oninput="renderList()">
+    </div>
+    <div id="searchWidget1_age" class="search-widget" style="display:none;">
       <div style="display:flex;align-items:center;gap:8px;width:100%;">
-        <select id="searchAgeFrom" onchange="renderList()" style="flex:1;">
-          <option value="">下限なし</option>
-        </select>
+        <select id="searchAgeFrom" onchange="renderList()" style="flex:1;"><option value="">下限なし</option></select>
         <span style="color:var(--text-muted);font-size:0.9rem;">〜</span>
-        <select id="searchAgeTo" onchange="renderList()" style="flex:1;">
-          <option value="">上限なし</option>
-        </select>
+        <select id="searchAgeTo" onchange="renderList()" style="flex:1;"><option value="">上限なし</option></select>
       </div>
     </div>
-    <!-- ホイール選択系 -->
-    <div id="searchWidget_select" class="search-widget" style="display:none;">
-      <select id="searchSelectValue" onchange="renderList()" style="width:100%;"></select>
+    <div id="searchWidget1_select" class="search-widget" style="display:none;">
+      <select id="searchSelectValue1" onchange="renderList()" style="width:100%;"></select>
+    </div>
+
+    <!-- AND / OR 切り替え -->
+    <div id="andOrRow" style="display:flex;align-items:center;gap:8px;width:100%;">
+      <span style="font-size:0.78rem;color:var(--text-muted);white-space:nowrap;">条件の組み合わせ</span>
+      <select id="searchLogic" onchange="renderList()" style="flex:1;">
+        <option value="and">AND（両方一致）</option>
+        <option value="or">OR（どちらか一致）</option>
+      </select>
+    </div>
+
+    <!-- 条件2 -->
+    <div style="display:flex;align-items:center;gap:6px;width:100%;">
+      <span style="font-size:0.78rem;color:var(--text-muted);white-space:nowrap;">条件2</span>
+      <select id="searchCategory2" onchange="onSearchCategoryChange(2)" style="flex:1;">
+        <option value="none">指定なし</option>
+        <option value="free">フリーワード</option>
+        <option value="age">年齢</option>
+        <option value="gender">性別</option>
+        <option value="trust">信用度</option>
+        <option value="position">立場</option>
+        <option value="relation">関係性</option>
+        <option value="job">職業</option>
+        <option value="living">住まい</option>
+        <option value="partner">パートナー</option>
+        <option value="type">タイプ</option>
+        <option value="lastcontact">最終連絡</option>
+        <option value="address">現住所（都道府県）</option>
+        <option value="hometown">出身地（都道府県）</option>
+      </select>
+    </div>
+    <div id="searchWidget2_free" class="search-widget" style="display:none;">
+      <input type="text" id="searchInput2" placeholder="名前・仕事・関係性・住所など" oninput="renderList()">
+    </div>
+    <div id="searchWidget2_age" class="search-widget" style="display:none;">
+      <div style="display:flex;align-items:center;gap:8px;width:100%;">
+        <select id="searchAgeFrom2" onchange="renderList()" style="flex:1;"><option value="">下限なし</option></select>
+        <span style="color:var(--text-muted);font-size:0.9rem;">〜</span>
+        <select id="searchAgeTo2" onchange="renderList()" style="flex:1;"><option value="">上限なし</option></select>
+      </div>
+    </div>
+    <div id="searchWidget2_select" class="search-widget" style="display:none;">
+      <select id="searchSelectValue2" onchange="renderList()" style="width:100%;"></select>
     </div>
   </div>
 
@@ -741,9 +806,11 @@ function getHighlightClass(p) {
 }
 
 // ===== 年齢セレクト初期化 =====
-function initAgeSelects() {
-  const from = document.getElementById('searchAgeFrom');
-  const to   = document.getElementById('searchAgeTo');
+// ===== 年齢セレクト初期化（n=1 or 2） =====
+function initAgeSelects(n) {
+  const suffix = n===2 ? '2' : '';
+  const from = document.getElementById('searchAgeFrom'+suffix);
+  const to   = document.getElementById('searchAgeTo'+suffix);
   if (!from || !to) return;
   from.innerHTML = '<option value="">下限なし</option>';
   to.innerHTML   = '<option value="">上限なし</option>';
@@ -753,71 +820,82 @@ function initAgeSelects() {
   }
 }
 
-// ===== カテゴリー変更時の処理 =====
-window.onSearchCategoryChange = function() {
-  const cat = document.getElementById('searchCategory').value;
-  document.getElementById('searchWidget_free').style.display   = 'none';
-  document.getElementById('searchWidget_age').style.display    = 'none';
-  document.getElementById('searchWidget_select').style.display = 'none';
+const FIXED_OPTIONS = {
+  gender:      ['男性','女性','その他'],
+  trust:       ['S','A','B','C','D'],
+  position:    ['↑','↓','ー'],
+  living:      ['一人暮らし','実家','同棲','その他'],
+  partner:     ['いる','いない'],
+  type:        ['プロモーター','コントローラー','アナライザー','サポーター'],
+  lastcontact: ['1週間以内','1ヶ月以内','3ヶ月以内','半年以内','1年以内','3年以上前'],
+};
 
-  if (cat === 'free') {
-    document.getElementById('searchWidget_free').style.display = 'block';
+// ===== カテゴリー変更時の処理（n=1 or 2） =====
+window.onSearchCategoryChange = function(n) {
+  const catId  = n===2 ? 'searchCategory2' : 'searchCategory';
+  const prefix = 'searchWidget' + (n===2?'2':'1') + '_';
+  const cat    = document.getElementById(catId).value;
+
+  ['free','age','select'].forEach(w =>
+    document.getElementById(prefix+w).style.display = 'none'
+  );
+
+  if (cat === 'none') {
+    // 条件2で「指定なし」選択時はウィジェット非表示のまま
+  } else if (cat === 'free') {
+    document.getElementById(prefix+'free').style.display = 'block';
   } else if (cat === 'age') {
-    initAgeSelects();
-    document.getElementById('searchWidget_age').style.display = 'block';
+    initAgeSelects(n);
+    document.getElementById(prefix+'age').style.display = 'block';
   } else {
-    const fixedOptions = {
-      gender:      ['男性','女性','その他'],
-      trust:       ['S','A','B','C','D'],
-      position:    ['↑','↓','ー'],
-      living:      ['一人暮らし','実家','同棲','その他'],
-      partner:     ['いる','いない'],
-      type:        ['プロモーター','コントローラー','アナライザー','サポーター'],
-      lastcontact: ['1週間以内','1ヶ月以内','3ヶ月以内','半年以内','1年以内','3年以上前'],
-    };
-    const sel = document.getElementById('searchSelectValue');
-    let opts = fixedOptions[cat];
-    // job・relation・address・hometownは登録データから動的生成
-    if (!opts) {
-      opts = [...new Set(people.map(p => p[cat]).filter(Boolean))].sort();
-    }
+    const selId = n===2 ? 'searchSelectValue2' : 'searchSelectValue1';
+    const sel   = document.getElementById(selId);
+    let opts    = FIXED_OPTIONS[cat];
+    if (!opts) opts = [...new Set(people.map(p=>p[cat]).filter(Boolean))].sort();
     sel.innerHTML = '<option value="">すべて</option>'
-      + opts.map(o => `<option value="${o}">${o}</option>`).join('');
-    document.getElementById('searchWidget_select').style.display = 'block';
+      + opts.map(o=>`<option value="${o}">${o}</option>`).join('');
+    document.getElementById(prefix+'select').style.display = 'block';
   }
   renderList();
 };
 
+// ===== 1つの条件でpersonがマッチするか判定 =====
+function matchCondition(p, catId, suffix) {
+  const cat = document.getElementById(catId)?.value || 'free';
+  if (cat === 'none') return true;
+  if (cat === 'free') {
+    const q = (document.getElementById('searchInput'+suffix)?.value||'').toLowerCase();
+    return !q || [p.name,p.job,p.relation,p.needs,p.address,p.address_city,p.hometown,p.hometown_city,p.memo,p.writer]
+      .some(v=>(v||'').toLowerCase().includes(q));
+  }
+  if (cat === 'age') {
+    const age  = parseInt(p.age, 10);
+    if (isNaN(age)) return false;
+    const from = parseInt(document.getElementById('searchAgeFrom'+suffix)?.value||'', 10);
+    const to   = parseInt(document.getElementById('searchAgeTo'+suffix)?.value||'', 10);
+    if (!isNaN(from) && age < from) return false;
+    if (!isNaN(to)   && age > to)   return false;
+    return true;
+  }
+  const val = document.getElementById('searchSelectValue'+suffix)?.value || '';
+  if (!val) return true;
+  const fieldMap = {
+    gender:p.gender, trust:p.trust, position:p.position, relation:p.relation,
+    job:p.job, living:p.living, partner:p.partner, type:p.type,
+    lastcontact:p.lastcontact, address:p.address, hometown:p.hometown,
+  };
+  return (fieldMap[cat]||'') === val;
+}
+
 // ===== リスト描画 =====
 window.renderList = function() {
-  const category = document.getElementById('searchCategory')?.value || 'free';
+  const logic = document.getElementById('searchLogic')?.value || 'and';
   const isReadOnly = viewingUserId !== currentUser?.uid;
 
   const filtered = people.filter(p => {
-    if (category === 'free') {
-      const q = (document.getElementById('searchInput')?.value||'').toLowerCase();
-      return !q || [p.name,p.job,p.relation,p.needs,p.address,p.address_city,p.hometown,p.hometown_city,p.memo,p.writer]
-        .some(v=>(v||'').toLowerCase().includes(q));
-    }
-    if (category === 'age') {
-      const age = parseInt(p.age, 10);
-      if (isNaN(age)) return false;
-      const from = parseInt(document.getElementById('searchAgeFrom')?.value||'', 10);
-      const to   = parseInt(document.getElementById('searchAgeTo')?.value||'', 10);
-      if (!isNaN(from) && age < from) return false;
-      if (!isNaN(to)   && age > to)   return false;
-      return true;
-    }
-    // ホイール選択系
-    const val = document.getElementById('searchSelectValue')?.value || '';
-    if (!val) return true;
-    const fieldMap = {
-      gender: p.gender, trust: p.trust, position: p.position,
-      relation: p.relation, job: p.job, living: p.living,
-      partner: p.partner, type: p.type, lastcontact: p.lastcontact,
-      address: p.address, hometown: p.hometown,
-    };
-    return (fieldMap[category]||'') === val;
+    const m1 = matchCondition(p, 'searchCategory',  '1');
+    const m2 = matchCondition(p, 'searchCategory2', '2');
+    return logic === 'or' ? (m1 || m2) : (m1 && m2);
   });
 
   document.getElementById('countBadge').textContent = `${filtered.length}人`;
@@ -864,7 +942,7 @@ window.renderList = function() {
           ${p.living?detailItem('住まい',escHtml(p.living)):''}
           ${p.partner?detailItem('パートナー',escHtml(p.partner)):''}
           ${p.lastcontact?detailItem('最終連絡',`<span class="lc-badge lc-${lastcontactClass(p.lastcontact)}">${escHtml(p.lastcontact)}</span>`):''}
-          ${p.insta?`<div class="detail-item"><div class="detail-label">インスタ</div><div class="detail-value"><a href="${escHtml(p.insta)}" target="_blank" rel="noopener">Instagram</a></div></div>`:''}
+          ${p.insta?`<div class="detail-item"><div class="detail-label">インスタ</div><div class="detail-value"><a href="${escHtml(p.insta)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;color:#e1306c;font-weight:600;text-decoration:none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="#e1306c"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>Instagram</a></div></div>`:''}
           ${p.memo?`<div class="detail-item full"><div class="detail-label">備考</div><div class="detail-value">${escHtml(p.memo)}</div></div>`:''}
           ${p.writer?detailItem('記入者',`<span style="color:var(--primary);font-weight:600;">${escHtml(p.writer)}</span>`):''}
         </div>
