@@ -5,23 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hot List</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@300;400;500;700&display=swap');
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --primary: #7eb8ff;
-      --primary-dark: #5a9fe8;
-      --danger: #ff5252;
-      --success: #4caf50;
-      --bg: #141416;
-      --bg2: #1c1c1f;
-      --surface: #222226;
-      --surface2: #2a2a2e;
-      --border: #38383f;
-      --text: #e8e8f0;
-      --text-muted: #888899;
+      --primary: #e8ff47;
+      --primary-dark: #d4e840;
+      --danger: #ff4757;
+      --success: #2ecc71;
+      --bg: #0a0a0f;
+      --bg2: #13131a;
+      --surface: #13131a;
+      --surface2: #1c1c26;
+      --border: #2a2a38;
+      --text: #f0f0f5;
+      --text-muted: #6b6b80;
+      --accent: #e8ff47;
+      --accent2: #ff4757;
       --radius: 12px;
       --shadow: 0 2px 20px rgba(0,0,0,0.45);
     }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    body { font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
     /* ===== ログイン画面 ===== */
     #loginScreen {
@@ -45,26 +49,39 @@
 
     /* ===== ヘッダー ===== */
     header {
-      background: var(--bg2); color: #fff; padding: 12px 16px;
-      display: grid; grid-template-columns: 1fr auto auto;
-      align-items: center; gap: 8px; position: sticky; top: 0; z-index: 100;
-      border-bottom: 1px solid var(--border); box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+      background: var(--bg2); color: var(--text); padding: 16px 20px;
+      display: flex; flex-direction: column; gap: 10px;
+      position: sticky; top: 0; z-index: 100;
+      border-bottom: 1px solid var(--border);
     }
-    .header-title {
-      grid-column: 1 / -1; text-align: center; font-size: 2.55rem; font-weight: 800;
-      letter-spacing: 0.06em;
-      background: linear-gradient(135deg, #ff9a00, #ff6a00, #ff4e00);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-      line-height: 1.2; padding: 2px 0;
+    .header-top {
+      display: flex; align-items: flex-end; justify-content: space-between;
+    }
+    .logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 44px; letter-spacing: 4px; color: var(--accent);
+      line-height: 1; text-shadow: 0 0 40px rgba(232,255,71,0.3);
+    }
+    .logo span {
+      color: var(--text-muted); font-size: 11px; display: block;
+      font-family: 'Noto Sans JP', sans-serif; font-weight: 300;
+      letter-spacing: 2px; margin-bottom: 2px;
+    }
+    .header-stats {
+      display: flex; gap: 20px; align-items: flex-end;
+    }
+    .stat { text-align: right; }
+    .stat-num {
+      font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--accent); line-height: 1;
+    }
+    .stat-label {
+      font-size: 9px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase;
     }
     .header-row {
-      grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
     }
     .header-left { display: flex; align-items: center; gap: 8px; }
-    .header-count {
-      background: rgba(126,184,255,0.12); border: 1px solid rgba(126,184,255,0.3);
-      border-radius: 20px; padding: 3px 10px; font-size: 0.85rem; color: var(--primary); font-weight: 600;
-    }
+    .header-count { display: none; }
     .user-avatar {
       width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
       border: 2px solid var(--border); object-fit: cover;
@@ -83,6 +100,7 @@
       padding: 12px 14px; display: flex; gap: 8px; flex-direction: column;
       background: var(--bg2); border-bottom: 1px solid var(--border);
     }
+    .toolbar-main { display: flex; gap: 8px; align-items: center; }
     .toolbar input[type="text"] {
       width: 100%; padding: 13px 14px; border: 2px solid var(--border);
       border-radius: 12px; font-size: 1.05rem; outline: none; transition: border-color 0.2s;
@@ -95,6 +113,13 @@
       font-size: 1rem; background: var(--surface); color: var(--text); outline: none;
     }
     .search-widget { width: 100%; }
+    .btn-filter {
+      white-space: nowrap; padding: 10px 16px; border-radius: 12px; border: 2px solid var(--border);
+      background: var(--surface2); color: var(--text-muted); font-size: 0.88rem; font-family: inherit;
+      cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+    }
+    .btn-filter:hover, .btn-filter.active { border-color: var(--primary); color: var(--primary); }
+    .advanced-filters { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
 
     /* ===== ボタン共通 ===== */
     .btn {
@@ -106,7 +131,7 @@
     .btn-primary { background: var(--primary); color: #1a1a2e; }
     .btn-primary:hover { background: var(--primary-dark); }
     .btn-danger { background: var(--danger); color: #fff; }
-    .btn-outline { background: rgba(126,184,255,0.07); color: var(--primary); border: 2px solid rgba(126,184,255,0.5); }
+    .btn-outline { background: rgba(232,255,71,0.07); color: var(--primary); border: 2px solid rgba(232,255,71,0.3); }
     .btn-sm { padding: 6px 12px; font-size: 0.82rem; }
 
     /* ===== カード ===== */
@@ -277,8 +302,27 @@
 <!-- ===== メイン画面（ログイン後） ===== -->
 <div id="mainScreen" style="display:none;">
   <header>
-    <div class="header-title">Hot List</div>
-    <div id="writerBanner" style="display:none;padding:4px 16px 6px;font-size:0.82rem;color:var(--text-muted);">
+    <div class="header-top">
+      <div class="logo">
+        <span>HOT LIST</span>
+        HOTLIST
+      </div>
+      <div class="header-stats">
+        <div class="stat">
+          <div class="stat-num" id="totalCount">0</div>
+          <div class="stat-label">Total</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num" id="trustCount">0</div>
+          <div class="stat-label">信頼S/A</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num" id="priorityCount">0</div>
+          <div class="stat-label">Priority</div>
+        </div>
+      </div>
+    </div>
+    <div id="writerBanner" style="display:none;font-size:0.82rem;color:var(--text-muted);">
       記入者：<span id="writerName" style="color:var(--primary);font-weight:600;"></span>
     </div>
     <div class="header-row">
@@ -295,28 +339,15 @@
   </header>
 
   <div class="toolbar">
-    <!-- 条件1 -->
-    <div style="display:flex;align-items:center;gap:6px;width:100%;">
-      <span style="font-size:0.78rem;color:var(--text-muted);white-space:nowrap;">条件1</span>
-      <select id="searchCategory" onchange="onSearchCategoryChange(1)" style="flex:1;">
-        <option value="free">フリーワード</option>
-        <option value="age">年齢</option>
-        <option value="gender">性別</option>
-        <option value="trust">信用度</option>
-        <option value="position">立場</option>
-        <option value="relation">関係性</option>
-        <option value="job">職業</option>
-        <option value="living">住まい</option>
-        <option value="partner">パートナー</option>
-        <option value="type">タイプ</option>
-        <option value="lastcontact">最終連絡</option>
-        <option value="address">現住所（都道府県）</option>
-        <option value="hometown">出身地（都道府県）</option>
-      </select>
-    </div>
-    <div id="searchWidget1_free" class="search-widget">
+    <!-- 常時表示：フリーワード検索 -->
+    <div class="toolbar-main">
       <input type="text" id="searchInput1" placeholder="名前・仕事・関係性・住所など" oninput="renderList()">
+      <button class="btn-filter" id="filterToggleBtn" onclick="toggleAdvancedFilters()">絞り込み ▾</button>
     </div>
+
+    <!-- 非表示：条件1の内部コントロール（常にfreeで使用） -->
+    <select id="searchCategory" style="display:none;" onchange="onSearchCategoryChange(1)"><option value="free" selected>フリーワード</option></select>
+    <div id="searchWidget1_free" style="display:none;"></div>
     <div id="searchWidget1_age" class="search-widget" style="display:none;">
       <div style="display:flex;align-items:center;gap:8px;width:100%;">
         <select id="searchAgeFrom" onchange="renderList()" style="flex:1;"><option value="">下限なし</option></select>
@@ -328,47 +359,47 @@
       <select id="searchSelectValue1" onchange="renderList()" style="width:100%;"></select>
     </div>
 
-    <!-- AND / OR 切り替え -->
-    <div id="andOrRow" style="display:flex;align-items:center;gap:8px;width:100%;">
-      <span style="font-size:0.78rem;color:var(--text-muted);white-space:nowrap;">条件の組み合わせ</span>
-      <select id="searchLogic" onchange="renderList()" style="flex:1;">
-        <option value="and">AND（両方一致）</option>
-        <option value="or">OR（どちらか一致）</option>
-      </select>
-    </div>
-
-    <!-- 条件2 -->
-    <div style="display:flex;align-items:center;gap:6px;width:100%;">
-      <span style="font-size:0.78rem;color:var(--text-muted);white-space:nowrap;">条件2</span>
-      <select id="searchCategory2" onchange="onSearchCategoryChange(2)" style="flex:1;">
-        <option value="none">指定なし</option>
-        <option value="free">フリーワード</option>
-        <option value="age">年齢</option>
-        <option value="gender">性別</option>
-        <option value="trust">信用度</option>
-        <option value="position">立場</option>
-        <option value="relation">関係性</option>
-        <option value="job">職業</option>
-        <option value="living">住まい</option>
-        <option value="partner">パートナー</option>
-        <option value="type">タイプ</option>
-        <option value="lastcontact">最終連絡</option>
-        <option value="address">現住所（都道府県）</option>
-        <option value="hometown">出身地（都道府県）</option>
-      </select>
-    </div>
-    <div id="searchWidget2_free" class="search-widget" style="display:none;">
-      <input type="text" id="searchInput2" placeholder="名前・仕事・関係性・住所など" oninput="renderList()">
-    </div>
-    <div id="searchWidget2_age" class="search-widget" style="display:none;">
+    <!-- 詳細フィルターパネル（トグル表示） -->
+    <div id="advancedFilters" class="advanced-filters" style="display:none;">
       <div style="display:flex;align-items:center;gap:8px;width:100%;">
-        <select id="searchAgeFrom2" onchange="renderList()" style="flex:1;"><option value="">下限なし</option></select>
-        <span style="color:var(--text-muted);font-size:0.9rem;">〜</span>
-        <select id="searchAgeTo2" onchange="renderList()" style="flex:1;"><option value="">上限なし</option></select>
+        <span style="font-size:0.78rem;color:var(--text-muted);white-space:nowrap;">条件の組み合わせ</span>
+        <select id="searchLogic" onchange="renderList()" style="flex:1;">
+          <option value="and">AND（両方一致）</option>
+          <option value="or">OR（どちらか一致）</option>
+        </select>
       </div>
-    </div>
-    <div id="searchWidget2_select" class="search-widget" style="display:none;">
-      <select id="searchSelectValue2" onchange="renderList()" style="width:100%;"></select>
+      <div style="display:flex;align-items:center;gap:6px;width:100%;">
+        <span style="font-size:0.78rem;color:var(--text-muted);white-space:nowrap;">条件2</span>
+        <select id="searchCategory2" onchange="onSearchCategoryChange(2)" style="flex:1;">
+          <option value="none">指定なし</option>
+          <option value="free">フリーワード</option>
+          <option value="age">年齢</option>
+          <option value="gender">性別</option>
+          <option value="trust">信用度</option>
+          <option value="position">立場</option>
+          <option value="relation">関係性</option>
+          <option value="job">職業</option>
+          <option value="living">住まい</option>
+          <option value="partner">パートナー</option>
+          <option value="type">タイプ</option>
+          <option value="lastcontact">最終連絡</option>
+          <option value="address">現住所（都道府県）</option>
+          <option value="hometown">出身地（都道府県）</option>
+        </select>
+      </div>
+      <div id="searchWidget2_free" class="search-widget" style="display:none;">
+        <input type="text" id="searchInput2" placeholder="名前・仕事・関係性・住所など" oninput="renderList()">
+      </div>
+      <div id="searchWidget2_age" class="search-widget" style="display:none;">
+        <div style="display:flex;align-items:center;gap:8px;width:100%;">
+          <select id="searchAgeFrom2" onchange="renderList()" style="flex:1;"><option value="">下限なし</option></select>
+          <span style="color:var(--text-muted);font-size:0.9rem;">〜</span>
+          <select id="searchAgeTo2" onchange="renderList()" style="flex:1;"><option value="">上限なし</option></select>
+        </div>
+      </div>
+      <div id="searchWidget2_select" class="search-widget" style="display:none;">
+        <select id="searchSelectValue2" onchange="renderList()" style="width:100%;"></select>
+      </div>
     </div>
   </div>
 
@@ -899,6 +930,9 @@ window.renderList = function() {
   });
 
   document.getElementById('countBadge').textContent = `${filtered.length}人`;
+  document.getElementById('totalCount').textContent = people.length;
+  document.getElementById('trustCount').textContent = people.filter(p => p.trust === 'S' || p.trust === 'A').length;
+  document.getElementById('priorityCount').textContent = people.filter(p => getHighlightClass(p) !== '').length;
   const container = document.getElementById('listContainer');
 
   if (filtered.length===0) {
@@ -990,6 +1024,15 @@ window.openEditModal = (id) => {
   FIELDS.forEach(f=>{ const el=document.getElementById('f_'+f); if(el) el.value=p[f]||''; });
   document.getElementById('editModal').classList.add('open');
   setTimeout(()=>{ document.getElementById('editModal').scrollTop=0; },0);
+};
+
+window.toggleAdvancedFilters = function() {
+  const panel = document.getElementById('advancedFilters');
+  const btn = document.getElementById('filterToggleBtn');
+  const isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'flex';
+  btn.textContent = isOpen ? '絞り込み ▾' : '絞り込み ▲';
+  btn.classList.toggle('active', !isOpen);
 };
 
 window.closeEditModal = () => document.getElementById('editModal').classList.remove('open');
