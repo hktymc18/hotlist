@@ -33,11 +33,11 @@
       min-height: 100vh; padding: 24px; gap: 24px;
     }
     .login-title {
-      font-size: 3rem; font-weight: 800; letter-spacing: 0.06em;
-      background: linear-gradient(135deg, #ff9a00, #ff6a00, #ff4e00);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 4rem; letter-spacing: 6px; color: var(--accent);
+      text-shadow: 0 0 40px rgba(232,255,71,0.35); line-height: 1;
     }
-    .login-subtitle { font-size: 0.95rem; color: var(--text-muted); text-align: center; line-height: 1.6; }
+    .login-subtitle { font-size: 0.88rem; color: var(--text-muted); text-align: center; line-height: 1.6; letter-spacing: 1px; }
     .btn-google {
       display: flex; align-items: center; gap: 12px; padding: 14px 28px;
       background: #fff; color: #333; border: none; border-radius: 12px;
@@ -88,12 +88,25 @@
     }
     .user-name { font-size: 0.8rem; color: var(--text-muted); max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .btn-add-header {
-      display: inline-flex; align-items: center; gap: 5px; padding: 7px 14px;
-      background: linear-gradient(135deg, #f7971e, #ff4e50); color: #fff; border: none;
-      border-radius: 22px; font-size: 0.9rem; font-weight: 700; cursor: pointer;
-      box-shadow: 0 2px 10px rgba(255,78,80,0.35); transition: transform 0.15s; white-space: nowrap;
+      display: inline-flex; align-items: center; gap: 5px; padding: 8px 16px;
+      background: var(--accent); color: #000; border: none;
+      border-radius: 8px; font-size: 0.9rem; font-weight: 700; cursor: pointer;
+      transition: all 0.2s; white-space: nowrap; font-family: 'Noto Sans JP', sans-serif;
     }
+    .btn-add-header:hover { background: var(--primary-dark); transform: translateY(-1px); }
     .btn-add-header:active { transform: scale(0.96); }
+
+    /* ===== ステータスバッジ ===== */
+    .status-badge {
+      display: inline-flex; align-items: center; font-size: 11px;
+      padding: 4px 10px; border-radius: 100px; font-weight: 500; white-space: nowrap;
+      cursor: pointer; font-family: 'Noto Sans JP', sans-serif; appearance: none; outline: none;
+    }
+    .status-未着手 { background: rgba(107,107,128,0.2); color: var(--text-muted); border: 1px solid var(--border); }
+    .status-アタック中 { background: rgba(232,255,71,0.15); color: var(--accent); border: 1px solid rgba(232,255,71,0.3); }
+    .status-返信待ち { background: rgba(255,165,0,0.15); color: #ffa500; border: 1px solid rgba(255,165,0,0.3); }
+    .status-成約 { background: rgba(46,204,113,0.15); color: var(--success); border: 1px solid rgba(46,204,113,0.3); }
+    .status-NG { background: rgba(255,71,87,0.15); color: var(--accent2); border: 1px solid rgba(255,71,87,0.3); }
 
     /* ===== ツールバー ===== */
     .toolbar {
@@ -245,7 +258,7 @@
 
 <!-- ===== ログイン画面 ===== -->
 <div id="loginScreen">
-  <div class="login-title">Hot List</div>
+  <div class="login-title">ATTACK LIST</div>
   <p class="login-subtitle">メールアドレスとパスワードでログイン</p>
   <div style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px;">
     <input id="authEmail" type="email" placeholder="メールアドレス" autocomplete="email"
@@ -262,7 +275,7 @@
 <!-- ===== 名前入力画面（初回登録時） ===== -->
 <div id="nameScreen" style="display:none;">
   <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;gap:20px;">
-    <div class="login-title">Hot List</div>
+    <div class="login-title">ATTACK LIST</div>
     <p class="login-subtitle">あなたの名前を登録してください</p>
     <div style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px;">
       <input id="registerName" type="text" placeholder="例：山田 太郎" autocomplete="name"
@@ -304,8 +317,8 @@
   <header>
     <div class="header-top">
       <div class="logo">
-        <span>HOT LIST</span>
-        HOTLIST
+        <span>BtoC</span>
+        ATTACK LIST
       </div>
       <div class="header-stats">
         <div class="stat">
@@ -313,12 +326,12 @@
           <div class="stat-label">Total</div>
         </div>
         <div class="stat">
-          <div class="stat-num" id="trustCount">0</div>
-          <div class="stat-label">信頼S/A</div>
+          <div class="stat-num" id="activeCount">0</div>
+          <div class="stat-label">Active</div>
         </div>
         <div class="stat">
-          <div class="stat-num" id="priorityCount">0</div>
-          <div class="stat-label">Priority</div>
+          <div class="stat-num" id="wonCount">0</div>
+          <div class="stat-label">Won</div>
         </div>
       </div>
     </div>
@@ -421,6 +434,7 @@
     <form id="personForm" onsubmit="savePerson(event)">
       <div class="form-grid">
         <div class="form-group full"><label>名前 *</label><input type="text" id="f_name" required placeholder="例：田中 太郎"></div>
+        <div class="form-group full"><label>ステータス</label><select id="f_status"><option value="未着手">未着手</option><option value="アタック中">アタック中</option><option value="返信待ち">返信待ち</option><option value="成約">成約</option><option value="NG">NG</option></select></div>
         <div class="form-group">
           <label>年齢</label>
           <select id="f_age">
@@ -555,7 +569,7 @@ let unsubscribeSnapshot = null;
 let viewingUserId = null; // 他人のリストを閲覧中のUID
 let viewingUserName = '';
 
-const FIELDS = ['name','age','gender','insta','relation','job','trust','position','needs',
+const FIELDS = ['name','status','age','gender','insta','relation','job','trust','position','needs',
                 'address','address_city','hometown','hometown_city','living','partner','type','lastcontact','memo','writer'];
 
 // ===== メール認証エラーメッセージ =====
@@ -931,8 +945,8 @@ window.renderList = function() {
 
   document.getElementById('countBadge').textContent = `${filtered.length}人`;
   document.getElementById('totalCount').textContent = people.length;
-  document.getElementById('trustCount').textContent = people.filter(p => p.trust === 'S' || p.trust === 'A').length;
-  document.getElementById('priorityCount').textContent = people.filter(p => getHighlightClass(p) !== '').length;
+  document.getElementById('activeCount').textContent = people.filter(p => p.status === 'アタック中' || p.status === '返信待ち').length;
+  document.getElementById('wonCount').textContent = people.filter(p => p.status === '成約').length;
   const container = document.getElementById('listContainer');
 
   if (filtered.length===0) {
@@ -964,7 +978,9 @@ window.renderList = function() {
         </div>
         <div class="card-badges">
           ${p.trust?`<span class="badge trust-${p.trust}">${p.trust}</span>`:''}
-          ${typeShort?`<span class="badge ${typeCls}">${p.type}</span>`:''}
+          <select class="status-badge status-${p.status||'未着手'}" onchange="changeStatus('${p.id}', this.value)" onclick="event.stopPropagation()">
+            ${['未着手','アタック中','返信待ち','成約','NG'].map(s=>`<option value="${s}" ${(p.status||'未着手')===s?'selected':''}>${s}</option>`).join('')}
+          </select>
           <span class="chevron" id="chev-${p.id}">▼</span>
         </div>
       </div>
@@ -1024,6 +1040,13 @@ window.openEditModal = (id) => {
   FIELDS.forEach(f=>{ const el=document.getElementById('f_'+f); if(el) el.value=p[f]||''; });
   document.getElementById('editModal').classList.add('open');
   setTimeout(()=>{ document.getElementById('editModal').scrollTop=0; },0);
+};
+
+window.changeStatus = async (id, newStatus) => {
+  if (!currentUser || viewingUserId !== currentUser.uid) return;
+  try {
+    await updateDoc(doc(db,'users',currentUser.uid,'people',id), { status: newStatus, updatedAt: serverTimestamp() });
+  } catch(e) { showToast('更新に失敗しました'); }
 };
 
 window.toggleAdvancedFilters = function() {
