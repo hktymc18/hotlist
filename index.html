@@ -500,7 +500,7 @@
         <input type="email" id="shareEmailInput" placeholder="例：friend@gmail.com" style="flex:1;font-size:0.92rem;padding:10px 12px;">
         <button class="btn btn-primary btn-sm" onclick="addShareMember()">追加</button>
       </div>
-      <div class="share-member-list" id="shareMemberList"></div>
+      <div class="share-member-list" id="shareMemberList" style="display:none;"></div>
     </div>
 
     <div class="share-divider"></div>
@@ -784,8 +784,7 @@ window.addShareMember = async () => {
     if (current.includes(email)) { showToast('すでに追加済みです'); return; }
     await setDoc(shareRef, { sharedWith: [...current, email] }, { merge: true });
     document.getElementById('shareEmailInput').value = '';
-    showToast(`${email} に共有しました`);
-    renderShareMemberList();
+    showToast('追加しました');
   } catch(e) {
     showToast('追加に失敗しました');
   }
