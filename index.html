@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hot List</title>
+  <title>ATTACK LIST</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@300;400;500;700&display=swap');
 
@@ -34,7 +34,7 @@
     }
     .login-title {
       font-family: 'Bebas Neue', sans-serif;
-      font-size: 4rem; letter-spacing: 6px; color: var(--accent);
+      font-size: 3.2rem; letter-spacing: 6px; color: var(--accent);
       text-shadow: 0 0 40px rgba(232,255,71,0.35); line-height: 1;
     }
     .login-subtitle { font-size: 0.88rem; color: var(--text-muted); text-align: center; line-height: 1.6; letter-spacing: 1px; }
@@ -259,15 +259,22 @@
 <!-- ===== ログイン画面 ===== -->
 <div id="loginScreen">
   <div class="login-title">ATTACK LIST</div>
-  <p class="login-subtitle">メールアドレスとパスワードでログイン</p>
   <div style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px;">
+    <!-- タブ切り替え -->
+    <div style="display:flex;border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+      <button id="tabLogin" onclick="setAuthMode('login')"
+        style="flex:1;padding:11px;border:none;background:var(--accent);color:#000;font-size:0.95rem;font-weight:700;cursor:pointer;font-family:inherit;">ログイン</button>
+      <button id="tabSignup" onclick="setAuthMode('signup')"
+        style="flex:1;padding:11px;border:none;background:transparent;color:var(--text-muted);font-size:0.95rem;font-weight:600;cursor:pointer;font-family:inherit;">新規登録</button>
+    </div>
+    <p id="authModeDesc" style="font-size:0.82rem;color:var(--text-muted);text-align:center;line-height:1.6;">メールアドレスとパスワードでログイン</p>
     <input id="authEmail" type="email" placeholder="メールアドレス" autocomplete="email"
       style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
-    <input id="authPassword" type="password" placeholder="パスワード" autocomplete="current-password"
+    <input id="authPassword" type="password" placeholder="パスワード（6文字以上）" autocomplete="current-password"
       style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
-    <button onclick="signInEmail()" style="padding:14px;border-radius:12px;border:none;background:var(--primary);color:#111;font-size:1rem;font-weight:700;cursor:pointer;">ログイン</button>
-    <button onclick="signUpEmail()" style="padding:14px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:1rem;font-weight:600;cursor:pointer;">新規登録</button>
-    <button onclick="resetPassword()" style="padding:8px;border:none;background:transparent;color:var(--text-muted);font-size:0.85rem;cursor:pointer;">パスワードを忘れた方はこちら</button>
+    <button id="authSubmitBtn" onclick="submitAuth()"
+      style="padding:14px;border-radius:12px;border:none;background:var(--primary);color:#111;font-size:1rem;font-weight:700;cursor:pointer;">ログイン</button>
+    <button onclick="resetPassword()" style="padding:8px;border:none;background:transparent;color:var(--text-muted);font-size:0.82rem;cursor:pointer;">パスワードを忘れた方はこちら</button>
     <p id="authError" style="color:#ff5252;font-size:0.85rem;text-align:center;min-height:20px;"></p>
   </div>
 </div>
@@ -482,13 +489,13 @@
 <div class="modal-overlay" id="shareModal">
   <div class="modal">
     <div class="modal-title">
-      <span>共有・アクセス管理</span>
+      <span>リストを共有する</span>
       <button class="modal-close" onclick="closeShareModal()">✕</button>
     </div>
 
     <div class="share-section">
-      <div class="share-section-title">自分のリストを共有する</div>
-      <p class="share-desc">共有したい相手のGmailアドレスを入力してください。そのメンバーだけが自分のリストを閲覧できます。</p>
+      <div class="share-section-title">メンバーを追加する</div>
+      <p class="share-desc">共有したい相手のメールアドレスを入力してください。そのメンバーだけが自分のリストを閲覧できます。</p>
       <div style="display:flex;gap:8px;margin-top:8px;">
         <input type="email" id="shareEmailInput" placeholder="例：friend@gmail.com" style="flex:1;font-size:0.92rem;padding:10px 12px;">
         <button class="btn btn-primary btn-sm" onclick="addShareMember()">追加</button>
@@ -507,21 +514,7 @@
     <div class="share-divider"></div>
 
     <div class="share-section">
-      <div class="share-section-title">バックアップ（JSON）</div>
-      <div class="share-actions">
-        <button class="btn btn-outline btn-sm" onclick="exportData()">エクスポート</button>
-        <label class="btn btn-outline btn-sm" style="cursor:pointer;">インポート<input type="file" accept=".json" style="display:none" onchange="importData(event)"></label>
-      </div>
-    </div>
-
-    <div class="share-divider"></div>
-
-    <div class="share-section">
-      <div id="shareStats" style="font-size:0.82rem;color:var(--text-muted);"></div>
-      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
-        <button class="btn btn-outline btn-sm" onclick="confirmSignOut()">ログアウト</button>
-        <button class="btn btn-danger btn-sm" onclick="clearAll()">全データ削除</button>
-      </div>
+      <button class="btn btn-outline btn-sm" onclick="confirmSignOut()">ログアウト</button>
     </div>
   </div>
 </div>
@@ -585,6 +578,23 @@ function authErrMsg(code) {
   };
   return map[code] || 'エラーが発生しました: ' + code;
 }
+
+// ===== 認証モード切り替え =====
+let authMode = 'login';
+window.setAuthMode = (mode) => {
+  authMode = mode;
+  const isLogin = mode === 'login';
+  document.getElementById('tabLogin').style.background = isLogin ? 'var(--accent)' : 'transparent';
+  document.getElementById('tabLogin').style.color = isLogin ? '#000' : 'var(--text-muted)';
+  document.getElementById('tabSignup').style.background = isLogin ? 'transparent' : 'var(--accent)';
+  document.getElementById('tabSignup').style.color = isLogin ? 'var(--text-muted)' : '#000';
+  document.getElementById('authSubmitBtn').textContent = isLogin ? 'ログイン' : '新規アカウントを作成';
+  document.getElementById('authModeDesc').textContent = isLogin
+    ? 'メールアドレスとパスワードでログイン'
+    : 'メールアドレスとパスワード（6文字以上）を設定してください';
+  document.getElementById('authError').textContent = '';
+};
+window.submitAuth = () => { authMode === 'login' ? signInEmail() : signUpEmail(); };
 
 // ===== ログイン =====
 window.signInEmail = async () => {
