@@ -1112,9 +1112,6 @@ window.confirmDelete = async () => {
 
 // ===== 共有モーダル =====
 window.openShareModal = async () => {
-  const s = people.length;
-  const trust = ['S','A','B','C','D'].map(t=>{ const n=people.filter(p=>p.trust===t).length; return n>0?`${t}:${n}人`:null; }).filter(Boolean).join('　');
-  document.getElementById('shareStats').textContent = `登録数：${s}人　${trust?'信用度 → '+trust:''}`;
   document.getElementById('shareModal').classList.add('open');
   setTimeout(()=>{ document.getElementById('shareModal').scrollTop=0; },0);
   renderShareMemberList();
