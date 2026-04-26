@@ -102,11 +102,28 @@
       padding: 4px 10px; border-radius: 100px; font-weight: 500; white-space: nowrap;
       cursor: pointer; font-family: 'Noto Sans JP', sans-serif; appearance: none; outline: none;
     }
-    .status-未着手 { background: rgba(107,107,128,0.2); color: var(--text-muted); border: 1px solid var(--border); }
-    .status-アタック中 { background: rgba(232,255,71,0.15); color: var(--accent); border: 1px solid rgba(232,255,71,0.3); }
-    .status-返信待ち { background: rgba(255,165,0,0.15); color: #ffa500; border: 1px solid rgba(255,165,0,0.3); }
-    .status-成約 { background: rgba(46,204,113,0.15); color: var(--success); border: 1px solid rgba(46,204,113,0.3); }
-    .status-NG { background: rgba(255,71,87,0.15); color: var(--accent2); border: 1px solid rgba(255,71,87,0.3); }
+    .status-未着手   { background: rgba(107,107,128,0.2); color: var(--text-muted); border: 1px solid var(--border); }
+    .status-連絡中   { background: rgba(232,255,71,0.15); color: var(--accent); border: 1px solid rgba(232,255,71,0.3); }
+    .status-CT予定  { background: rgba(255,165,0,0.15); color: #ffa500; border: 1px solid rgba(255,165,0,0.3); }
+    .status-つながった { background: rgba(74,158,255,0.15); color: #4a9eff; border: 1px solid rgba(74,158,255,0.3); }
+    .status-BC済み  { background: rgba(46,204,113,0.15); color: var(--success); border: 1px solid rgba(46,204,113,0.3); }
+    .status-ユーザー { background: rgba(162,155,254,0.15); color: #a29bfe; border: 1px solid rgba(162,155,254,0.3); }
+    .status-NG      { background: rgba(255,71,87,0.15); color: var(--accent2); border: 1px solid rgba(255,71,87,0.3); }
+
+    /* ===== ☆お気に入りボタン ===== */
+    .star-btn {
+      background: none; border: none; font-size: 1.4rem; cursor: pointer;
+      color: var(--text-muted); transition: all 0.15s; flex-shrink: 0;
+      padding: 4px 6px; line-height: 1; border-radius: 6px;
+    }
+    .star-btn.starred { color: #ffd04a; }
+    .star-btn:hover { transform: scale(1.2); }
+    .btn-star-filter {
+      white-space: nowrap; padding: 10px 14px; border-radius: 12px; border: 2px solid var(--border);
+      background: var(--surface2); color: var(--text-muted); font-size: 1.1rem; font-family: inherit;
+      cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+    }
+    .btn-star-filter.active { border-color: #ffd04a; color: #ffd04a; background: rgba(255,208,74,0.1); }
 
     /* ===== ツールバー ===== */
     .toolbar {
@@ -362,6 +379,7 @@
     <!-- 常時表示：フリーワード検索 -->
     <div class="toolbar-main">
       <input type="text" id="searchInput1" placeholder="名前・仕事・関係性・住所など" oninput="renderList()">
+      <button class="btn-star-filter" id="starFilterBtn" onclick="toggleStarFilter()" title="お気に入りのみ表示">☆</button>
       <button class="btn-filter" id="filterToggleBtn" onclick="toggleAdvancedFilters()">絞り込み ▾</button>
     </div>
 
@@ -441,7 +459,7 @@
     <form id="personForm" onsubmit="savePerson(event)">
       <div class="form-grid">
         <div class="form-group full"><label>名前 *</label><input type="text" id="f_name" required placeholder="例：田中 太郎"></div>
-        <div class="form-group full"><label>ステータス</label><select id="f_status"><option value="未着手">未着手</option><option value="アタック中">アタック中</option><option value="返信待ち">返信待ち</option><option value="成約">成約</option><option value="NG">NG</option></select></div>
+        <div class="form-group full"><label>ステータス</label><select id="f_status"><option value="未着手">未着手</option><option value="連絡中">連絡中</option><option value="CT予定">CT予定</option><option value="つながった">つながった</option><option value="BC済み">BC済み</option><option value="ユーザー">ユーザー</option><option value="NG">NG</option></select></div>
         <div class="form-group">
           <label>年齢</label>
           <select id="f_age">
@@ -564,6 +582,7 @@ let viewingUserName = '';
 
 const FIELDS = ['name','status','age','gender','insta','relation','job','trust','position','needs',
                 'address','address_city','hometown','hometown_city','living','partner','type','lastcontact','memo','writer'];
+let favoriteFilter = false;
 
 // ===== メール認証エラーメッセージ =====
 function authErrMsg(code) {
@@ -947,6 +966,7 @@ window.renderList = function() {
   const isReadOnly = viewingUserId !== currentUser?.uid;
 
   const filtered = people.filter(p => {
+    if (favoriteFilter && !p.favorite) return false;
     const m1 = matchCondition(p, 'searchCategory',  '1');
     const m2 = matchCondition(p, 'searchCategory2', '2');
     return logic === 'or' ? (m1 || m2) : (m1 && m2);
@@ -954,8 +974,8 @@ window.renderList = function() {
 
   document.getElementById('countBadge').textContent = `${filtered.length}人`;
   document.getElementById('totalCount').textContent = people.length;
-  document.getElementById('activeCount').textContent = people.filter(p => p.status === 'アタック中' || p.status === '返信待ち').length;
-  document.getElementById('wonCount').textContent = people.filter(p => p.status === '成約').length;
+  document.getElementById('activeCount').textContent = people.filter(p => ['連絡中','CT予定','つながった'].includes(p.status)).length;
+  document.getElementById('wonCount').textContent = people.filter(p => ['BC済み','ユーザー'].includes(p.status)).length;
   const container = document.getElementById('listContainer');
 
   if (filtered.length===0) {
@@ -979,16 +999,16 @@ window.renderList = function() {
     const canEdit = !isReadOnly;
     return `<div class="person-card ${hlClass}" id="card-${p.id}">
       <div class="card-header" onclick="toggleCard('${p.id}')">
-        <div class="avatar" style="background:${color}">${initial}</div>
+        <button class="star-btn ${p.favorite?'starred':''}" onclick="event.stopPropagation();toggleFavorite('${p.id}')" title="お気に入り">${p.favorite?'★':'☆'}</button>
         <div class="card-info">
-          <div class="card-name">${escHtml(p.name)}${p.position?`<span>${positionLabel(p.position)}</span>`:''}</div>
+          <div class="card-name" style="color:${p.gender==='女性'?'#f4a7b9':p.gender==='男性'?'#f0f0f5':'var(--text)'}">${escHtml(p.name)}${p.position?`<span>${positionLabel(p.position)}</span>`:''}</div>
           <div class="card-sub">${[p.age?p.age+'歳':'',p.gender,p.job].filter(Boolean).join(' · ')}</div>
           <div class="card-sub">${p.relation||''}</div>
         </div>
         <div class="card-badges">
           ${p.trust?`<span class="badge trust-${p.trust}">${p.trust}</span>`:''}
           <select class="status-badge status-${p.status||'未着手'}" onchange="changeStatus('${p.id}', this.value)" onclick="event.stopPropagation()">
-            ${['未着手','アタック中','返信待ち','成約','NG'].map(s=>`<option value="${s}" ${(p.status||'未着手')===s?'selected':''}>${s}</option>`).join('')}
+            ${['未着手','連絡中','CT予定','つながった','BC済み','ユーザー','NG'].map(s=>`<option value="${s}" ${(p.status||'未着手')===s?'selected':''}>${s}</option>`).join('')}
           </select>
           <span class="chevron" id="chev-${p.id}">▼</span>
         </div>
@@ -1049,6 +1069,23 @@ window.openEditModal = (id) => {
   FIELDS.forEach(f=>{ const el=document.getElementById('f_'+f); if(el) el.value=p[f]||''; });
   document.getElementById('editModal').classList.add('open');
   setTimeout(()=>{ document.getElementById('editModal').scrollTop=0; },0);
+};
+
+window.toggleFavorite = async (id) => {
+  if (!currentUser || viewingUserId !== currentUser.uid) return;
+  const p = people.find(x => x.id === id);
+  if (!p) return;
+  try {
+    await updateDoc(doc(db,'users',currentUser.uid,'people',id), { favorite: !p.favorite, updatedAt: serverTimestamp() });
+  } catch(e) { showToast('更新に失敗しました'); }
+};
+
+window.toggleStarFilter = () => {
+  favoriteFilter = !favoriteFilter;
+  const btn = document.getElementById('starFilterBtn');
+  btn.textContent = favoriteFilter ? '★' : '☆';
+  btn.classList.toggle('active', favoriteFilter);
+  renderList();
 };
 
 window.changeStatus = async (id, newStatus) => {
