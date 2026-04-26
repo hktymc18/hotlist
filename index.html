@@ -103,9 +103,9 @@
       cursor: pointer; font-family: 'Noto Sans JP', sans-serif; appearance: none; outline: none;
     }
     .status-未着手   { background: rgba(107,107,128,0.2); color: var(--text-muted); border: 1px solid var(--border); }
-    .status-連絡中   { background: rgba(232,255,71,0.15); color: var(--accent); border: 1px solid rgba(232,255,71,0.3); }
+    .status-連絡中   { background: rgba(74,158,255,0.15); color: #4a9eff; border: 1px solid rgba(74,158,255,0.3); }
     .status-CT予定  { background: rgba(255,165,0,0.15); color: #ffa500; border: 1px solid rgba(255,165,0,0.3); }
-    .status-つながった { background: rgba(74,158,255,0.15); color: #4a9eff; border: 1px solid rgba(74,158,255,0.3); }
+    .status-つながった { background: rgba(232,255,71,0.15); color: var(--accent); border: 1px solid rgba(232,255,71,0.3); }
     .status-BC済み  { background: rgba(46,204,113,0.15); color: var(--success); border: 1px solid rgba(46,204,113,0.3); }
     .status-ユーザー { background: rgba(162,155,254,0.15); color: #a29bfe; border: 1px solid rgba(162,155,254,0.3); }
     .status-NG      { background: rgba(255,71,87,0.15); color: var(--accent2); border: 1px solid rgba(255,71,87,0.3); }
@@ -1001,7 +1001,7 @@ window.renderList = function() {
       <div class="card-header" onclick="toggleCard('${p.id}')">
         <button class="star-btn ${p.favorite?'starred':''}" onclick="event.stopPropagation();toggleFavorite('${p.id}')" title="お気に入り">${p.favorite?'★':'☆'}</button>
         <div class="card-info">
-          <div class="card-name" style="color:${p.gender==='女性'?'#f4a7b9':p.gender==='男性'?'#f0f0f5':'var(--text)'}">${escHtml(p.name)}${p.position?`<span>${positionLabel(p.position)}</span>`:''}</div>
+          <div class="card-name" style="color:${p.gender==='女性'?'#ff6eb4':p.gender==='男性'?'#f0f0f5':'var(--text)'}">${escHtml(p.name)}${p.position?`<span>${positionLabel(p.position)}</span>`:''}</div>
           <div class="card-sub">${[p.age?p.age+'歳':'',p.gender,p.job].filter(Boolean).join(' · ')}</div>
           <div class="card-sub">${p.relation||''}</div>
         </div>
