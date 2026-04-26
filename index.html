@@ -175,9 +175,9 @@
     .card-sub { font-size: 0.83rem; color: var(--text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .card-badges { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
     .badge { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; padding: 3px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 800; letter-spacing: 0.04em; }
-    .trust-S { background: linear-gradient(135deg,#1b4d28,#2a6b38); color: #6ef093; border: 1px solid #3a8a4a; box-shadow: 0 0 6px rgba(110,240,147,0.2); }
-    .trust-A { background: linear-gradient(135deg,#0e1e40,#1a3060); color: #6ab4fa; border: 1px solid #2a50a0; box-shadow: 0 0 6px rgba(100,180,250,0.2); }
-    .trust-B { background: linear-gradient(135deg,#2e1e00,#4a3200); color: #ffd04a; border: 1px solid #6a4800; box-shadow: 0 0 6px rgba(255,200,50,0.2); }
+    .trust-S { background: rgba(255,215,0,0.15); color: #ffd700; border: 1px solid rgba(255,215,0,0.4); box-shadow: 0 0 6px rgba(255,215,0,0.2); }
+    .trust-A { background: rgba(255,140,0,0.15); color: #ff8c00; border: 1px solid rgba(255,140,0,0.4); box-shadow: 0 0 6px rgba(255,140,0,0.2); }
+    .trust-B { background: rgba(46,204,113,0.15); color: #2ecc71; border: 1px solid rgba(46,204,113,0.4); }
     .trust-C { background: linear-gradient(135deg,#2e0808,#4a1010); color: #ff7a70; border: 1px solid #7a2020; }
     .trust-D { background: linear-gradient(135deg,#1a1a22,#252530); color: #888899; border: 1px solid #3a3a4a; }
     .type-P { background: #2a1a20; color: #f48fb1; border: 1px solid #4a2a35; }
@@ -185,9 +185,9 @@
     .type-A { background: #0e1e1c; color: #80cbc4; border: 1px solid #1e3835; }
     .type-S { background: #201800; color: #ffcc80; border: 1px solid #3a2a00; }
     .pos-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 0.6rem; font-weight: 800; letter-spacing: 0.06em; vertical-align: middle; }
-    .pos-up   { background: rgba(79,200,120,0.15); color: #4fc878; border: 1px solid rgba(79,200,120,0.4); }
-    .pos-down { background: rgba(255,82,82,0.15);  color: #ff7070; border: 1px solid rgba(255,82,82,0.4); }
-    .pos-eq   { background: rgba(150,150,200,0.15); color: #aab0cc; border: 1px solid rgba(150,150,200,0.4); }
+    .pos-up   { background: rgba(255,215,0,0.15); color: #ffd700; border: 1px solid rgba(255,215,0,0.4); }
+    .pos-down { background: rgba(107,107,128,0.2); color: var(--text-muted); border: 1px solid var(--border); }
+    .pos-eq   { background: rgba(46,204,113,0.15); color: #2ecc71; border: 1px solid rgba(46,204,113,0.4); }
     .chevron { font-size: 0.82rem; color: var(--text-muted); transition: transform 0.2s; }
     .chevron.open { transform: rotate(180deg); }
 
@@ -738,19 +738,21 @@ async function loadSharedWithMe() {
   if (!currentUser) return;
   const el = document.getElementById('sharedWithMeList');
   try {
-    // 自分のemailが sharedWith に含まれているユーザーを検索
     const usersSnap = await getDocs(collection(db, 'users'));
-    const shared = [];
-    for (const userDoc of usersSnap.docs) {
-      if (userDoc.id === currentUser.uid) continue;
-      const shareDoc = await getDoc(doc(db, 'users', userDoc.id, 'settings', 'share'));
-      if (shareDoc.exists()) {
-        const sw = shareDoc.data().sharedWith || [];
-        if (sw.includes(currentUser.email)) {
-          shared.push({ uid: userDoc.id, name: userDoc.data().displayName || userDoc.data().email });
-        }
-      }
-    }
+    const otherUsers = usersSnap.docs.filter(d => d.id !== currentUser.uid);
+
+    // 全ユーザーの共有設定を並列で一括取得
+    const results = await Promise.all(
+      otherUsers.map(userDoc =>
+        getDoc(doc(db, 'users', userDoc.id, 'settings', 'share'))
+          .then(shareDoc => ({ userDoc, shareDoc }))
+      )
+    );
+
+    const shared = results
+      .filter(({ shareDoc }) => shareDoc.exists() && (shareDoc.data().sharedWith || []).includes(currentUser.email))
+      .map(({ userDoc }) => ({ uid: userDoc.id, name: userDoc.data().displayName || userDoc.data().email }));
+
     if (shared.length === 0) {
       el.textContent = 'まだ共有されているリストはありません';
       return;
