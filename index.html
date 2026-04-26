@@ -167,6 +167,7 @@
     /* ===== カード ===== */
     .list-container { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
     .person-card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; border: 1px solid var(--border); }
+    .person-card.card-ng { opacity: 0.35; filter: grayscale(60%); }
     .card-header { padding: 13px 14px 11px; display: flex; align-items: center; gap: 11px; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
     .avatar { width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; font-weight: 700; color: #fff; flex-shrink: 0; }
     .card-info { flex: 1; min-width: 0; }
@@ -973,7 +974,7 @@ window.renderList = function() {
   });
 
   document.getElementById('countBadge').textContent = `${filtered.length}人`;
-  document.getElementById('totalCount').textContent = people.length;
+  document.getElementById('totalCount').textContent = people.filter(p => p.status !== 'NG').length;
   document.getElementById('activeCount').textContent = people.filter(p => ['連絡中','CT予定','つながった'].includes(p.status)).length;
   document.getElementById('wonCount').textContent = people.filter(p => ['BC済み','ユーザー'].includes(p.status)).length;
   const container = document.getElementById('listContainer');
@@ -997,7 +998,7 @@ window.renderList = function() {
     const addressFull = [p.address,p.address_city].filter(Boolean).join(' ');
     const hometownFull = [p.hometown,p.hometown_city].filter(Boolean).join(' ');
     const canEdit = !isReadOnly;
-    return `<div class="person-card ${hlClass}" id="card-${p.id}">
+    return `<div class="person-card ${hlClass}${p.status==='NG'?' card-ng':''}" id="card-${p.id}">
       <div class="card-header" onclick="toggleCard('${p.id}')">
         <button class="star-btn ${p.favorite?'starred':''}" onclick="event.stopPropagation();toggleFavorite('${p.id}')" title="お気に入り">${p.favorite?'★':'☆'}</button>
         <div class="card-info">
