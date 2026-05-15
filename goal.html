@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>目標設定シート</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap');
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #e8ff47;
+      --primary-dark: #d4e840;
+      --danger: #ff4757;
+      --success: #2ecc71;
+      --pink: #ff6b9d;
+      --orange: #ff9f43;
+      --bg: #0a0a0f;
+      --bg2: #13131a;
+      --surface: #13131a;
+      --surface2: #1c1c26;
+      --surface3: #242430;
+      --border: #2a2a38;
+      --text: #f0f0f5;
+      --text-muted: #6b6b80;
+      --accent: #e8ff47;
+      --radius: 12px;
+      --shadow: 0 2px 20px rgba(0,0,0,0.45);
+      --example: #ff4757;
+    }
+    body {
+      font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg); color: var(--text); min-height: 100vh;
+      -webkit-tap-highlight-color: transparent;
+      padding-bottom: 70px;
+    }
+    input, select, textarea {
+      font-family: inherit; font-size: 14px;
+      background: var(--surface2); color: var(--text);
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: 10px 12px; width: 100%; outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+    textarea { resize: vertical; min-height: 60px; }
+    select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b6b80' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px; }
+
+    /* Header */
+    .header {
+      background: var(--bg2); padding: 14px 16px;
+      display: flex; align-items: center; gap: 12px;
+      position: sticky; top: 0; z-index: 100;
+      border-bottom: 1px solid var(--border);
+    }
+    .header .back { background: none; border: none; color: var(--text-muted); font-size: 1.4rem; cursor: pointer; padding: 4px; }
+    .header .title {
+      font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem;
+      color: var(--accent); letter-spacing: 3px; line-height: 1;
+    }
+    .header .title small { display: block; font-family: 'Noto Sans JP'; font-size: 0.6rem; color: var(--text-muted); letter-spacing: 1px; font-weight: 300; }
+
+    /* Tab Bar */
+    .tab-bar {
+      display: flex; background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 56px; z-index: 99;
+      overflow-x: auto; -webkit-overflow-scrolling: touch;
+    }
+    .tab-bar::-webkit-scrollbar { display: none; }
+    .tab-btn {
+      flex: 0 0 auto; padding: 12px 16px; font-size: 0.78rem; font-weight: 500;
+      color: var(--text-muted); background: none; border: none;
+      border-bottom: 2px solid transparent; cursor: pointer;
+      white-space: nowrap; transition: all 0.2s;
+    }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    /* Tab Content */
+    .tab-panel { display: none; padding: 16px; }
+    .tab-panel.active { display: block; }
+
+    /* Section */
+    .section { margin-bottom: 24px; }
+    .section-title {
+      font-size: 0.85rem; font-weight: 700; color: var(--accent);
+      margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+      letter-spacing: 1px;
+    }
+    .section-title::before {
+      content: ''; width: 3px; height: 16px; background: var(--accent); border-radius: 2px;
+    }
+
+    /* Card */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 16px; margin-bottom: 12px;
+    }
+
+    /* Example text */
+    .example { color: var(--example); font-size: 0.75rem; }
+    input::placeholder { color: rgba(255,71,87,0.5); }
+
+    /* Form Grid */
+    .form-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-end; }
+    .form-row > * { flex: 1; }
+    .form-group { margin-bottom: 10px; }
+    .form-group label {
+      display: block; font-size: 0.72rem; color: var(--text-muted);
+      margin-bottom: 4px; font-weight: 500;
+    }
+
+    /* Simulation */
+    .sim-month-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 14px; margin-bottom: 10px;
+    }
+    .sim-month-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 10px;
+    }
+    .sim-month-label {
+      font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem;
+      color: var(--accent); letter-spacing: 2px;
+    }
+    .sim-month-title {
+      font-size: 0.7rem; color: var(--pink); font-weight: 700;
+      background: rgba(255,107,157,0.15); padding: 3px 10px; border-radius: 20px;
+    }
+    .sim-input-row {
+      display: flex; gap: 8px; align-items: center; margin-bottom: 6px;
+    }
+    .sim-input-row label {
+      font-size: 0.72rem; color: var(--text-muted); white-space: nowrap; min-width: 90px;
+    }
+    .sim-input-row input {
+      width: 70px; text-align: center; padding: 6px 8px; font-size: 0.85rem;
+    }
+    .sim-input-row .unit { font-size: 0.7rem; color: var(--text-muted); }
+
+    .sim-result {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;
+    }
+    .sim-result-item {
+      background: var(--surface2); border-radius: 8px; padding: 8px 10px;
+      text-align: center;
+    }
+    .sim-result-item .val {
+      font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; color: var(--accent); line-height: 1;
+    }
+    .sim-result-item .lbl { font-size: 0.65rem; color: var(--text-muted); margin-top: 2px; }
+
+    /* Org Tree Visual */
+    .org-tree {
+      display: flex; overflow-x: auto; gap: 6px; padding: 10px 0;
+      -webkit-overflow-scrolling: touch;
+    }
+    .org-tree::-webkit-scrollbar { display: none; }
+    .org-node {
+      flex: 0 0 auto; width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.55rem; font-weight: 700; color: #fff;
+    }
+    .org-node.you { background: var(--accent); color: #000; }
+    .org-node.b1 { background: var(--pink); }
+    .org-node.q1 { background: #9b59b6; }
+    .org-node.q2 { background: #3498db; }
+    .org-node.q3 { background: #1abc9c; }
+    .org-node.q4 { background: #27ae60; }
+    .org-node.br { background: var(--orange); }
+
+    /* Bonus Calculator */
+    .bonus-display {
+      text-align: center; padding: 20px;
+      background: linear-gradient(135deg, rgba(232,255,71,0.08), rgba(255,107,157,0.08));
+      border-radius: var(--radius); margin: 16px 0;
+    }
+    .bonus-amount {
+      font-family: 'Bebas Neue', sans-serif; font-size: 3rem;
+      color: var(--accent); line-height: 1;
+    }
+    .bonus-amount small { font-size: 1rem; color: var(--text-muted); }
+    .bonus-label { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+
+    /* Progress Bar */
+    .progress-wrap { margin-bottom: 12px; }
+    .progress-label {
+      display: flex; justify-content: space-between; align-items: baseline;
+      font-size: 0.72rem; color: var(--text-muted); margin-bottom: 4px;
+    }
+    .progress-label .current { color: var(--accent); font-weight: 700; font-size: 0.85rem; }
+    .progress-bar {
+      height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; border-radius: 4px; transition: width 0.5s ease;
+      background: linear-gradient(90deg, var(--accent), var(--pink));
+    }
+
+    /* Checklist */
+    .check-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 0; border-bottom: 1px solid var(--border);
+    }
+    .check-item:last-child { border-bottom: none; }
+    .check-box {
+      width: 22px; height: 22px; border-radius: 6px;
+      border: 2px solid var(--border); background: var(--surface2);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; flex-shrink: 0; transition: all 0.2s;
+    }
+    .check-box.checked {
+      background: var(--accent); border-color: var(--accent);
+    }
+    .check-box.checked::after { content: '✓'; color: #000; font-size: 0.8rem; font-weight: 900; }
+    .check-label { font-size: 0.82rem; flex: 1; }
+    .check-date {
+      font-size: 0.72rem; color: var(--text-muted); width: 70px;
+    }
+    .check-date input { padding: 4px 6px; font-size: 0.72rem; }
+
+    /* Current vs Ideal Table */
+    .cv-table { width: 100%; border-collapse: collapse; }
+    .cv-table th {
+      font-size: 0.65rem; color: var(--text-muted); padding: 6px 4px;
+      text-align: center; font-weight: 500; border-bottom: 1px solid var(--border);
+    }
+    .cv-table td { padding: 4px; }
+    .cv-table td:nth-child(2) {
+      font-size: 0.72rem; color: var(--text-muted); text-align: center;
+      white-space: nowrap; min-width: 55px;
+    }
+    .cv-table input {
+      font-size: 0.75rem; padding: 6px 8px;
+      background: var(--surface2);
+    }
+
+    /* Commitment */
+    .commitment-box {
+      background: linear-gradient(135deg, rgba(232,255,71,0.05), rgba(255,159,67,0.05));
+      border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 20px; text-align: center;
+    }
+    .commitment-box .line {
+      display: flex; align-items: center; justify-content: center;
+      gap: 6px; margin: 8px 0; flex-wrap: wrap; font-size: 0.9rem;
+    }
+    .commitment-box input {
+      width: auto; display: inline-block; text-align: center;
+      border-bottom: 2px solid var(--accent); border-radius: 0;
+      background: transparent; border-top: none; border-left: none; border-right: none;
+      font-weight: 700; padding: 4px 8px;
+    }
+    .commitment-box input.name-input { width: 140px; }
+    .commitment-box input.amount-input { width: 100px; }
+    .commitment-box input.date-input { width: 50px; }
+    .commitment-box input.title-input { width: 100px; }
+
+    /* Wishlist */
+    .wish-item {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+    }
+    .wish-rank {
+      font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem;
+      color: var(--orange); width: 30px; text-align: center;
+    }
+    .wish-item input.wish-name { flex: 1; }
+    .wish-item input.wish-price { width: 90px; text-align: right; }
+    .wish-total {
+      text-align: right; font-size: 0.85rem; color: var(--accent);
+      font-weight: 700; padding-top: 8px; border-top: 1px solid var(--border);
+    }
+
+    /* Sim Config */
+    .sim-config {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 14px; margin-bottom: 16px;
+    }
+    .sim-config-title {
+      font-size: 0.78rem; font-weight: 700; color: var(--text);
+      margin-bottom: 10px;
+    }
+    .sim-preset-row {
+      display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px;
+    }
+    .sim-preset-btn {
+      padding: 6px 14px; font-size: 0.72rem; border-radius: 20px;
+      border: 1px solid var(--border); background: var(--surface2);
+      color: var(--text-muted); cursor: pointer; transition: all 0.2s;
+    }
+    .sim-preset-btn.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 700; }
+
+    /* Monthly Target Table */
+    .target-table {
+      width: 100%; border-collapse: collapse; font-size: 0.75rem;
+      overflow-x: auto; display: block;
+    }
+    .target-table::-webkit-scrollbar { display: none; }
+    .target-table th, .target-table td {
+      padding: 6px 4px; text-align: center; white-space: nowrap;
+      border-bottom: 1px solid var(--border);
+    }
+    .target-table th {
+      color: var(--text-muted); font-weight: 500; font-size: 0.65rem;
+      position: sticky; left: 0; background: var(--surface); z-index: 1;
+    }
+    .target-table td:first-child {
+      text-align: left; font-size: 0.7rem; color: var(--text-muted);
+      position: sticky; left: 0; background: var(--surface); z-index: 1;
+      min-width: 85px;
+    }
+    .target-table input {
+      width: 50px; text-align: center; padding: 4px; font-size: 0.75rem;
+    }
+
+    /* Bonus Table Display */
+    .bonus-table-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+    }
+    .bonus-table-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 10px; background: var(--surface2); border-radius: 6px;
+      font-size: 0.75rem;
+    }
+    .bonus-table-item .pts { color: var(--text-muted); }
+    .bonus-table-item .amt { color: var(--accent); font-weight: 700; }
+
+    /* Summary Banner */
+    .summary-banner {
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 16px; margin-bottom: 16px;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+    }
+    .summary-item { text-align: center; }
+    .summary-item .num {
+      font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem;
+      color: var(--accent); line-height: 1;
+    }
+    .summary-item .label { font-size: 0.6rem; color: var(--text-muted); margin-top: 2px; }
+
+    /* Elite LOI */
+    .loi-timeline {
+      display: flex; gap: 4px; margin: 12px 0;
+    }
+    .loi-month {
+      flex: 1; text-align: center; padding: 10px 4px;
+      background: var(--surface2); border-radius: 8px;
+      border: 1px solid var(--border); transition: all 0.3s;
+    }
+    .loi-month.achieved { background: rgba(232,255,71,0.12); border-color: var(--accent); }
+    .loi-month.failed { background: rgba(255,71,87,0.1); border-color: var(--danger); }
+    .loi-month .m-label { font-size: 0.6rem; color: var(--text-muted); }
+    .loi-month .m-num { font-family: 'Bebas Neue'; font-size: 1.1rem; color: var(--text); }
+    .loi-month .m-bb { font-size: 0.6rem; color: var(--accent); margin-top: 2px; }
+
+    /* Button */
+    .btn-primary {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 12px 24px; background: var(--accent); color: #000;
+      border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 700;
+      cursor: pointer; transition: all 0.2s; width: 100%;
+    }
+    .btn-primary:active { transform: scale(0.97); }
+    .btn-secondary {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 10px 20px; background: var(--surface2); color: var(--text);
+      border: 1px solid var(--border); border-radius: 8px;
+      font-size: 0.8rem; cursor: pointer; transition: all 0.2s;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: var(--surface2); color: var(--text); padding: 10px 24px;
+      border-radius: 20px; font-size: 0.8rem; box-shadow: var(--shadow);
+      opacity: 0; transition: all 0.3s; pointer-events: none; z-index: 1000;
+      border: 1px solid var(--border);
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* Sim Org Flow */
+    .org-flow {
+      overflow-x: auto; padding: 10px 0;
+      -webkit-overflow-scrolling: touch;
+    }
+    .org-flow::-webkit-scrollbar { display: none; }
+    .org-flow-inner {
+      display: flex; gap: 12px; min-width: max-content;
+    }
+    .org-flow-month {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      min-width: 60px;
+    }
+    .org-flow-month .month-label {
+      font-family: 'Bebas Neue'; font-size: 0.85rem; color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .org-flow-month .node-stack {
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+    }
+    .mini-node {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.45rem; font-weight: 700; color: #fff;
+    }
+    .mini-node.you { background: var(--accent); color: #000; width: 32px; height: 32px; font-size: 0.5rem; }
+    .mini-node.b1 { background: var(--pink); }
+    .mini-node.loi { background: #e056a0; }
+    .mini-node.q1 { background: #9b59b6; }
+    .mini-node.q2 { background: #3498db; }
+    .mini-node.q3 { background: #1abc9c; }
+    .mini-node.q4 { background: #27ae60; }
+    .mini-node.br { background: var(--orange); }
+    .node-count {
+      font-size: 0.55rem; color: var(--text-muted); margin-top: 1px;
+    }
+
+    /* Slider */
+    input[type="range"] {
+      -webkit-appearance: none; width: 100%; height: 6px;
+      background: var(--surface2); border-radius: 3px; border: none;
+      padding: 0;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 22px; height: 22px;
+      background: var(--accent); border-radius: 50%; cursor: pointer;
+    }
+
+    /* Info Box */
+    .info-box {
+      background: rgba(232,255,71,0.05); border: 1px solid rgba(232,255,71,0.15);
+      border-radius: 8px; padding: 12px; margin-bottom: 12px;
+      font-size: 0.72rem; color: var(--text-muted); line-height: 1.6;
+    }
+    .info-box strong { color: var(--accent); }
+
+    @media (min-width: 480px) {
+      .tab-btn { flex: 1; }
+    }
+    /* Login Screen */
+    #loginScreen {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 100vh; padding: 24px; gap: 20px;
+    }
+    .login-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.8rem; letter-spacing: 5px; color: var(--accent);
+      text-shadow: 0 0 40px rgba(232,255,71,0.35); line-height: 1;
+    }
+    .login-title small { display: block; font-family: 'Noto Sans JP'; font-size: 0.7rem; color: var(--text-muted); letter-spacing: 1px; font-weight: 300; margin-top: 4px; }
+    .login-subtitle { font-size: 0.8rem; color: var(--text-muted); text-align: center; }
+    .auth-tabs { display: flex; gap: 0; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+    .auth-tab { flex: 1; padding: 10px 20px; border: none; font-size: 0.8rem; font-weight: 600; cursor: pointer; text-align: center; transition: all 0.2s; font-family: inherit; }
+    .auth-form { width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 10px; }
+    .auth-form input { padding: 12px 14px; }
+    .auth-error { font-size: 0.75rem; color: var(--danger); text-align: center; min-height: 1.2em; }
+    .btn-auth {
+      padding: 14px; background: var(--accent); color: #000; border: none; border-radius: 8px;
+      font-size: 0.9rem; font-weight: 700; cursor: pointer; font-family: inherit;
+    }
+    .btn-auth:active { transform: scale(0.97); }
+    .auth-link { font-size: 0.72rem; color: var(--text-muted); text-align: center; cursor: pointer; text-decoration: underline; }
+    #mainApp { display: none; }
+    .loading-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; color: var(--text-muted); font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+
+<!-- ===== ログイン画面 ===== -->
+<div id="loginScreen" style="display:none;">
+  <div class="login-title">GOAL SHEET<small>目標設定シート</small></div>
+  <div class="login-subtitle">ATTACK LISTと同じアカウントでログイン</div>
+  <div class="auth-tabs">
+    <button class="auth-tab" id="tabLogin" style="background:var(--accent);color:#000;" onclick="setAuthMode('login')">ログイン</button>
+    <button class="auth-tab" id="tabSignup" style="background:transparent;color:var(--text-muted);" onclick="setAuthMode('signup')">新規登録</button>
+  </div>
+  <div class="auth-form">
+    <input type="email" id="authEmail" placeholder="メールアドレス">
+    <input type="password" id="authPassword" placeholder="パスワード">
+    <div class="auth-error" id="authError"></div>
+    <button class="btn-auth" id="authSubmitBtn" onclick="submitAuth()">ログイン</button>
+    <div class="auth-link" onclick="resetPassword()">パスワードを忘れた方</div>
+  </div>
+</div>
+
+<!-- ===== 読み込み画面 ===== -->
+<div id="loadingScreen" class="loading-screen">読み込み中...</div>
+
+<!-- ===== メインアプリ ===== -->
+<div id="mainApp">
+<div class="header">
+  <button class="back" onclick="location.href='index.html'">←</button>
+  <div class="title">
+    GOAL SHEET
+    <small>目標設定シート</small>
+  </div>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+    <span id="userNameDisplay" style="font-size:0.7rem;color:var(--text-muted);"></span>
+    <button onclick="confirmSignOut()" style="background:none;border:1px solid var(--border);color:var(--text-muted);font-size:0.65rem;padding:4px 10px;border-radius:6px;cursor:pointer;">ログアウト</button>
+  </div>
+</div>
+
+<div class="tab-bar" id="tabBar">
+  <button class="tab-btn active" data-tab="sim">シミュレーション</button>
+  <button class="tab-btn" data-tab="goal">目標設定</button>
+  <button class="tab-btn" data-tab="check">チェックリスト</button>
+  <button class="tab-btn" data-tab="bonus">ボーナス計算</button>
+</div>
+
+<!-- ==================== TAB 1: シミュレーション ==================== -->
+<div class="tab-panel active" id="tab-sim">
+
+  <div class="section">
+    <div class="section-title">組織シミュレーション</div>
+
+    <div class="sim-config">
+      <div class="sim-config-title">フロント数（Q2・Q3月のみ）</div>
+      <div class="sim-preset-row">
+        <button class="sim-preset-btn active" onclick="applyPreset(2)">2人</button>
+        <button class="sim-preset-btn" onclick="applyPreset(3)">3人</button>
+        <button class="sim-preset-btn" onclick="applyPreset(4)">4人</button>
+        <button class="sim-preset-btn" onclick="applyPreset(5)">5人</button>
+        <button class="sim-preset-btn" onclick="applyPreset(0)">カスタム</button>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>1人あたりBPCポイント</label>
+          <input type="number" id="simPsv" value="1500" min="100" max="5000" step="100" onchange="runSimulation()">
+        </div>
+        <div class="form-group">
+          <label>自分のPSV</label>
+          <input type="number" id="simMyPsv" value="300" min="50" max="1000" step="50" onchange="runSimulation()">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>デュプリケーション率（各B1が毎月出すフロント数）</label>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <input type="range" id="simDupRate" min="1" max="10" step="1" value="1" oninput="document.getElementById('dupRateLabel').textContent=this.value+'人';runSimulation();">
+          <span id="dupRateLabel" style="font-size:0.85rem;color:var(--accent);font-weight:700;min-width:35px;">1人</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">開始年月</div>
+    <div class="form-row" style="margin-bottom:16px;">
+      <div class="form-group">
+        <label>年</label>
+        <select id="simStartYear" onchange="runSimulation()">
+          <option value="2025">2025</option>
+          <option value="2026" selected>2026</option>
+          <option value="2027">2027</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>月</label>
+        <select id="simStartMonth" onchange="runSimulation()">
+          <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option>
+          <option value="4">4月</option><option value="5">5月</option><option value="6" selected>6月</option>
+          <option value="7">7月</option><option value="8">8月</option><option value="9">9月</option>
+          <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Simulation results rendered here -->
+  <div id="simResults"></div>
+
+  <div class="section" style="margin-top:16px;">
+    <div class="section-title">ファーストボーナス</div>
+    <div id="simFBResult"></div>
+  </div>
+</div>
+
+<!-- ==================== TAB 2: 目標設定 ==================== -->
+<div class="tab-panel" id="tab-goal">
+
+  <div class="section">
+    <div class="section-title">月別目標</div>
+    <div class="card" style="overflow-x:auto;">
+      <table class="target-table" id="targetTable">
+        <thead><tr id="targetHeader"></tr></thead>
+        <tbody id="targetBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">現状と理想</div>
+    <div class="card" style="overflow-x:auto;">
+      <table class="cv-table" id="cvTable">
+        <thead><tr><th style="width:30%;">現状</th><th style="width:15%;">項目</th><th style="width:30%;">理想</th></tr></thead>
+        <tbody id="cvBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">First Bonus で手に入れるものリスト</div>
+    <div class="card">
+      <div id="wishList"></div>
+      <div class="wish-total" id="wishTotal">合計: ¥0</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Commitment</div>
+    <div class="commitment-box">
+      <div class="line">私 <input type="text" class="name-input" id="cmtName" placeholder="○○○○"> は、</div>
+      <div class="line">月収 <input type="text" class="amount-input" id="cmtAmount" placeholder="30万円"> を目標として</div>
+      <div class="line">
+        <input type="text" class="date-input" id="cmtYear" placeholder="2026"> 年
+        <input type="text" class="date-input" id="cmtMonth" placeholder="4" style="width:35px;"> 月
+        <input type="text" class="date-input" id="cmtDay" placeholder="1" style="width:35px;"> 日で、
+      </div>
+      <div class="line"><input type="text" class="title-input" id="cmtTitle" placeholder="EBP"> を達成します。</div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB 3: チェックリスト ==================== -->
+<div class="tab-panel" id="tab-check">
+
+  <div class="section">
+    <div class="section-title">必須アイテム</div>
+    <div class="card" id="essentialChecklist"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">TRAINING</div>
+    <div class="card" id="trainingChecklist"></div>
+  </div>
+</div>
+
+<!-- ==================== TAB 4: ボーナス計算 ==================== -->
+<div class="tab-panel" id="tab-bonus">
+
+  <div class="section">
+    <div class="section-title">ビルディングボーナス計算</div>
+    <div class="card">
+      <div class="form-group">
+        <label>GSV（ポイント）を入力</label>
+        <input type="number" id="bonusGsvInput" value="5000" min="0" step="500" oninput="calcBonus()">
+      </div>
+      <div class="bonus-display">
+        <div class="bonus-label">ビルディングボーナス（税抜）</div>
+        <div class="bonus-amount" id="bonusResult">¥117,014</div>
+        <div style="font-size:0.7rem;color:var(--text-muted);margin-top:4px;">
+          <span id="bonusBlocks">10</span> ブロック
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">エリートLOI進捗</div>
+    <div class="info-box">
+      <strong>エリートLOI（4ヵ月固定型）</strong><br>
+      期間：2025/10/22 〜 2026/12/31（延長予定）<br>
+      目標：<strong>10BB（5,000pt）</strong> + <strong>3SB（1,500pt）</strong><br>
+      各月最低：2BB（1,000pt）<br>
+      特典：達成＋翌月BR維持(2,000GSV+) → <strong>50,000円ボーナス</strong>
+    </div>
+
+    <div class="card">
+      <div class="loi-timeline" id="loiTimeline"></div>
+      <div style="margin-top:12px;">
+        <div class="form-row">
+          <div class="form-group">
+            <label>1ヵ月目 BB</label>
+            <input type="number" id="loi_bb1" value="0" min="0" step="0.5" onchange="calcLoi()">
+          </div>
+          <div class="form-group">
+            <label>1ヵ月目 SB</label>
+            <input type="number" id="loi_sb1" value="0" min="0" step="0.5" onchange="calcLoi()">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>2ヵ月目 BB</label>
+            <input type="number" id="loi_bb2" value="0" min="0" step="0.5" onchange="calcLoi()">
+          </div>
+          <div class="form-group">
+            <label>2ヵ月目 SB</label>
+            <input type="number" id="loi_sb2" value="0" min="0" step="0.5" onchange="calcLoi()">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>3ヵ月目 BB</label>
+            <input type="number" id="loi_bb3" value="0" min="0" step="0.5" onchange="calcLoi()">
+          </div>
+          <div class="form-group">
+            <label>3ヵ月目 SB</label>
+            <input type="number" id="loi_sb3" value="0" min="0" step="0.5" onchange="calcLoi()">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>4ヵ月目 BB</label>
+            <input type="number" id="loi_bb4" value="0" min="0" step="0.5" onchange="calcLoi()">
+          </div>
+          <div class="form-group">
+            <label>4ヵ月目 SB</label>
+            <input type="number" id="loi_sb4" value="0" min="0" step="0.5" onchange="calcLoi()">
+          </div>
+        </div>
+      </div>
+
+      <div id="loiProgress" style="margin-top:12px;"></div>
+      <div id="loiResult" style="margin-top:12px;text-align:center;"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">ファーストボーナス（FB）自動計算</div>
+    <div class="card">
+      <div class="info-box">
+        BR昇格後、組織のGSVに基づいてビルディングボーナスが毎月発生します。<br>
+        シミュレーションのGSVから自動計算されます。
+      </div>
+      <div id="fbCalcResult"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">ボーナス早見表</div>
+    <div class="card">
+      <div class="bonus-table-grid" id="bonusTableGrid"></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /mainApp -->
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, doc, getDoc, setDoc, serverTimestamp }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBHLz19p4wsSi043V0hhE-Crjwv6VBKBro",
+  authDomain: "hotlist-21865.firebaseapp.com",
+  projectId: "hotlist-21865",
+  storageBucket: "hotlist-21865.firebasestorage.app",
+  messagingSenderId: "565556414915",
+  appId: "1:565556414915:web:f8c3489260e8d9d6e49576"
+};
+
+const fbApp = initializeApp(firebaseConfig);
+const auth = getAuth(fbApp);
+const firedb = getFirestore(fbApp);
+
+let currentUser = null;
+let saveTimer = null;
+
+// ===== Auth UI =====
+let authMode = 'login';
+window.setAuthMode = (mode) => {
+  authMode = mode;
+  const isLogin = mode === 'login';
+  document.getElementById('tabLogin').style.background = isLogin ? 'var(--accent)' : 'transparent';
+  document.getElementById('tabLogin').style.color = isLogin ? '#000' : 'var(--text-muted)';
+  document.getElementById('tabSignup').style.background = isLogin ? 'transparent' : 'var(--accent)';
+  document.getElementById('tabSignup').style.color = isLogin ? 'var(--text-muted)' : '#000';
+  document.getElementById('authSubmitBtn').textContent = isLogin ? 'ログイン' : '新規登録';
+  document.getElementById('authError').textContent = '';
+};
+window.submitAuth = () => { authMode === 'login' ? doSignIn() : doSignUp(); };
+
+function authErrMsg(code) {
+  const map = {
+    'auth/invalid-email': 'メールアドレスの形式が正しくありません',
+    'auth/user-not-found': 'アカウントが見つかりません',
+    'auth/wrong-password': 'パスワードが間違っています',
+    'auth/email-already-in-use': 'このメールアドレスはすでに登録されています',
+    'auth/weak-password': 'パスワードは6文字以上にしてください',
+    'auth/invalid-credential': 'メールアドレスまたはパスワードが間違っています',
+    'auth/too-many-requests': 'しばらく待ってから再試行してください',
+  };
+  return map[code] || 'エラーが発生しました: ' + code;
+}
+
+async function doSignIn() {
+  const email = document.getElementById('authEmail').value.trim();
+  const pass = document.getElementById('authPassword').value;
+  const err = document.getElementById('authError');
+  err.textContent = '';
+  if (!email || !pass) { err.textContent = 'メールアドレスとパスワードを入力してください'; return; }
+  try { await signInWithEmailAndPassword(auth, email, pass); } catch(e) { err.textContent = authErrMsg(e.code); }
+}
+
+async function doSignUp() {
+  const email = document.getElementById('authEmail').value.trim();
+  const pass = document.getElementById('authPassword').value;
+  const err = document.getElementById('authError');
+  err.textContent = '';
+  if (!email || !pass) { err.textContent = 'メールアドレスとパスワードを入力してください'; return; }
+  try { await createUserWithEmailAndPassword(auth, email, pass); } catch(e) { err.textContent = authErrMsg(e.code); }
+}
+
+window.resetPassword = async () => {
+  const email = document.getElementById('authEmail').value.trim();
+  const err = document.getElementById('authError');
+  if (!email) { err.textContent = 'メールアドレスを入力してください'; return; }
+  try {
+    await sendPasswordResetEmail(auth, email);
+    err.style.color = '#4caf50';
+    err.textContent = 'パスワードリセットメールを送信しました';
+  } catch(e) { err.style.color = 'var(--danger)'; err.textContent = authErrMsg(e.code); }
+};
+
+window.confirmSignOut = async () => {
+  if (!confirm('ログアウトしますか？')) return;
+  await signOut(auth);
+};
+
+// ===== Auth State =====
+onAuthStateChanged(auth, async user => {
+  document.getElementById('loadingScreen').style.display = 'none';
+  if (user) {
+    currentUser = user;
+    const userSnap = await getDoc(doc(firedb, 'users', user.uid));
+    const name = userSnap.exists() ? (userSnap.data().displayName || user.email) : user.email;
+    document.getElementById('userNameDisplay').textContent = name;
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'block';
+    await loadFromFirestore();
+    init();
+  } else {
+    currentUser = null;
+    document.getElementById('mainApp').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'flex';
+  }
+});
+
+// ===== Firestore Data =====
+async function loadFromFirestore() {
+  if (!currentUser) return;
+  try {
+    const snap = await getDoc(doc(firedb, 'users', currentUser.uid, 'appData', 'goalSheet'));
+    if (snap.exists()) {
+      localStorage.setItem('goalSheetData', JSON.stringify(snap.data().data || {}));
+    }
+  } catch(e) { console.error('Load error:', e); }
+}
+
+window.saveToFirestore = function() {
+  if (!currentUser) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    try {
+      const data = JSON.parse(localStorage.getItem('goalSheetData')) || {};
+      await setDoc(doc(firedb, 'users', currentUser.uid, 'appData', 'goalSheet'), {
+        data,
+        updatedAt: serverTimestamp()
+      });
+    } catch(e) { console.error('Save error:', e); }
+  }, 1500);
+};
+</script>
+
+<script>
+// ===== Building Bonus Lookup Table =====
+const BB_TABLE = [
+  [2000, 20867], [2500, 32517], [3000, 47078], [3500, 64562],
+  [4000, 82046], [4500, 99530], [5000, 117014], [5500, 134498],
+  [6000, 151982], [6500, 169466], [7000, 186950], [7500, 204434],
+  [8000, 221918], [8500, 239402], [9000, 256886], [9500, 274370],
+  [10000, 291854], [11000, 326822], [12000, 361790], [13000, 396758],
+  [14000, 431726], [15000, 466694], [16000, 501662], [17000, 536630],
+  [18000, 571598], [19000, 606566], [20000, 641534], [25000, 816374],
+  [30000, 991214], [35000, 1166054], [40000, 1340894], [45000, 1515734],
+  [50000, 1690574], [55000, 1865414]
+];
+
+function lookupBuildingBonus(gsv) {
+  if (gsv < 2000) {
+    const blocks = gsv / 500;
+    const csvPerBlock = 58280;
+    const rates = [0.05, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30];
+    let bonus = 0;
+    const fullBlocks = Math.floor(blocks);
+    const frac = blocks - fullBlocks;
+    for (let i = 0; i < fullBlocks && i < rates.length; i++) {
+      bonus += csvPerBlock * rates[i];
+    }
+    if (frac > 0 && fullBlocks < rates.length) {
+      bonus += csvPerBlock * frac * rates[fullBlocks];
+    }
+    return Math.round(bonus);
+  }
+  if (gsv >= 55000) {
+    const extra = gsv - 55000;
+    const perPt = (1865414 - 1690574) / (55000 - 50000);
+    return Math.round(1865414 + extra * perPt);
+  }
+  for (let i = 0; i < BB_TABLE.length - 1; i++) {
+    const [p1, b1] = BB_TABLE[i];
+    const [p2, b2] = BB_TABLE[i + 1];
+    if (gsv >= p1 && gsv <= p2) {
+      const ratio = (gsv - p1) / (p2 - p1);
+      return Math.round(b1 + (b2 - b1) * ratio);
+    }
+  }
+  return 0;
+}
+
+// ===== Data Persistence =====
+const STORAGE_KEY = 'goalSheetData';
+
+function loadData() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+  } catch { return {}; }
+}
+
+function saveData(data) {
+  const current = loadData();
+  Object.assign(current, data);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(current));
+  if (typeof window.saveToFirestore === 'function') window.saveToFirestore();
+}
+
+function saveField(key, value) {
+  saveData({ [key]: value });
+}
+
+// ===== Tab Switching =====
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    window.scrollTo(0, 0);
+  });
+});
+
+// ===== Simulation =====
+// frontsPerMonth: LOI, Q2, Q3, Q4, BR, BR — Q2・Q3月のみフロント投入
+let simConfig = { frontsPerMonth: [0,2,2,0,0,0], preset: 2 };
+
+function buildFrontsFromPreset(n) {
+  return [0, n, n, 0, 0, 0];
+}
+
+function applyPreset(n) {
+  document.querySelectorAll('.sim-preset-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  if (n > 0) {
+    simConfig.preset = n;
+    simConfig.frontsPerMonth = buildFrontsFromPreset(n);
+  } else {
+    simConfig.preset = 0;
+  }
+  runSimulation();
+}
+
+function runSimulation() {
+  const myPsv = parseInt(document.getElementById('simMyPsv').value) || 200;
+  const memberPsv = parseInt(document.getElementById('simPsv').value) || 100;
+  const dupRate = parseFloat(document.getElementById('simDupRate').value) || 0;
+  const startYear = parseInt(document.getElementById('simStartYear').value);
+  const startMonth = parseInt(document.getElementById('simStartMonth').value);
+  const fronts = simConfig.frontsPerMonth;
+
+  let html = '';
+  let bonusHtml = '';
+  let cumGsv = 0;
+  let totalPeople = 1;
+  let orgByMonth = [];
+
+  const titleProgression = ['LOI', 'Q2', 'Q3', 'Q4', 'BR', 'BR'];
+
+  for (let m = 0; m < 6; m++) {
+    const year = startYear + Math.floor((startMonth - 1 + m) / 12);
+    const month = ((startMonth - 1 + m) % 12) + 1;
+    const myTitle = titleProgression[Math.min(m, titleProgression.length - 1)];
+    const newFronts = fronts[m];
+
+    let gen1 = 0, gen2 = 0, gen3 = 0;
+    for (let prev = 0; prev < m; prev++) {
+      gen1 += fronts[prev];
+      if (dupRate > 0) {
+        const monthsActive = m - prev - 1;
+        for (let d = 0; d < monthsActive; d++) {
+          gen2 += fronts[prev] * dupRate;
+          gen3 += fronts[prev] * dupRate * dupRate * Math.max(0, monthsActive - d - 1);
+        }
+      }
+    }
+    gen1 += newFronts;
+
+    const totalOrg = 1 + gen1 + Math.round(gen2) + Math.round(gen3 * 0.3);
+    const monthGsv = myPsv + gen1 * memberPsv + Math.round(gen2) * memberPsv * 0.8 + Math.round(gen3 * 0.3) * memberPsv * 0.5;
+    const blocks = (monthGsv / 500).toFixed(1);
+    const isBR = m >= 4;
+    const bonus = isBR ? lookupBuildingBonus(Math.round(monthGsv)) : 0;
+
+    orgByMonth.push({ gen1: Math.round(gen1), gen2: Math.round(gen2), gen3: Math.round(gen3 * 0.3), total: totalOrg, gsv: Math.round(monthGsv), blocks, bonus, isBR });
+
+    const customInput = simConfig.preset === 0 ?
+      `<div class="sim-input-row"><label>新規フロント数</label><input type="number" value="${fronts[m]}" min="0" max="20" data-month="${m}" onchange="updateCustomFront(this)"><span class="unit">人</span></div>` :
+      (newFronts > 0 ? `<div style="font-size:0.65rem;color:var(--orange);margin-bottom:4px;">← フロント ${newFronts}人投入</div>` : '');
+
+    html += `
+      <div class="sim-month-card">
+        <div class="sim-month-header">
+          <span class="sim-month-label">${year}年 ${month}月</span>
+          <span class="sim-month-title">${myTitle}</span>
+        </div>
+        ${customInput}
+        <div style="display:flex;gap:4px;flex-wrap:wrap;margin:6px 0;">
+          <span class="mini-node you" style="display:inline-flex;">${myTitle}</span>
+          ${gen1 > 0 ? `<span style="font-size:0.65rem;color:var(--pink);display:flex;align-items:center;">G1: ${Math.round(gen1)}人</span>` : ''}
+          ${Math.round(gen2) > 0 ? `<span style="font-size:0.65rem;color:#9b59b6;display:flex;align-items:center;">G2: ${Math.round(gen2)}人</span>` : ''}
+          ${Math.round(gen3 * 0.3) > 0 ? `<span style="font-size:0.65rem;color:#3498db;display:flex;align-items:center;">G3: ${Math.round(gen3 * 0.3)}人</span>` : ''}
+        </div>
+        <div class="sim-result">
+          <div class="sim-result-item"><div class="val">${totalOrg}</div><div class="lbl">組織人数</div></div>
+          <div class="sim-result-item"><div class="val">${Math.round(monthGsv).toLocaleString()}</div><div class="lbl">GSV</div></div>
+          <div class="sim-result-item"><div class="val">${blocks}</div><div class="lbl">ブロック</div></div>
+          <div class="sim-result-item"><div class="val" style="font-size:1.1rem;${isBR ? 'color:var(--orange)' : ''}">${isBR ? '¥' + bonus.toLocaleString() : '—'}</div><div class="lbl">${isBR ? 'BB（税抜）' : 'BR後に発生'}</div></div>
+        </div>
+      </div>
+    `;
+  }
+
+  document.getElementById('simResults').innerHTML = html;
+
+  // Update FB display at bottom of sim tab
+  updateSimFB(orgByMonth, startYear, startMonth);
+  saveData({ simConfig });
+}
+
+function updateCustomFront(el) {
+  const m = parseInt(el.dataset.month);
+  simConfig.frontsPerMonth[m] = parseInt(el.value) || 0;
+  runSimulation();
+}
+
+function findFirstBRMonth(orgByMonth) {
+  return orgByMonth.find(o => o.isBR);
+}
+
+function updateSimFB(orgByMonth, startYear, startMonth) {
+  const container = document.getElementById('simFBResult');
+  const brData = findFirstBRMonth(orgByMonth);
+  if (!brData) {
+    container.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:0.8rem;">BR未達成</div>';
+    return;
+  }
+  const gsv = brData.gsv;
+  const bonus = brData.bonus;
+  const blocks = brData.blocks;
+  const loiBonus = gsv >= 2000 ? 50000 : 0;
+  const fbTotal = bonus + loiBonus;
+
+  container.innerHTML = `
+    <div class="bonus-display">
+      <div class="bonus-label">ファーストボーナス（BR昇格後）</div>
+      <div class="bonus-amount">¥${fbTotal.toLocaleString()}<small> /月</small></div>
+      <div style="font-size:0.7rem;color:var(--text-muted);margin-top:8px;">
+        ビルディングボーナス: ¥${bonus.toLocaleString()}（${blocks}ブロック / ${gsv.toLocaleString()}GSV）<br>
+        ${loiBonus > 0 ? `エリートLOI特典: ¥${loiBonus.toLocaleString()}（BR維持で翌月進呈）` : '<span style="color:var(--danger);">※GSV 2,000以上でエリートLOI特典対象</span>'}
+      </div>
+    </div>
+  `;
+
+  // Also update bonus tab FB section
+  updateFBCalc(orgByMonth);
+}
+
+function updateFBCalc(orgByMonth) {
+  const container = document.getElementById('fbCalcResult');
+  const brData = findFirstBRMonth(orgByMonth);
+  if (!brData) {
+    container.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:0.8rem;">シミュレーションを実行してください</div>';
+    return;
+  }
+  const gsv = brData.gsv;
+  const bonus = brData.bonus;
+  const blocks = brData.blocks;
+  const loiBonus = gsv >= 2000 ? 50000 : 0;
+  const fbTotal = bonus + loiBonus;
+
+  container.innerHTML = `
+    <div class="bonus-display">
+      <div class="bonus-label">BR昇格後の月間ボーナス見込み</div>
+      <div class="bonus-amount">¥${fbTotal.toLocaleString()}<small> /月</small></div>
+      <div style="font-size:0.7rem;color:var(--text-muted);margin-top:8px;">
+        ビルディングボーナス: ¥${bonus.toLocaleString()}（${blocks}ブロック / ${gsv.toLocaleString()}GSV）<br>
+        ${loiBonus > 0 ? `エリートLOI特典: ¥${loiBonus.toLocaleString()}（BR維持で翌月進呈）` : '<span style="color:var(--danger);">※GSV 2,000以上でエリートLOI特典対象</span>'}
+      </div>
+    </div>
+  `;
+}
+
+// ===== Monthly Target Table =====
+const TARGET_ROWS = [
+  { key: 'b1', label: 'B1数' },
+  { key: 'ft', label: 'FT数' },
+  { key: 'user', label: 'ユーザー数' },
+  { key: 'idshare', label: 'IDシェア数(PR)' },
+  { key: 'seed', label: 'SEED動員数' },
+  { key: 'ur', label: 'UR動員数' },
+];
+
+const EXAMPLE_TARGETS = {
+  b1:      ['-', '2', '2', '', '', ''],
+  ft:      ['5', '20', '20', '', '', ''],
+  user:    ['5', '2', '2', '', '', ''],
+  idshare: ['-', '5', '5', '', '', ''],
+  seed:    ['1', '5', '10', '', '', ''],
+  ur:      ['1', '5', '10', '', '', ''],
+};
+
+function renderTargetTable() {
+  const data = loadData();
+  const startYear = parseInt(document.getElementById('simStartYear')?.value || 2026);
+  const startMonth = parseInt(document.getElementById('simStartMonth')?.value || 6);
+
+  let headerHtml = '<th></th>';
+  for (let i = 0; i < 6; i++) {
+    const y = startYear + Math.floor((startMonth - 1 + i) / 12);
+    const m = ((startMonth - 1 + i) % 12) + 1;
+    headerHtml += `<th>${m}月</th>`;
+  }
+  document.getElementById('targetHeader').innerHTML = headerHtml;
+
+  let bodyHtml = '';
+  TARGET_ROWS.forEach(row => {
+    bodyHtml += `<tr><td>${row.label}</td>`;
+    for (let i = 0; i < 6; i++) {
+      const saved = data[`target_${row.key}_${i}`] || '';
+      const example = EXAMPLE_TARGETS[row.key]?.[i] || '';
+      bodyHtml += `<td><input type="text" value="${saved}" placeholder="${example}" data-key="target_${row.key}_${i}" onchange="saveField(this.dataset.key, this.value)"></td>`;
+    }
+    bodyHtml += '</tr>';
+  });
+  document.getElementById('targetBody').innerHTML = bodyHtml;
+}
+
+// ===== Current vs Ideal =====
+const CV_ITEMS = [
+  { key: 'home', label: '住まい', exCurrent: '実家', exIdeal: '1人暮らし2LDK' },
+  { key: 'food', label: '食生活', exCurrent: 'スーパーで買う', exIdeal: '好きなものを食べる' },
+  { key: 'clothes', label: '洋服', exCurrent: '月1万円', exIdeal: '月10万円以上' },
+  { key: 'bag', label: 'バッグ', exCurrent: '半年に1回購入', exIdeal: '毎月ブランド物購入' },
+  { key: 'transport', label: '移動手段', exCurrent: 'バス・自転車', exIdeal: 'ベンツ・タクシー' },
+  { key: 'travel', label: '旅行', exCurrent: '年1回 国内旅行', exIdeal: '年1回 海外旅行' },
+  { key: 'people', label: '人間関係', exCurrent: '昼の仕事の人', exIdeal: '成功者、仲間とつるむ' },
+  { key: 'character', label: '性格', exCurrent: '飽きっぽい', exIdeal: '勉強家・素直・プラス思考' },
+  { key: 'reputation', label: '評判', exCurrent: '適当な性格', exIdeal: '頼りになる' },
+  { key: 'health', label: '健康状態', exCurrent: '低血圧', exIdeal: '超健康' },
+  { key: 'hobby', label: '趣味', exCurrent: '逃げ出すスキル', exIdeal: 'クルージング' },
+  { key: 'love', label: '恋愛', exCurrent: 'その場のノリ', exIdeal: '年収1億円稼ぐ男性' },
+  { key: 'social', label: '社会貢献', exCurrent: 'できない', exIdeal: 'ビタミール100袋/月' },
+  { key: 'parents', label: '親孝行', exCurrent: 'できていない', exIdeal: '月1回食事に連れて行く' },
+];
+
+function renderCvTable() {
+  const data = loadData();
+  let html = '';
+  CV_ITEMS.forEach(item => {
+    const cVal = data[`cv_current_${item.key}`] || '';
+    const iVal = data[`cv_ideal_${item.key}`] || '';
+    html += `<tr>
+      <td><input type="text" value="${cVal}" placeholder="${item.exCurrent}" data-key="cv_current_${item.key}" onchange="saveField(this.dataset.key,this.value)" style="font-size:0.72rem;"></td>
+      <td>${item.label}</td>
+      <td><input type="text" value="${iVal}" placeholder="${item.exIdeal}" data-key="cv_ideal_${item.key}" onchange="saveField(this.dataset.key,this.value)" style="font-size:0.72rem;"></td>
+    </tr>`;
+  });
+  document.getElementById('cvBody').innerHTML = html;
+}
+
+// ===== Wishlist =====
+function renderWishList() {
+  const data = loadData();
+  let html = '';
+  for (let i = 1; i <= 5; i++) {
+    const name = data[`wish_name_${i}`] || '';
+    const price = data[`wish_price_${i}`] || '';
+    const exNames = ['引越し(2LDK)', 'シャネルのピアス', 'MacBookAir（ブラック）', '美容代', 'オーダースーツ'];
+    const exPrices = ['200000', '150000', '200000', '200000', '150000'];
+    html += `
+      <div class="wish-item">
+        <span class="wish-rank">${i}</span>
+        <input type="text" class="wish-name" value="${name}" placeholder="${exNames[i-1]}" data-key="wish_name_${i}" onchange="saveField(this.dataset.key,this.value);updateWishTotal();">
+        <input type="number" class="wish-price" value="${price}" placeholder="${exPrices[i-1]}" data-key="wish_price_${i}" onchange="saveField(this.dataset.key,this.value);updateWishTotal();">
+        <span style="font-size:0.7rem;color:var(--text-muted);">円</span>
+      </div>`;
+  }
+  document.getElementById('wishList').innerHTML = html;
+  updateWishTotal();
+}
+
+function updateWishTotal() {
+  const data = loadData();
+  let total = 0;
+  for (let i = 1; i <= 5; i++) {
+    total += parseInt(data[`wish_price_${i}`]) || 0;
+  }
+  document.getElementById('wishTotal').textContent = `合計: ¥${total.toLocaleString()}`;
+}
+
+// ===== Checklists =====
+const ESSENTIAL_ITEMS = [
+  'BPC', 'ADP登録', 'COM登録', 'GS購入', 'リストアップ',
+  'FamilyDATA', 'やる理由作文', '名刺作成', '本（1000倍/症状別）'
+];
+const TRAINING_ITEMS = [
+  'FT-T', 'NSE-T', 'ABC-T', 'MLM', 'S-SET', 'FFG',
+  'システム-T', 'WEEK', 'ST-T', 'DAY/TIARA',
+  'DUP', 'ディファレンス/実験', 'GS', '上映会',
+  'UR', 'サービス体感レッスン', 'SEED-T'
+];
+
+function renderChecklists() {
+  const data = loadData();
+
+  let essHtml = '';
+  ESSENTIAL_ITEMS.forEach((item, i) => {
+    const checked = data[`ess_${i}`] || false;
+    const date = data[`ess_date_${i}`] || '';
+    essHtml += `
+      <div class="check-item">
+        <div class="check-box ${checked ? 'checked' : ''}" data-idx="${i}" data-type="ess" onclick="toggleCheck(this)"></div>
+        <span class="check-label">${item}</span>
+        <div class="check-date"><input type="text" value="${date}" placeholder="日付" data-key="ess_date_${i}" onchange="saveField(this.dataset.key,this.value)"></div>
+      </div>`;
+  });
+  document.getElementById('essentialChecklist').innerHTML = essHtml;
+
+  let trHtml = '';
+  TRAINING_ITEMS.forEach((item, i) => {
+    const checked = data[`tr_${i}`] || false;
+    const date = data[`tr_date_${i}`] || '';
+    trHtml += `
+      <div class="check-item">
+        <div class="check-box ${checked ? 'checked' : ''}" data-idx="${i}" data-type="tr" onclick="toggleCheck(this)"></div>
+        <span class="check-label">${item}</span>
+        <div class="check-date"><input type="text" value="${date}" placeholder="日付" data-key="tr_date_${i}" onchange="saveField(this.dataset.key,this.value)"></div>
+      </div>`;
+  });
+  document.getElementById('trainingChecklist').innerHTML = trHtml;
+}
+
+function toggleCheck(el) {
+  const idx = el.dataset.idx;
+  const type = el.dataset.type;
+  const key = `${type}_${idx}`;
+  const data = loadData();
+  const newVal = !data[key];
+  saveField(key, newVal);
+  el.classList.toggle('checked', newVal);
+}
+
+// ===== Bonus Calculator =====
+function calcBonus() {
+  const gsv = parseInt(document.getElementById('bonusGsvInput').value) || 0;
+  const bonus = lookupBuildingBonus(gsv);
+  const blocks = (gsv / 500).toFixed(1);
+  document.getElementById('bonusResult').textContent = '¥' + bonus.toLocaleString();
+  document.getElementById('bonusBlocks').textContent = blocks;
+}
+
+// ===== Bonus Table =====
+function renderBonusTable() {
+  let html = '';
+  BB_TABLE.forEach(([pts, amt]) => {
+    html += `<div class="bonus-table-item"><span class="pts">${pts.toLocaleString()}P</span><span class="amt">¥${amt.toLocaleString()}</span></div>`;
+  });
+  document.getElementById('bonusTableGrid').innerHTML = html;
+}
+
+// ===== Elite LOI Calculator =====
+function calcLoi() {
+  let totalBB = 0, totalSB = 0;
+  let monthlyOk = true;
+  let monthData = [];
+
+  for (let i = 1; i <= 4; i++) {
+    const bb = parseFloat(document.getElementById(`loi_bb${i}`).value) || 0;
+    const sb = parseFloat(document.getElementById(`loi_sb${i}`).value) || 0;
+    totalBB += bb;
+    totalSB += sb;
+    const bbGsv = bb * 500;
+    const meetMin = bbGsv >= 1000 || i === 4;
+    if (!meetMin && bb > 0) monthlyOk = false;
+    monthData.push({ bb, sb, totalBB, totalSB, bbGsv, meetMin });
+  }
+
+  // Timeline
+  let tlHtml = '';
+  monthData.forEach((d, i) => {
+    const achieved = d.bbGsv >= 1000;
+    const cls = d.bb > 0 ? (achieved || i === 3 ? 'achieved' : 'failed') : '';
+    tlHtml += `
+      <div class="loi-month ${cls}">
+        <div class="m-label">${i + 1}ヵ月目</div>
+        <div class="m-num">${d.bb}BB</div>
+        <div class="m-bb">${d.sb}SB</div>
+      </div>`;
+  });
+  document.getElementById('loiTimeline').innerHTML = tlHtml;
+
+  // Progress bars
+  const bbPct = Math.min(100, (totalBB / 10) * 100);
+  const sbPct = Math.min(100, (totalSB / 3) * 100);
+
+  let progHtml = `
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span>ビルディングブロック</span>
+        <span><span class="current">${totalBB}</span> / 10 BB</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${bbPct}%"></div></div>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span>シェアリングブロック</span>
+        <span><span class="current">${totalSB}</span> / 3 SB</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${sbPct}%"></div></div>
+    </div>
+  `;
+  document.getElementById('loiProgress').innerHTML = progHtml;
+
+  // Result
+  const achieved = totalBB >= 10 && totalSB >= 3;
+  let resultHtml = '';
+  if (achieved) {
+    const totalGsv = totalBB * 500;
+    const fbBonus = lookupBuildingBonus(totalGsv);
+    resultHtml = `
+      <div style="background:rgba(46,204,113,0.12);border:1px solid var(--success);border-radius:8px;padding:12px;text-align:center;">
+        <div style="font-size:1rem;font-weight:700;color:var(--success);">🎉 エリートLOI達成！</div>
+        <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">
+          翌月BR維持(2,000GSV+)で <strong style="color:var(--accent);">¥50,000</strong> ボーナス進呈
+        </div>
+      </div>`;
+  } else if (totalBB > 0) {
+    const remainBB = Math.max(0, 10 - totalBB);
+    const remainSB = Math.max(0, 3 - totalSB);
+    resultHtml = `
+      <div style="font-size:0.75rem;color:var(--text-muted);text-align:center;">
+        あと <strong style="color:var(--orange);">${remainBB}BB</strong>、
+        <strong style="color:var(--orange);">${remainSB}SB</strong> で達成
+      </div>`;
+  }
+  document.getElementById('loiResult').innerHTML = resultHtml;
+
+  // Save LOI data
+  for (let i = 1; i <= 4; i++) {
+    saveField(`loi_bb${i}`, document.getElementById(`loi_bb${i}`).value);
+    saveField(`loi_sb${i}`, document.getElementById(`loi_sb${i}`).value);
+  }
+}
+
+// ===== Commitment save/load =====
+function initCommitment() {
+  const data = loadData();
+  ['cmtName', 'cmtAmount', 'cmtYear', 'cmtMonth', 'cmtDay', 'cmtTitle'].forEach(id => {
+    const el = document.getElementById(id);
+    if (data[id]) el.value = data[id];
+    el.addEventListener('change', () => saveField(id, el.value));
+  });
+}
+
+// ===== Toast =====
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+// ===== Init =====
+function init() {
+  const data = loadData();
+
+  // Restore LOI inputs
+  for (let i = 1; i <= 4; i++) {
+    if (data[`loi_bb${i}`]) document.getElementById(`loi_bb${i}`).value = data[`loi_bb${i}`];
+    if (data[`loi_sb${i}`]) document.getElementById(`loi_sb${i}`).value = data[`loi_sb${i}`];
+  }
+
+  renderTargetTable();
+  renderCvTable();
+  renderWishList();
+  renderChecklists();
+  renderBonusTable();
+  calcBonus();
+  calcLoi();
+  initCommitment();
+  runSimulation();
+}
+
+// init() is called from Firebase onAuthStateChanged
+</script>
+</body>
+</html>
