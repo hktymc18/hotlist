@@ -97,7 +97,7 @@
 
     /* Example text */
     .example { color: var(--example); font-size: 0.75rem; }
-    input::placeholder { color: rgba(255,71,87,0.5); }
+    input::placeholder { color: rgba(107,107,128,0.7); }
 
     /* Form Grid */
     .form-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: flex-end; }
@@ -225,7 +225,7 @@
     }
     .cv-table td { padding: 4px; }
     .cv-table td:nth-child(2) {
-      font-size: 0.72rem; color: var(--text-muted); text-align: center;
+      font-size: 0.72rem; color: var(--text); text-align: center;
       white-space: nowrap; min-width: 55px;
     }
     .cv-table input {
@@ -243,16 +243,15 @@
       display: flex; align-items: center; justify-content: center;
       gap: 6px; margin: 8px 0; flex-wrap: wrap; font-size: 0.9rem;
     }
-    .commitment-box input {
+    .commitment-box input, .commitment-box select {
       width: auto; display: inline-block; text-align: center;
       border-bottom: 2px solid var(--accent); border-radius: 0;
       background: transparent; border-top: none; border-left: none; border-right: none;
       font-weight: 700; padding: 4px 8px;
     }
+    .commitment-box select { padding-right: 8px; background-image: none; }
     .commitment-box input.name-input { width: 140px; }
     .commitment-box input.amount-input { width: 100px; }
-    .commitment-box input.date-input { width: 50px; }
-    .commitment-box input.title-input { width: 100px; }
 
     /* Wishlist */
     .wish-item {
@@ -303,7 +302,7 @@
       position: sticky; left: 0; background: var(--surface); z-index: 1;
     }
     .target-table td:first-child {
-      text-align: left; font-size: 0.7rem; color: var(--text-muted);
+      text-align: left; font-size: 0.7rem; color: var(--text);
       position: sticky; left: 0; background: var(--surface); z-index: 1;
       min-width: 85px;
     }
@@ -609,11 +608,19 @@
       <div class="line">私 <input type="text" class="name-input" id="cmtName" placeholder="○○○○"> は、</div>
       <div class="line">月収 <input type="text" class="amount-input" id="cmtAmount" placeholder="30万円"> を目標として</div>
       <div class="line">
-        <input type="text" class="date-input" id="cmtYear" placeholder="2026"> 年
-        <input type="text" class="date-input" id="cmtMonth" placeholder="4" style="width:35px;"> 月
-        <input type="text" class="date-input" id="cmtDay" placeholder="1" style="width:35px;"> 日で、
+        <select class="date-input" id="cmtYear" style="width:75px;"></select> 年
+        <select class="date-input" id="cmtMonth" style="width:55px;"></select> 月 1日で、
       </div>
-      <div class="line"><input type="text" class="title-input" id="cmtTitle" placeholder="EBP"> を達成します。</div>
+      <div class="line">
+        <select class="title-input" id="cmtTitle" style="width:150px;">
+          <option value="">選択</option>
+          <option value="RUBY">RUBY</option>
+          <option value="EMERALD">EMERALD</option>
+          <option value="DIAMOND">DIAMOND</option>
+          <option value="BLUE DIAMOND">BLUE DIAMOND</option>
+          <option value="TEAM ELITE">TEAM ELITE</option>
+        </select> を達成します。
+      </div>
     </div>
   </div>
 </div>
@@ -997,7 +1004,10 @@ function runSimulation() {
     gen1 += newFronts;
 
     const totalOrg = 1 + gen1 + Math.round(gen2) + Math.round(gen3 * 0.3);
-    const monthGsv = myPsv + gen1 * memberPsv + Math.round(gen2) * memberPsv * 0.8 + Math.round(gen3 * 0.3) * memberPsv * 0.5;
+    const myPsvThisMonth = m === 0 ? 0 : myPsv;
+    const monthGsv = m === 0
+      ? memberPsv
+      : myPsvThisMonth + gen1 * memberPsv + Math.round(gen2) * memberPsv * 0.8 + Math.round(gen3 * 0.3) * memberPsv * 0.5;
     const blocks = (monthGsv / 500).toFixed(1);
     const isBR = m >= 4;
     const bonus = isBR ? lookupBuildingBonus(Math.round(monthGsv)) : 0;
@@ -1366,7 +1376,23 @@ function calcLoi() {
 // ===== Commitment save/load =====
 function initCommitment() {
   const data = loadData();
-  ['cmtName', 'cmtAmount', 'cmtYear', 'cmtMonth', 'cmtDay', 'cmtTitle'].forEach(id => {
+  const now = new Date();
+  const thisYear = now.getFullYear();
+
+  const yearEl = document.getElementById('cmtYear');
+  yearEl.innerHTML = `<option value="${thisYear}">${thisYear}</option><option value="${thisYear + 1}">${thisYear + 1}</option>`;
+
+  const monthEl = document.getElementById('cmtMonth');
+  monthEl.innerHTML = '';
+  for (let i = 1; i <= 12; i++) monthEl.innerHTML += `<option value="${i}">${i}</option>`;
+
+  const nameEl = document.getElementById('cmtName');
+  if (!data.cmtName) {
+    const userName = document.getElementById('userNameDisplay')?.textContent || '';
+    if (userName && userName !== '') nameEl.value = userName;
+  }
+
+  ['cmtName', 'cmtAmount', 'cmtYear', 'cmtMonth', 'cmtTitle'].forEach(id => {
     const el = document.getElementById(id);
     if (data[id]) el.value = data[id];
     el.addEventListener('change', () => saveField(id, el.value));
