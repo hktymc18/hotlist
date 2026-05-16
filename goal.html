@@ -217,8 +217,9 @@
     .check-date {
       font-size: 0.72rem; color: var(--text-muted); width: 90px;
     }
-    .check-date input[type="date"] { padding: 4px 6px; font-size: 0.72rem; color: var(--text); }
-    .check-date input[type="date"].empty { color: var(--danger); }
+    .check-date input { padding: 4px 6px; font-size: 0.72rem; color: var(--text); }
+    .check-date input.empty { color: var(--danger); }
+    .check-date input::placeholder { color: var(--danger); opacity: 1; }
     .check-progress { margin-bottom: 8px; }
     @keyframes msgPop {
       0% { transform: scale(0.5); opacity: 0; }
@@ -657,7 +658,7 @@
     <div id="trMsg"></div>
   </div>
 
-  <div id="checkToast" onclick="this.style.display='none'" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.9);border:2px solid var(--accent);border-radius:12px;padding:16px 28px;font-size:1.1rem;font-weight:700;color:var(--accent);z-index:200;display:none;text-align:center;animation:msgPop 0.4s ease;"></div>
+  <div id="checkToast" onclick="this.style.display='none'" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.9);border:2px solid var(--accent);border-radius:12px;padding:16px 28px;font-size:1.1rem;font-weight:700;color:var(--accent);z-index:200;display:none;text-align:center;"></div>
 </div>
 
 <!-- ==================== TAB 4: BB早見表 ==================== -->
@@ -1171,7 +1172,7 @@ function renderCheckSection(items, prefix, containerId, progressId) {
       <div class="check-item ${checked ? 'done' : ''}">
         <div class="check-box ${checked ? 'checked' : ''}" data-idx="${i}" data-type="${prefix}" onclick="toggleCheck(this)"></div>
         <span class="check-label">${item}</span>
-        <div class="check-date"><input type="date" class="${emptyClass}" value="${date}" data-key="${prefix}_date_${i}" onchange="saveField(this.dataset.key,this.value);this.classList.toggle('empty',!this.value)"></div>
+        <div class="check-date"><input type="text" class="${emptyClass}" value="${date}" placeholder="日付" data-key="${prefix}_date_${i}" onfocus="this.type='date'" onchange="saveField(this.dataset.key,this.value);this.classList.toggle('empty',!this.value)"></div>
       </div>`;
   });
   document.getElementById(containerId).innerHTML = html;
