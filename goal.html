@@ -217,18 +217,20 @@
     .check-date {
       font-size: 0.72rem; color: var(--text-muted); width: 90px;
     }
-    .check-date input[type="date"] { padding: 4px 6px; font-size: 0.72rem; }
+    .check-date input[type="date"] { padding: 4px 6px; font-size: 0.72rem; color: var(--text); }
     .check-date input[type="date"].empty { color: var(--danger); }
     .check-progress { margin-bottom: 8px; }
-    .check-msg {
-      text-align: center; padding: 10px; font-weight: 700; font-size: 0.9rem;
-      color: var(--accent); animation: msgPop 0.4s ease;
-    }
     @keyframes msgPop {
       0% { transform: scale(0.5); opacity: 0; }
       60% { transform: scale(1.15); }
       100% { transform: scale(1); opacity: 1; }
     }
+    @keyframes rainbow {
+      0% { color: #ff0000; } 14% { color: #ff8800; } 28% { color: #ffff00; }
+      42% { color: #00ff00; } 57% { color: #00aaff; } 71% { color: #0000ff; }
+      85% { color: #aa00ff; } 100% { color: #ff0000; }
+    }
+    .check-toast-rainbow { animation: rainbow 1s linear infinite; }
 
     /* Current vs Ideal Table */
     .cv-table { width: 100%; border-collapse: collapse; }
@@ -655,7 +657,7 @@
     <div id="trMsg"></div>
   </div>
 
-  <div id="checkToast" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.85);border:2px solid var(--accent);border-radius:12px;padding:16px 28px;font-size:1.1rem;font-weight:700;color:var(--accent);z-index:200;pointer-events:none;display:none;text-align:center;"></div>
+  <div id="checkToast" onclick="this.style.display='none'" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.9);border:2px solid var(--accent);border-radius:12px;padding:16px 28px;font-size:1.1rem;font-weight:700;color:var(--accent);z-index:200;display:none;text-align:center;animation:msgPop 0.4s ease;"></div>
 </div>
 
 <!-- ==================== TAB 4: BB早見表 ==================== -->
@@ -1186,11 +1188,25 @@ function renderChecklists() {
   renderCheckSection(TRAINING_ITEMS, 'tr', 'trainingChecklist', 'trProgress');
 }
 
-function showCheckToast(msg) {
+let checkToastTimer = null;
+
+function showCheckToast(msg, opts = {}) {
   const el = document.getElementById('checkToast');
+  clearTimeout(checkToastTimer);
   el.textContent = msg;
+  el.className = '';
+  el.style.color = opts.color || 'var(--accent)';
+  el.style.borderColor = opts.color || 'var(--accent)';
+  el.style.pointerEvents = opts.persistent ? 'auto' : 'none';
+  if (opts.rainbow) {
+    el.classList.add('check-toast-rainbow');
+    el.style.color = '';
+    el.style.borderColor = '#ff00ff';
+  }
   el.style.display = 'block';
-  setTimeout(() => { el.style.display = 'none'; }, 1200);
+  if (!opts.persistent) {
+    checkToastTimer = setTimeout(() => { el.style.display = 'none'; }, 1200);
+  }
 }
 
 function toggleCheck(el) {
@@ -1211,16 +1227,20 @@ function toggleCheck(el) {
     const pct = remaining / items.length;
 
     const r = Math.random();
-    if (r < 0.005) {
-      showCheckToast(['4U！！！！！', 'かあちゃんのためならエンヤコーラ'][Math.floor(Math.random() * 2)]);
-    } else if (r < 0.025) {
-      showCheckToast('楽勝やね！');
+    if (r < 0.01) {
+      const msgs = ['4U！！！！！', 'かあちゃんのためならエンヤコーラ', 'きみこそが未来のBD'];
+      showCheckToast(msgs[Math.floor(Math.random() * msgs.length)], { rainbow: true, persistent: true });
+    } else if (r < 0.11) {
+      showCheckToast('楽勝！', { color: 'var(--danger)' });
     } else if (remaining === 0) {
-      showCheckToast(['これで準備万端！', 'いよいよ旅立ちのとき'][Math.floor(Math.random() * 2)]);
+      const msgs = ['これで準備万端！', 'いよいよ旅立ちのとき', '未来は手の中'];
+      showCheckToast(msgs[Math.floor(Math.random() * msgs.length)]);
     } else if (pct < 0.3) {
-      showCheckToast('あと少し！');
+      const msgs = ['あと少し！', 'もうちょい！', 'もういっちょ！', 'ちょいもう'];
+      showCheckToast(msgs[Math.floor(Math.random() * msgs.length)]);
     } else {
-      showCheckToast(['いいね！', 'ナイス！', 'その調子！'][Math.floor(Math.random() * 3)]);
+      const msgs = ['いいね！', 'ナイス！', 'その調子！', 'GO！GO！', 'コツコツが勝つコツ'];
+      showCheckToast(msgs[Math.floor(Math.random() * msgs.length)]);
     }
   }
 
