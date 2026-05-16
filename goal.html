@@ -199,7 +199,9 @@
     .check-item {
       display: flex; align-items: center; gap: 10px;
       padding: 10px 0; border-bottom: 1px solid var(--border);
+      transition: opacity 0.3s;
     }
+    .check-item.done { opacity: 0.4; }
     .check-item:last-child { border-bottom: none; }
     .check-box {
       width: 22px; height: 22px; border-radius: 6px;
@@ -213,9 +215,20 @@
     .check-box.checked::after { content: '✓'; color: #000; font-size: 0.8rem; font-weight: 900; }
     .check-label { font-size: 0.82rem; flex: 1; }
     .check-date {
-      font-size: 0.72rem; color: var(--text-muted); width: 70px;
+      font-size: 0.72rem; color: var(--text-muted); width: 90px;
     }
-    .check-date input { padding: 4px 6px; font-size: 0.72rem; }
+    .check-date input[type="date"] { padding: 4px 6px; font-size: 0.72rem; }
+    .check-date input[type="date"].empty { color: var(--danger); }
+    .check-progress { margin-bottom: 8px; }
+    .check-msg {
+      text-align: center; padding: 10px; font-weight: 700; font-size: 0.9rem;
+      color: var(--accent); animation: msgPop 0.4s ease;
+    }
+    @keyframes msgPop {
+      0% { transform: scale(0.5); opacity: 0; }
+      60% { transform: scale(1.15); }
+      100% { transform: scale(1); opacity: 1; }
+    }
 
     /* Current vs Ideal Table */
     .cv-table { width: 100%; border-collapse: collapse; }
@@ -502,7 +515,7 @@
   <button class="tab-btn active" data-tab="sim">シミュレーション</button>
   <button class="tab-btn" data-tab="goal">目標設定</button>
   <button class="tab-btn" data-tab="check">チェックリスト</button>
-  <button class="tab-btn" data-tab="bonus">ボーナス計算</button>
+  <button class="tab-btn" data-tab="bonus">BB早見表</button>
 </div>
 
 <!-- ==================== TAB 1: シミュレーション ==================== -->
@@ -630,16 +643,22 @@
 
   <div class="section">
     <div class="section-title">必須アイテム</div>
+    <div class="check-progress" id="essProgress"></div>
     <div class="card" id="essentialChecklist"></div>
+    <div id="essMsg"></div>
   </div>
 
   <div class="section">
     <div class="section-title">TRAINING</div>
+    <div class="check-progress" id="trProgress"></div>
     <div class="card" id="trainingChecklist"></div>
+    <div id="trMsg"></div>
   </div>
+
+  <div id="checkToast" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.85);border:2px solid var(--accent);border-radius:12px;padding:16px 28px;font-size:1.1rem;font-weight:700;color:var(--accent);z-index:200;pointer-events:none;display:none;text-align:center;"></div>
 </div>
 
-<!-- ==================== TAB 4: ボーナス計算 ==================== -->
+<!-- ==================== TAB 4: BB早見表 ==================== -->
 <div class="tab-panel" id="tab-bonus">
 
   <div class="section">
@@ -656,77 +675,6 @@
           <span id="bonusBlocks">10</span> ブロック
         </div>
       </div>
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="section-title">エリートLOI進捗</div>
-    <div class="info-box">
-      <strong>エリートLOI（4ヵ月固定型）</strong><br>
-      期間：2025/10/22 〜 2026/12/31（延長予定）<br>
-      目標：<strong>10BB（5,000pt）</strong> + <strong>3SB（1,500pt）</strong><br>
-      各月最低：2BB（1,000pt）<br>
-      特典：達成＋翌月BR維持(2,000GSV+) → <strong>50,000円ボーナス</strong>
-    </div>
-
-    <div class="card">
-      <div class="loi-timeline" id="loiTimeline"></div>
-      <div style="margin-top:12px;">
-        <div class="form-row">
-          <div class="form-group">
-            <label>1ヵ月目 BB</label>
-            <input type="number" id="loi_bb1" value="0" min="0" step="0.5" onchange="calcLoi()">
-          </div>
-          <div class="form-group">
-            <label>1ヵ月目 SB</label>
-            <input type="number" id="loi_sb1" value="0" min="0" step="0.5" onchange="calcLoi()">
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>2ヵ月目 BB</label>
-            <input type="number" id="loi_bb2" value="0" min="0" step="0.5" onchange="calcLoi()">
-          </div>
-          <div class="form-group">
-            <label>2ヵ月目 SB</label>
-            <input type="number" id="loi_sb2" value="0" min="0" step="0.5" onchange="calcLoi()">
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>3ヵ月目 BB</label>
-            <input type="number" id="loi_bb3" value="0" min="0" step="0.5" onchange="calcLoi()">
-          </div>
-          <div class="form-group">
-            <label>3ヵ月目 SB</label>
-            <input type="number" id="loi_sb3" value="0" min="0" step="0.5" onchange="calcLoi()">
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>4ヵ月目 BB</label>
-            <input type="number" id="loi_bb4" value="0" min="0" step="0.5" onchange="calcLoi()">
-          </div>
-          <div class="form-group">
-            <label>4ヵ月目 SB</label>
-            <input type="number" id="loi_sb4" value="0" min="0" step="0.5" onchange="calcLoi()">
-          </div>
-        </div>
-      </div>
-
-      <div id="loiProgress" style="margin-top:12px;"></div>
-      <div id="loiResult" style="margin-top:12px;text-align:center;"></div>
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="section-title">ファーストボーナス（FB）自動計算</div>
-    <div class="card">
-      <div class="info-box">
-        BR昇格後、組織のGSVに基づいてビルディングボーナスが毎月発生します。<br>
-        シミュレーションのGSVから自動計算されます。
-      </div>
-      <div id="fbCalcResult"></div>
     </div>
   </div>
 
@@ -1086,30 +1034,7 @@ function updateSimFB(orgByMonth, startYear, startMonth) {
   updateFBCalc(orgByMonth);
 }
 
-function updateFBCalc(orgByMonth) {
-  const container = document.getElementById('fbCalcResult');
-  const brData = findFirstBRMonth(orgByMonth);
-  if (!brData) {
-    container.innerHTML = '<div style="text-align:center;color:var(--text-muted);font-size:0.8rem;">シミュレーションを実行してください</div>';
-    return;
-  }
-  const gsv = brData.gsv;
-  const bonus = brData.bonus;
-  const blocks = brData.blocks;
-  const loiBonus = gsv >= 2000 ? 50000 : 0;
-  const fbTotal = bonus + loiBonus;
-
-  container.innerHTML = `
-    <div class="bonus-display">
-      <div class="bonus-label">BR昇格後の月間ボーナス見込み</div>
-      <div class="bonus-amount">¥${fbTotal.toLocaleString()}<small> /月</small></div>
-      <div style="font-size:0.7rem;color:var(--text-muted);margin-top:8px;">
-        ビルディングボーナス: ¥${bonus.toLocaleString()}（${blocks}ブロック / ${gsv.toLocaleString()}GSV）<br>
-        ${loiBonus > 0 ? `エリートLOI特典: ¥${loiBonus.toLocaleString()}（BR維持で翌月進呈）` : '<span style="color:var(--danger);">※GSV 2,000以上でエリートLOI特典対象</span>'}
-      </div>
-    </div>
-  `;
-}
+function updateFBCalc(orgByMonth) {}
 
 // ===== Monthly Target Table =====
 const TARGET_ROWS = [
@@ -1231,34 +1156,41 @@ const TRAINING_ITEMS = [
   'UR', 'サービス体感レッスン', 'SEED-T'
 ];
 
-function renderChecklists() {
+function renderCheckSection(items, prefix, containerId, progressId) {
   const data = loadData();
-
-  let essHtml = '';
-  ESSENTIAL_ITEMS.forEach((item, i) => {
-    const checked = data[`ess_${i}`] || false;
-    const date = data[`ess_date_${i}`] || '';
-    essHtml += `
-      <div class="check-item">
-        <div class="check-box ${checked ? 'checked' : ''}" data-idx="${i}" data-type="ess" onclick="toggleCheck(this)"></div>
+  let html = '';
+  let done = 0;
+  items.forEach((item, i) => {
+    const checked = data[`${prefix}_${i}`] || false;
+    if (checked) done++;
+    const date = data[`${prefix}_date_${i}`] || '';
+    const emptyClass = date ? '' : 'empty';
+    html += `
+      <div class="check-item ${checked ? 'done' : ''}">
+        <div class="check-box ${checked ? 'checked' : ''}" data-idx="${i}" data-type="${prefix}" onclick="toggleCheck(this)"></div>
         <span class="check-label">${item}</span>
-        <div class="check-date"><input type="text" value="${date}" placeholder="日付" data-key="ess_date_${i}" onchange="saveField(this.dataset.key,this.value)"></div>
+        <div class="check-date"><input type="date" class="${emptyClass}" value="${date}" data-key="${prefix}_date_${i}" onchange="saveField(this.dataset.key,this.value);this.classList.toggle('empty',!this.value)"></div>
       </div>`;
   });
-  document.getElementById('essentialChecklist').innerHTML = essHtml;
+  document.getElementById(containerId).innerHTML = html;
+  const pct = items.length ? Math.round((done / items.length) * 100) : 0;
+  document.getElementById(progressId).innerHTML = `
+    <div class="progress-wrap" style="margin-bottom:4px;">
+      <div class="progress-label"><span>${done} / ${items.length}</span><span class="current">${pct}%</span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+    </div>`;
+}
 
-  let trHtml = '';
-  TRAINING_ITEMS.forEach((item, i) => {
-    const checked = data[`tr_${i}`] || false;
-    const date = data[`tr_date_${i}`] || '';
-    trHtml += `
-      <div class="check-item">
-        <div class="check-box ${checked ? 'checked' : ''}" data-idx="${i}" data-type="tr" onclick="toggleCheck(this)"></div>
-        <span class="check-label">${item}</span>
-        <div class="check-date"><input type="text" value="${date}" placeholder="日付" data-key="tr_date_${i}" onchange="saveField(this.dataset.key,this.value)"></div>
-      </div>`;
-  });
-  document.getElementById('trainingChecklist').innerHTML = trHtml;
+function renderChecklists() {
+  renderCheckSection(ESSENTIAL_ITEMS, 'ess', 'essentialChecklist', 'essProgress');
+  renderCheckSection(TRAINING_ITEMS, 'tr', 'trainingChecklist', 'trProgress');
+}
+
+function showCheckToast(msg) {
+  const el = document.getElementById('checkToast');
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(() => { el.style.display = 'none'; }, 1200);
 }
 
 function toggleCheck(el) {
@@ -1269,6 +1201,30 @@ function toggleCheck(el) {
   const newVal = !data[key];
   saveField(key, newVal);
   el.classList.toggle('checked', newVal);
+  el.closest('.check-item').classList.toggle('done', newVal);
+
+  if (newVal) {
+    const items = type === 'ess' ? ESSENTIAL_ITEMS : TRAINING_ITEMS;
+    let done = 0;
+    items.forEach((_, i) => { if (loadData()[`${type}_${i}`]) done++; });
+    const remaining = items.length - done;
+    const pct = remaining / items.length;
+
+    const r = Math.random();
+    if (r < 0.005) {
+      showCheckToast(['4U！！！！！', 'かあちゃんのためならエンヤコーラ'][Math.floor(Math.random() * 2)]);
+    } else if (r < 0.025) {
+      showCheckToast('楽勝やね！');
+    } else if (remaining === 0) {
+      showCheckToast(['これで準備万端！', 'いよいよ旅立ちのとき'][Math.floor(Math.random() * 2)]);
+    } else if (pct < 0.3) {
+      showCheckToast('あと少し！');
+    } else {
+      showCheckToast(['いいね！', 'ナイス！', 'その調子！'][Math.floor(Math.random() * 3)]);
+    }
+  }
+
+  renderChecklists();
 }
 
 // ===== Bonus Calculator =====
@@ -1289,89 +1245,6 @@ function renderBonusTable() {
   document.getElementById('bonusTableGrid').innerHTML = html;
 }
 
-// ===== Elite LOI Calculator =====
-function calcLoi() {
-  let totalBB = 0, totalSB = 0;
-  let monthlyOk = true;
-  let monthData = [];
-
-  for (let i = 1; i <= 4; i++) {
-    const bb = parseFloat(document.getElementById(`loi_bb${i}`).value) || 0;
-    const sb = parseFloat(document.getElementById(`loi_sb${i}`).value) || 0;
-    totalBB += bb;
-    totalSB += sb;
-    const bbGsv = bb * 500;
-    const meetMin = bbGsv >= 1000 || i === 4;
-    if (!meetMin && bb > 0) monthlyOk = false;
-    monthData.push({ bb, sb, totalBB, totalSB, bbGsv, meetMin });
-  }
-
-  // Timeline
-  let tlHtml = '';
-  monthData.forEach((d, i) => {
-    const achieved = d.bbGsv >= 1000;
-    const cls = d.bb > 0 ? (achieved || i === 3 ? 'achieved' : 'failed') : '';
-    tlHtml += `
-      <div class="loi-month ${cls}">
-        <div class="m-label">${i + 1}ヵ月目</div>
-        <div class="m-num">${d.bb}BB</div>
-        <div class="m-bb">${d.sb}SB</div>
-      </div>`;
-  });
-  document.getElementById('loiTimeline').innerHTML = tlHtml;
-
-  // Progress bars
-  const bbPct = Math.min(100, (totalBB / 10) * 100);
-  const sbPct = Math.min(100, (totalSB / 3) * 100);
-
-  let progHtml = `
-    <div class="progress-wrap">
-      <div class="progress-label">
-        <span>ビルディングブロック</span>
-        <span><span class="current">${totalBB}</span> / 10 BB</span>
-      </div>
-      <div class="progress-bar"><div class="progress-fill" style="width:${bbPct}%"></div></div>
-    </div>
-    <div class="progress-wrap">
-      <div class="progress-label">
-        <span>シェアリングブロック</span>
-        <span><span class="current">${totalSB}</span> / 3 SB</span>
-      </div>
-      <div class="progress-bar"><div class="progress-fill" style="width:${sbPct}%"></div></div>
-    </div>
-  `;
-  document.getElementById('loiProgress').innerHTML = progHtml;
-
-  // Result
-  const achieved = totalBB >= 10 && totalSB >= 3;
-  let resultHtml = '';
-  if (achieved) {
-    const totalGsv = totalBB * 500;
-    const fbBonus = lookupBuildingBonus(totalGsv);
-    resultHtml = `
-      <div style="background:rgba(46,204,113,0.12);border:1px solid var(--success);border-radius:8px;padding:12px;text-align:center;">
-        <div style="font-size:1rem;font-weight:700;color:var(--success);">🎉 エリートLOI達成！</div>
-        <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">
-          翌月BR維持(2,000GSV+)で <strong style="color:var(--accent);">¥50,000</strong> ボーナス進呈
-        </div>
-      </div>`;
-  } else if (totalBB > 0) {
-    const remainBB = Math.max(0, 10 - totalBB);
-    const remainSB = Math.max(0, 3 - totalSB);
-    resultHtml = `
-      <div style="font-size:0.75rem;color:var(--text-muted);text-align:center;">
-        あと <strong style="color:var(--orange);">${remainBB}BB</strong>、
-        <strong style="color:var(--orange);">${remainSB}SB</strong> で達成
-      </div>`;
-  }
-  document.getElementById('loiResult').innerHTML = resultHtml;
-
-  // Save LOI data
-  for (let i = 1; i <= 4; i++) {
-    saveField(`loi_bb${i}`, document.getElementById(`loi_bb${i}`).value);
-    saveField(`loi_sb${i}`, document.getElementById(`loi_sb${i}`).value);
-  }
-}
 
 // ===== Commitment save/load =====
 function initCommitment() {
@@ -1409,21 +1282,12 @@ function showToast(msg) {
 
 // ===== Init =====
 function init() {
-  const data = loadData();
-
-  // Restore LOI inputs
-  for (let i = 1; i <= 4; i++) {
-    if (data[`loi_bb${i}`]) document.getElementById(`loi_bb${i}`).value = data[`loi_bb${i}`];
-    if (data[`loi_sb${i}`]) document.getElementById(`loi_sb${i}`).value = data[`loi_sb${i}`];
-  }
-
   renderTargetTable();
   renderCvTable();
   renderWishList();
   renderChecklists();
   renderBonusTable();
   calcBonus();
-  calcLoi();
   initCommitment();
   runSimulation();
 }
