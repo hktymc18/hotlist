@@ -935,64 +935,64 @@ function runSimulation() {
 
   const titleProgression = ['LOI', 'Q2', 'Q3', 'Q4', 'BR'];
 
+  // Build member tree: each member = { joinMonth, gen }
+  // members[gen] = array of joinMonth values
+  let allMembers = []; // { gen, joinMonth }
+
   for (let m = 0; m < 5; m++) {
+    // Self recruits fronts
+    const newFronts = fronts[m];
+    for (let f = 0; f < newFronts; f++) {
+      allMembers.push({ gen: 1, joinMonth: m });
+    }
+
+    // Existing members recruit (duplication) — only during their personal Q2 and Q3
+    if (dupRate > 0) {
+      const newDups = [];
+      allMembers.forEach(member => {
+        const monthsActive = m - member.joinMonth;
+        if (monthsActive === 1 || monthsActive === 2) {
+          for (let d = 0; d < dupRate; d++) {
+            newDups.push({ gen: member.gen + 1, joinMonth: m });
+          }
+        }
+      });
+      allMembers = allMembers.concat(newDups);
+    }
+
+    // Count by generation and new/existing
+    const genCounts = {};
+    let newCount = 0, existCount = 0;
+    allMembers.forEach(member => {
+      const g = member.gen;
+      genCounts[g] = (genCounts[g] || 0) + 1;
+      if (member.joinMonth === m) newCount++;
+      else existCount++;
+    });
+
+    const g1 = genCounts[1] || 0;
+    const g2 = genCounts[2] || 0;
+    const g3 = genCounts[3] || 0;
+    const g4 = genCounts[4] || 0;
+    const totalOrg = 1 + allMembers.length;
+
     const year = startYear + Math.floor((startMonth - 1 + m) / 12);
     const month = ((startMonth - 1 + m) % 12) + 1;
     const myTitle = titleProgression[m];
-    const newFronts = fronts[m];
 
-    let newMembers = 0, existingMembers = 0;
-    let gen1 = 0, gen2 = 0, gen3 = 0;
-
-    // Count new and existing members per generation
-    let newG1 = newFronts, existG1 = 0;
-    let newG2 = 0, existG2 = 0;
-    let newG3 = 0, existG3 = 0;
-
-    for (let prev = 0; prev < m; prev++) {
-      existG1 += fronts[prev];
-      if (dupRate > 0) {
-        const monthsActive = m - prev;
-        for (let d = 0; d < monthsActive; d++) {
-          if (d === monthsActive - 1) {
-            newG2 += fronts[prev] * dupRate;
-          } else {
-            existG2 += fronts[prev] * dupRate;
-          }
-        }
-        for (let d = 0; d < monthsActive; d++) {
-          const g3months = monthsActive - d - 1;
-          for (let e = 0; e < g3months; e++) {
-            if (e === g3months - 1) {
-              newG3 += fronts[prev] * dupRate * dupRate;
-            } else {
-              existG3 += fronts[prev] * dupRate * dupRate;
-            }
-          }
-        }
-      }
-    }
-
-    gen1 = newG1 + existG1;
-    gen2 = newG2 + existG2;
-    gen3 = Math.round((newG3 + existG3) * 0.3);
-    newMembers = newG1 + newG2 + Math.round(newG3 * 0.3);
-    existingMembers = existG1 + existG2 + Math.round(existG3 * 0.3);
-
-    const totalOrg = 1 + gen1 + Math.round(newG2 + existG2) + gen3;
     const myPsvThisMonth = m === 0 ? 0 : myPsv;
     const monthGsv = m === 0
-      ? memberBpc
-      : myPsvThisMonth + newMembers * memberBpc + existingMembers * myPsv;
+      ? newCount * memberBpc
+      : myPsvThisMonth + newCount * memberBpc + existCount * myPsv;
     const blocks = (monthGsv / 500).toFixed(1);
     const isBR = m >= 4;
     const bonus = isBR ? lookupBuildingBonus(Math.round(monthGsv)) : 0;
 
-    orgByMonth.push({ gen1: Math.round(gen1), gen2: Math.round(newG2 + existG2), gen3, total: totalOrg, gsv: Math.round(monthGsv), blocks, bonus, isBR });
+    orgByMonth.push({ gen1: g1, gen2: g2, gen3: g3, gen4: g4, total: totalOrg, gsv: Math.round(monthGsv), blocks, bonus, isBR, newCount, existCount });
 
     const customInput = simConfig.preset === 0 ?
       `<div class="sim-input-row"><label>新規フロント数</label><input type="number" value="${fronts[m]}" min="0" max="20" data-month="${m}" onchange="updateCustomFront(this)"><span class="unit">人</span></div>` :
-      (newFronts > 0 ? `<div style="font-size:0.65rem;color:var(--orange);margin-bottom:4px;">← フロント ${newFronts}人投入</div>` : '');
+      (fronts[m] > 0 ? `<div style="font-size:0.65rem;color:var(--orange);margin-bottom:4px;">← フロント ${fronts[m]}人投入</div>` : '');
 
     html += `
       <div class="sim-month-card">
@@ -1003,9 +1003,10 @@ function runSimulation() {
         ${customInput}
         <div style="display:flex;gap:4px;flex-wrap:wrap;margin:6px 0;">
           <span class="mini-node you" style="display:inline-flex;">${myTitle}</span>
-          ${gen1 > 0 ? `<span style="font-size:0.65rem;color:var(--pink);display:flex;align-items:center;">G1: ${gen1}人</span>` : ''}
-          ${Math.round(newG2 + existG2) > 0 ? `<span style="font-size:0.65rem;color:#9b59b6;display:flex;align-items:center;">G2: ${Math.round(newG2 + existG2)}人</span>` : ''}
-          ${gen3 > 0 ? `<span style="font-size:0.65rem;color:#3498db;display:flex;align-items:center;">G3: ${gen3}人</span>` : ''}
+          ${g1 > 0 ? `<span style="font-size:0.65rem;color:var(--pink);display:flex;align-items:center;">G1: ${g1}人</span>` : ''}
+          ${g2 > 0 ? `<span style="font-size:0.65rem;color:#9b59b6;display:flex;align-items:center;">G2: ${g2}人</span>` : ''}
+          ${g3 > 0 ? `<span style="font-size:0.65rem;color:#3498db;display:flex;align-items:center;">G3: ${g3}人</span>` : ''}
+          ${g4 > 0 ? `<span style="font-size:0.65rem;color:#1abc9c;display:flex;align-items:center;">G4: ${g4}人</span>` : ''}
         </div>
         <div class="sim-result">
           <div class="sim-result-item"><div class="val">${totalOrg}</div><div class="lbl">組織人数</div></div>
