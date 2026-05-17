@@ -945,7 +945,7 @@ function runSimulation() {
     for (let prev = 0; prev < m; prev++) {
       gen1 += fronts[prev];
       if (dupRate > 0) {
-        const monthsActive = m - prev - 1;
+        const monthsActive = m - prev;
         for (let d = 0; d < monthsActive; d++) {
           gen2 += fronts[prev] * dupRate;
           gen3 += fronts[prev] * dupRate * dupRate * Math.max(0, monthsActive - d - 1);
