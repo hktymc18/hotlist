@@ -900,11 +900,11 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 });
 
 // ===== Simulation =====
-// frontsPerMonth: LOI, Q2, Q3, Q4, BR, BR — Q2・Q3月のみフロント投入
-let simConfig = { frontsPerMonth: [0,2,2,0,0,0], preset: 2 };
+// frontsPerMonth: LOI, Q2, Q3, Q4, BR — Q2・Q3月のみフロント投入
+let simConfig = { frontsPerMonth: [0,2,2,0,0], preset: 2 };
 
 function buildFrontsFromPreset(n) {
-  return [0, n, n, 0, 0, 0];
+  return [0, n, n, 0, 0];
 }
 
 function applyPreset(n) {
@@ -921,7 +921,7 @@ function applyPreset(n) {
 
 function runSimulation() {
   const myPsv = parseInt(document.getElementById('simMyPsv').value) || 200;
-  const memberPsv = parseInt(document.getElementById('simPsv').value) || 100;
+  const memberBpc = parseInt(document.getElementById('simPsv').value) || 100;
   const dupRate = parseFloat(document.getElementById('simDupRate').value) || 0;
   const startYear = parseInt(document.getElementById('simStartYear').value);
   const startMonth = parseInt(document.getElementById('simStartMonth').value);
@@ -933,37 +933,62 @@ function runSimulation() {
   let totalPeople = 1;
   let orgByMonth = [];
 
-  const titleProgression = ['LOI', 'Q2', 'Q3', 'Q4', 'BR', 'BR'];
+  const titleProgression = ['LOI', 'Q2', 'Q3', 'Q4', 'BR'];
 
-  for (let m = 0; m < 6; m++) {
+  for (let m = 0; m < 5; m++) {
     const year = startYear + Math.floor((startMonth - 1 + m) / 12);
     const month = ((startMonth - 1 + m) % 12) + 1;
-    const myTitle = titleProgression[Math.min(m, titleProgression.length - 1)];
+    const myTitle = titleProgression[m];
     const newFronts = fronts[m];
 
+    let newMembers = 0, existingMembers = 0;
     let gen1 = 0, gen2 = 0, gen3 = 0;
+
+    // Count new and existing members per generation
+    let newG1 = newFronts, existG1 = 0;
+    let newG2 = 0, existG2 = 0;
+    let newG3 = 0, existG3 = 0;
+
     for (let prev = 0; prev < m; prev++) {
-      gen1 += fronts[prev];
+      existG1 += fronts[prev];
       if (dupRate > 0) {
         const monthsActive = m - prev;
         for (let d = 0; d < monthsActive; d++) {
-          gen2 += fronts[prev] * dupRate;
-          gen3 += fronts[prev] * dupRate * dupRate * Math.max(0, monthsActive - d - 1);
+          if (d === monthsActive - 1) {
+            newG2 += fronts[prev] * dupRate;
+          } else {
+            existG2 += fronts[prev] * dupRate;
+          }
+        }
+        for (let d = 0; d < monthsActive; d++) {
+          const g3months = monthsActive - d - 1;
+          for (let e = 0; e < g3months; e++) {
+            if (e === g3months - 1) {
+              newG3 += fronts[prev] * dupRate * dupRate;
+            } else {
+              existG3 += fronts[prev] * dupRate * dupRate;
+            }
+          }
         }
       }
     }
-    gen1 += newFronts;
 
-    const totalOrg = 1 + gen1 + Math.round(gen2) + Math.round(gen3 * 0.3);
+    gen1 = newG1 + existG1;
+    gen2 = newG2 + existG2;
+    gen3 = Math.round((newG3 + existG3) * 0.3);
+    newMembers = newG1 + newG2 + Math.round(newG3 * 0.3);
+    existingMembers = existG1 + existG2 + Math.round(existG3 * 0.3);
+
+    const totalOrg = 1 + gen1 + Math.round(newG2 + existG2) + gen3;
     const myPsvThisMonth = m === 0 ? 0 : myPsv;
     const monthGsv = m === 0
-      ? memberPsv
-      : myPsvThisMonth + gen1 * memberPsv + Math.round(gen2) * memberPsv * 0.8 + Math.round(gen3 * 0.3) * memberPsv * 0.5;
+      ? memberBpc
+      : myPsvThisMonth + newMembers * memberBpc + existingMembers * myPsv;
     const blocks = (monthGsv / 500).toFixed(1);
     const isBR = m >= 4;
     const bonus = isBR ? lookupBuildingBonus(Math.round(monthGsv)) : 0;
 
-    orgByMonth.push({ gen1: Math.round(gen1), gen2: Math.round(gen2), gen3: Math.round(gen3 * 0.3), total: totalOrg, gsv: Math.round(monthGsv), blocks, bonus, isBR });
+    orgByMonth.push({ gen1: Math.round(gen1), gen2: Math.round(newG2 + existG2), gen3, total: totalOrg, gsv: Math.round(monthGsv), blocks, bonus, isBR });
 
     const customInput = simConfig.preset === 0 ?
       `<div class="sim-input-row"><label>新規フロント数</label><input type="number" value="${fronts[m]}" min="0" max="20" data-month="${m}" onchange="updateCustomFront(this)"><span class="unit">人</span></div>` :
@@ -978,9 +1003,9 @@ function runSimulation() {
         ${customInput}
         <div style="display:flex;gap:4px;flex-wrap:wrap;margin:6px 0;">
           <span class="mini-node you" style="display:inline-flex;">${myTitle}</span>
-          ${gen1 > 0 ? `<span style="font-size:0.65rem;color:var(--pink);display:flex;align-items:center;">G1: ${Math.round(gen1)}人</span>` : ''}
-          ${Math.round(gen2) > 0 ? `<span style="font-size:0.65rem;color:#9b59b6;display:flex;align-items:center;">G2: ${Math.round(gen2)}人</span>` : ''}
-          ${Math.round(gen3 * 0.3) > 0 ? `<span style="font-size:0.65rem;color:#3498db;display:flex;align-items:center;">G3: ${Math.round(gen3 * 0.3)}人</span>` : ''}
+          ${gen1 > 0 ? `<span style="font-size:0.65rem;color:var(--pink);display:flex;align-items:center;">G1: ${gen1}人</span>` : ''}
+          ${Math.round(newG2 + existG2) > 0 ? `<span style="font-size:0.65rem;color:#9b59b6;display:flex;align-items:center;">G2: ${Math.round(newG2 + existG2)}人</span>` : ''}
+          ${gen3 > 0 ? `<span style="font-size:0.65rem;color:#3498db;display:flex;align-items:center;">G3: ${gen3}人</span>` : ''}
         </div>
         <div class="sim-result">
           <div class="sim-result-item"><div class="val">${totalOrg}</div><div class="lbl">組織人数</div></div>
