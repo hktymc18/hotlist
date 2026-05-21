@@ -132,16 +132,22 @@
     }
     .toolbar-main { display: flex; gap: 8px; align-items: center; }
     .toolbar input[type="text"] {
-      width: 100%; padding: 13px 14px; border: 2px solid var(--border);
-      border-radius: 12px; font-size: 1.05rem; outline: none; transition: border-color 0.2s;
+      width: 100%; padding: 10px 14px; border: 2px solid var(--border);
+      border-radius: 12px; font-size: 1rem; outline: none; transition: border-color 0.2s;
       background: var(--surface); color: var(--text);
     }
     .toolbar input[type="text"]::placeholder { color: var(--text-muted); }
     .toolbar input[type="text"]:focus { border-color: var(--primary); }
     .toolbar select {
-      padding: 13px 10px; border: 2px solid var(--border); border-radius: 12px;
-      font-size: 1rem; background: var(--surface); color: var(--text); outline: none;
+      padding: 10px 10px; border: 2px solid var(--border); border-radius: 12px;
+      font-size: 0.95rem; background: var(--surface); color: var(--text); outline: none;
     }
+    .btn-reset {
+      white-space: nowrap; padding: 8px 12px; border-radius: 12px; border: 2px solid var(--border);
+      background: transparent; color: var(--text-muted); font-size: 0.82rem; font-family: inherit;
+      cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+    }
+    .btn-reset:hover { border-color: var(--danger); color: var(--danger); }
     .search-widget { width: 100%; }
     .btn-filter {
       white-space: nowrap; padding: 10px 16px; border-radius: 12px; border: 2px solid var(--border);
@@ -377,25 +383,38 @@
   </header>
 
   <div class="toolbar">
-    <!-- 常時表示：フリーワード検索 -->
+    <!-- 条件1（常時表示・セレクト形式） -->
     <div class="toolbar-main">
-      <input type="text" id="searchInput1" placeholder="名前・仕事・関係性・住所など" oninput="renderList()">
-      <button class="btn-star-filter" id="starFilterBtn" onclick="toggleStarFilter()" title="お気に入りのみ表示">☆</button>
-      <button class="btn-filter" id="filterToggleBtn" onclick="toggleAdvancedFilters()">絞り込み ▾</button>
-    </div>
-
-    <!-- 非表示：条件1の内部コントロール（常にfreeで使用） -->
-    <select id="searchCategory" style="display:none;" onchange="onSearchCategoryChange(1)"><option value="free" selected>フリーワード</option></select>
-    <div id="searchWidget1_free" style="display:none;"></div>
-    <div id="searchWidget1_age" class="search-widget" style="display:none;">
-      <div style="display:flex;align-items:center;gap:8px;width:100%;">
-        <select id="searchAgeFrom" onchange="renderList()" style="flex:1;"><option value="">下限なし</option></select>
-        <span style="color:var(--text-muted);font-size:0.9rem;">〜</span>
-        <select id="searchAgeTo" onchange="renderList()" style="flex:1;"><option value="">上限なし</option></select>
+      <select id="searchCategory" onchange="onSearchCategoryChange(1)" style="flex-shrink:0;">
+        <option value="free">フリーワード</option>
+        <option value="age">年齢</option>
+        <option value="gender">性別</option>
+        <option value="trust">信用度</option>
+        <option value="position">立場</option>
+        <option value="relation">関係性</option>
+        <option value="job">職業</option>
+        <option value="living">住まい</option>
+        <option value="partner">パートナー</option>
+        <option value="lastcontact">最終連絡</option>
+        <option value="address">現住所（都道府県）</option>
+        <option value="hometown">出身地（都道府県）</option>
+      </select>
+      <div id="searchWidget1_free" class="search-widget">
+        <input type="text" id="searchInput1" placeholder="名前・仕事・関係性・住所など" oninput="renderList()">
       </div>
-    </div>
-    <div id="searchWidget1_select" class="search-widget" style="display:none;">
-      <select id="searchSelectValue1" onchange="renderList()" style="width:100%;"></select>
+      <div id="searchWidget1_age" class="search-widget" style="display:none;">
+        <div style="display:flex;align-items:center;gap:8px;width:100%;">
+          <select id="searchAgeFrom" onchange="renderList()" style="flex:1;"><option value="">下限なし</option></select>
+          <span style="color:var(--text-muted);font-size:0.9rem;">〜</span>
+          <select id="searchAgeTo" onchange="renderList()" style="flex:1;"><option value="">上限なし</option></select>
+        </div>
+      </div>
+      <div id="searchWidget1_select" class="search-widget" style="display:none;">
+        <select id="searchSelectValue1" onchange="renderList()" style="width:100%;"></select>
+      </div>
+      <button class="btn-star-filter" id="starFilterBtn" onclick="toggleStarFilter()" title="お気に入りのみ表示">☆</button>
+      <button class="btn-filter" id="filterToggleBtn" onclick="toggleAdvancedFilters()">検索 ▾</button>
+      <button class="btn-reset" onclick="resetSearch()">リセット</button>
     </div>
 
     <!-- 詳細フィルターパネル（トグル表示） -->
@@ -1091,6 +1110,24 @@ window.toggleStarFilter = () => {
   renderList();
 };
 
+window.resetSearch = () => {
+  document.getElementById('searchCategory').value = 'free';
+  onSearchCategoryChange(1);
+  document.getElementById('searchInput1').value = '';
+  document.getElementById('searchCategory2').value = 'none';
+  onSearchCategoryChange(2);
+  document.getElementById('searchLogic').value = 'and';
+  const panel = document.getElementById('advancedFilters');
+  if (panel.style.display !== 'none') {
+    panel.style.display = 'none';
+    const btn = document.getElementById('filterToggleBtn');
+    btn.textContent = '検索 ▾';
+    btn.classList.remove('active');
+  }
+  if (favoriteFilter) toggleStarFilter();
+  renderList();
+};
+
 window.changeStatus = async (id, newStatus) => {
   if (!currentUser || viewingUserId !== currentUser.uid) return;
   try {
@@ -1103,7 +1140,7 @@ window.toggleAdvancedFilters = function() {
   const btn = document.getElementById('filterToggleBtn');
   const isOpen = panel.style.display !== 'none';
   panel.style.display = isOpen ? 'none' : 'flex';
-  btn.textContent = isOpen ? '絞り込み ▾' : '絞り込み ▲';
+  btn.textContent = isOpen ? '検索 ▾' : '検索 ▲';
   btn.classList.toggle('active', !isOpen);
 };
 
