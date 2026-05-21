@@ -175,7 +175,7 @@
     .list-container { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
     .person-card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; border: 1px solid var(--border); }
     .person-card.card-ng { opacity: 0.35; filter: grayscale(60%); }
-    .card-header { padding: 13px 14px 11px; display: flex; align-items: center; gap: 11px; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
+    .card-header { padding: 10px 14px 8px; display: flex; align-items: center; gap: 11px; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
     .avatar { width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; font-weight: 700; color: #fff; flex-shrink: 0; }
     .card-info { flex: 1; min-width: 0; }
     .card-name { font-size: 1.05rem; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
@@ -496,6 +496,16 @@
             <option value="42">42歳</option><option value="43">43歳</option><option value="44">44歳</option>
             <option value="45">45歳</option><option value="46">46歳</option><option value="47">47歳</option>
             <option value="48">48歳</option><option value="49">49歳</option><option value="50">50歳</option>
+            <option value="51">51歳</option><option value="52">52歳</option><option value="53">53歳</option>
+            <option value="54">54歳</option><option value="55">55歳</option><option value="56">56歳</option>
+            <option value="57">57歳</option><option value="58">58歳</option><option value="59">59歳</option>
+            <option value="60">60歳</option><option value="61">61歳</option><option value="62">62歳</option>
+            <option value="63">63歳</option><option value="64">64歳</option><option value="65">65歳</option>
+            <option value="66">66歳</option><option value="67">67歳</option><option value="68">68歳</option>
+            <option value="69">69歳</option><option value="70">70歳</option><option value="71">71歳</option>
+            <option value="72">72歳</option><option value="73">73歳</option><option value="74">74歳</option>
+            <option value="75">75歳</option><option value="76">76歳</option><option value="77">77歳</option>
+            <option value="78">78歳</option><option value="79">79歳</option><option value="80">80歳</option>
           </select>
         </div>
         <div class="form-group"><label>性別</label><select id="f_gender"><option value="">-</option><option value="男性">男性</option><option value="女性">女性</option><option value="その他">その他</option></select></div>
@@ -910,7 +920,7 @@ function initAgeSelects(n) {
   if (!from || !to) return;
   from.innerHTML = '<option value="">下限なし</option>';
   to.innerHTML   = '<option value="">上限なし</option>';
-  for (let i = 18; i <= 50; i++) {
+  for (let i = 18; i <= 80; i++) {
     from.innerHTML += `<option value="${i}">${i}歳</option>`;
     to.innerHTML   += `<option value="${i}">${i}歳</option>`;
   }
