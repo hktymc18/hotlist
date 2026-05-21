@@ -130,7 +130,8 @@
       padding: 12px 14px; display: flex; gap: 8px; flex-direction: column;
       background: var(--bg2); border-bottom: 1px solid var(--border);
     }
-    .toolbar-main { display: flex; gap: 8px; align-items: center; }
+    .toolbar-main { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .toolbar-main .search-widget { width: 100%; order: 10; }
     .toolbar input[type="text"] {
       width: 100%; padding: 10px 14px; border: 2px solid var(--border);
       border-radius: 12px; font-size: 1rem; outline: none; transition: border-color 0.2s;
@@ -385,7 +386,7 @@
   <div class="toolbar">
     <!-- 条件1（常時表示・セレクト形式） -->
     <div class="toolbar-main">
-      <select id="searchCategory" onchange="onSearchCategoryChange(1)" style="flex-shrink:0;">
+      <select id="searchCategory" onchange="onSearchCategoryChange(1)" style="flex:1;min-width:0;">
         <option value="free">フリーワード</option>
         <option value="age">年齢</option>
         <option value="gender">性別</option>
