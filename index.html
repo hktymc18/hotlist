@@ -401,20 +401,19 @@
         <option value="hometown">出身地（都道府県）</option>
       </select>
       <div id="searchWidget1_free" class="search-widget">
-        <input type="text" id="searchInput1" placeholder="名前・仕事・関係性・住所など">
+        <input type="text" id="searchInput1" placeholder="名前・仕事・関係性・住所など" oninput="renderList()">
       </div>
       <div id="searchWidget1_age" class="search-widget" style="display:none;">
         <div style="display:flex;align-items:center;gap:8px;width:100%;">
-          <select id="searchAgeFrom" style="flex:1;"><option value="">下限なし</option></select>
+          <select id="searchAgeFrom" onchange="renderList()" style="flex:1;"><option value="">下限なし</option></select>
           <span style="color:var(--text-muted);font-size:0.9rem;">〜</span>
-          <select id="searchAgeTo" style="flex:1;"><option value="">上限なし</option></select>
+          <select id="searchAgeTo" onchange="renderList()" style="flex:1;"><option value="">上限なし</option></select>
         </div>
       </div>
       <div id="searchWidget1_select" class="search-widget" style="display:none;">
-        <select id="searchSelectValue1" style="width:100%;"></select>
+        <select id="searchSelectValue1" onchange="renderList()" style="width:100%;"></select>
       </div>
       <button class="btn-star-filter" id="starFilterBtn" onclick="toggleStarFilter()" title="お気に入りのみ表示">☆</button>
-      <button class="btn-filter" onclick="renderList()">検索</button>
       <button class="btn-filter" id="addConditionBtn" onclick="toggleAdvancedFilters()">条件追加 ▾</button>
       <button class="btn-reset" onclick="resetSearch()">リセット</button>
     </div>
@@ -423,7 +422,7 @@
     <div id="advancedFilters" class="advanced-filters" style="display:none;">
       <div style="display:flex;align-items:center;gap:8px;width:100%;">
         <span style="font-size:0.78rem;color:var(--text-muted);white-space:nowrap;">条件の組み合わせ</span>
-        <select id="searchLogic" style="flex:1;">
+        <select id="searchLogic" onchange="renderList()" style="flex:1;">
           <option value="and">AND（両方一致）</option>
           <option value="or">OR（どちらか一致）</option>
         </select>
@@ -448,17 +447,17 @@
         </select>
       </div>
       <div id="searchWidget2_free" class="search-widget" style="display:none;">
-        <input type="text" id="searchInput2" placeholder="名前・仕事・関係性・住所など">
+        <input type="text" id="searchInput2" placeholder="名前・仕事・関係性・住所など" oninput="renderList()">
       </div>
       <div id="searchWidget2_age" class="search-widget" style="display:none;">
         <div style="display:flex;align-items:center;gap:8px;width:100%;">
-          <select id="searchAgeFrom2" style="flex:1;"><option value="">下限なし</option></select>
+          <select id="searchAgeFrom2" onchange="renderList()" style="flex:1;"><option value="">下限なし</option></select>
           <span style="color:var(--text-muted);font-size:0.9rem;">〜</span>
-          <select id="searchAgeTo2" style="flex:1;"><option value="">上限なし</option></select>
+          <select id="searchAgeTo2" onchange="renderList()" style="flex:1;"><option value="">上限なし</option></select>
         </div>
       </div>
       <div id="searchWidget2_select" class="search-widget" style="display:none;">
-        <select id="searchSelectValue2" style="width:100%;"></select>
+        <select id="searchSelectValue2" onchange="renderList()" style="width:100%;"></select>
       </div>
     </div>
   </div>
