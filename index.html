@@ -703,7 +703,10 @@ window.resetPassword = async () => {
   errEl.textContent = '';
   if (!email) { errEl.textContent = 'まずメールアドレスを入力してください'; return; }
   try {
-    await sendPasswordResetEmail(auth, email);
+    await sendPasswordResetEmail(auth, email, {
+      url: 'https://hktymc18.github.io/hotlist/',
+      handleCodeInApp: true
+    });
     errEl.style.color = '#4caf50';
     errEl.textContent = '✅ リセットメールを送信しました。迷惑メールフォルダもご確認ください。';
   } catch(e) {
