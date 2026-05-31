@@ -619,12 +619,14 @@ let favoriteFilter = false;
 function authErrMsg(code) {
   const map = {
     'auth/invalid-email': 'メールアドレスの形式が正しくありません',
-    'auth/user-not-found': 'アカウントが見つかりません',
+    'auth/user-not-found': 'このメールアドレスは登録されていません',
     'auth/wrong-password': 'パスワードが間違っています',
     'auth/email-already-in-use': 'このメールアドレスはすでに登録されています',
     'auth/weak-password': 'パスワードは6文字以上にしてください',
     'auth/invalid-credential': 'メールアドレスまたはパスワードが間違っています',
-    'auth/too-many-requests': 'ログイン試行が多すぎます。しばらく待ってから再試行してください',
+    'auth/too-many-requests': 'しばらく時間をおいてから再試行してください',
+    'auth/missing-email': 'メールアドレスを入力してください',
+    'auth/network-request-failed': '通信エラーが発生しました。接続を確認してください',
   };
   return map[code] || 'エラーが発生しました: ' + code;
 }
@@ -679,14 +681,18 @@ window.signUpEmail = async () => {
 window.resetPassword = async () => {
   const email = document.getElementById('authEmail').value.trim();
   const errEl = document.getElementById('authError');
-  if (!email) { errEl.textContent = 'メールアドレスを入力してください'; return; }
+  errEl.style.color = '#ff5252';
+  errEl.textContent = '';
+  if (!email) { errEl.textContent = 'まずメールアドレスを入力してください'; return; }
   try {
     await sendPasswordResetEmail(auth, email);
     errEl.style.color = '#4caf50';
-    errEl.textContent = 'パスワードリセットメールを送信しました';
+    errEl.textContent = '✅ リセットメールを送信しました。迷惑メールフォルダもご確認ください。';
   } catch(e) {
     errEl.style.color = '#ff5252';
-    errEl.textContent = authErrMsg(e.code);
+    const msg = authErrMsg(e.code);
+    errEl.textContent = msg;
+    console.error('resetPassword error:', e.code, e.message);
   }
 };
 
