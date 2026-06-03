@@ -1119,6 +1119,7 @@ window.renderList = function() {
       </div>
       <div class="card-detail" id="detail-${p.id}">
         <div class="detail-grid">
+          ${p.type?detailItem('４つのタイプ',escHtml(p.type)):''}
           ${p.needs?detailItem('ニーズ',escHtml(p.needs)):''}
           ${addressFull?detailItem('現住所',escHtml(addressFull)):''}
           ${hometownFull?detailItem('出身地',escHtml(hometownFull)):''}
