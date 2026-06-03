@@ -900,11 +900,11 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 });
 
 // ===== Simulation =====
-// frontsPerMonth: LOI, Q2, Q3, Q4, BR — Q2・Q3月のみフロント投入
-let simConfig = { frontsPerMonth: [0,2,2,0,0], preset: 2 };
+// frontsPerMonth: LOI, Q2, Q3, BR — Q2・Q3月のみフロント投入
+let simConfig = { frontsPerMonth: [0,2,2,0], preset: 2 };
 
 function buildFrontsFromPreset(n) {
-  return [0, n, n, 0, 0];
+  return [0, n, n, 0];
 }
 
 function applyPreset(n) {
@@ -933,13 +933,13 @@ function runSimulation() {
   let totalPeople = 1;
   let orgByMonth = [];
 
-  const titleProgression = ['LOI', 'Q2', 'Q3', 'Q4', 'BR'];
+  const titleProgression = ['LOI', 'Q2', 'Q3', 'BR'];
 
   // Build member tree: each member = { joinMonth, gen }
   // members[gen] = array of joinMonth values
   let allMembers = []; // { gen, joinMonth }
 
-  for (let m = 0; m < 5; m++) {
+  for (let m = 0; m < 4; m++) {
     // Self recruits fronts
     const newFronts = fronts[m];
     for (let f = 0; f < newFronts; f++) {
@@ -985,10 +985,11 @@ function runSimulation() {
       ? newCount * memberBpc
       : myPsvThisMonth + newCount * memberBpc + existCount * myPsv;
     const blocks = (monthGsv / 500).toFixed(1);
-    const isBR = m >= 4;
-    const bonus = isBR ? lookupBuildingBonus(Math.round(monthGsv)) : 0;
+    const isBR = m >= 3;
+    const bbGsv = Math.max(0, Math.round(monthGsv) - 1000);
+    const bonus = isBR ? lookupBuildingBonus(bbGsv) : 0;
 
-    orgByMonth.push({ gen1: g1, gen2: g2, gen3: g3, gen4: g4, total: totalOrg, gsv: Math.round(monthGsv), blocks, bonus, isBR, newCount, existCount });
+    orgByMonth.push({ gen1: g1, gen2: g2, gen3: g3, gen4: g4, total: totalOrg, gsv: Math.round(monthGsv), bbGsv: isBR ? bbGsv : 0, blocks, bonus, isBR, newCount, existCount });
 
     const customInput = simConfig.preset === 0 ?
       `<div class="sim-input-row"><label>新規フロント数</label><input type="number" value="${fronts[m]}" min="0" max="20" data-month="${m}" onchange="updateCustomFront(this)"><span class="unit">人</span></div>` :
@@ -1043,8 +1044,9 @@ function updateSimFB(orgByMonth, startYear, startMonth) {
     return;
   }
   const gsv = brData.gsv;
+  const bbGsv = brData.bbGsv;
   const bonus = brData.bonus;
-  const blocks = brData.blocks;
+  const bbBlocks = (bbGsv / 500).toFixed(1);
   const loiBonus = gsv >= 2000 ? 50000 : 0;
   const fbTotal = bonus + loiBonus;
 
@@ -1053,7 +1055,8 @@ function updateSimFB(orgByMonth, startYear, startMonth) {
       <div class="bonus-label">ファーストボーナス（BR昇格後）</div>
       <div class="bonus-amount">¥${fbTotal.toLocaleString()}<small> /月</small></div>
       <div style="font-size:0.7rem;color:var(--text-muted);margin-top:8px;">
-        ビルディングボーナス: ¥${bonus.toLocaleString()}（${blocks}ブロック / ${gsv.toLocaleString()}GSV）<br>
+        ビルディングボーナス: ¥${bonus.toLocaleString()}（${bbBlocks}ブロック / ${bbGsv.toLocaleString()}GSV）<br>
+        <span style="font-size:0.6rem;">※ GSV ${gsv.toLocaleString()} − 1,000P（BR昇格分）= ${bbGsv.toLocaleString()}P がBB対象</span><br>
         ${loiBonus > 0 ? `エリートLOI特典: ¥${loiBonus.toLocaleString()}（BR維持で翌月進呈）` : '<span style="color:var(--danger);">※GSV 2,000以上でエリートLOI特典対象</span>'}
       </div>
     </div>
@@ -1115,7 +1118,7 @@ const CV_ITEMS = [
   { key: 'home', label: '住まい', exCurrent: '実家', exIdeal: '1人暮らし2LDK' },
   { key: 'food', label: '食生活', exCurrent: 'スーパーで買う', exIdeal: '好きなものを食べる' },
   { key: 'clothes', label: '洋服', exCurrent: '月1万円', exIdeal: '月10万円以上' },
-  { key: 'bag', label: 'バッグ', exCurrent: '半年に1回購入', exIdeal: '毎月ブランド物購入' },
+
   { key: 'transport', label: '移動手段', exCurrent: 'バス・自転車', exIdeal: 'ベンツ・タクシー' },
   { key: 'travel', label: '旅行', exCurrent: '年1回 国内旅行', exIdeal: '年1回 海外旅行' },
   { key: 'people', label: '人間関係', exCurrent: '昼の仕事の人', exIdeal: '成功者、仲間とつるむ' },
@@ -1240,8 +1243,20 @@ function toggleCheck(el) {
   const idx = el.dataset.idx;
   const type = el.dataset.type;
   const key = `${type}_${idx}`;
+  const dateKey = `${type}_date_${idx}`;
   const data = loadData();
   const newVal = !data[key];
+
+  // 日付未入力ならチェック不可
+  if (newVal && !data[dateKey]) {
+    const dateInput = el.closest('.check-item').querySelector('.check-date input');
+    dateInput.style.outline = '2px solid var(--danger)';
+    dateInput.focus();
+    dateInput.type = 'date';
+    setTimeout(function() { dateInput.style.outline = ''; }, 1500);
+    return;
+  }
+
   saveField(key, newVal);
   el.classList.toggle('checked', newVal);
   el.closest('.check-item').classList.toggle('done', newVal);
