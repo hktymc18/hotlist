@@ -330,6 +330,14 @@
     <div style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px;">
       <input id="registerName" type="text" placeholder="例：山田 太郎" autocomplete="name"
         style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
+      <input id="registerUnion" type="text" placeholder="所属ユニオン"
+        style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
+      <input id="registerArea" type="text" placeholder="活動地域（例：東京・大阪）"
+        style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
+      <input id="registerUpRuby" type="text" placeholder="UPルビー"
+        style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
+      <input id="registerUpBd" type="text" placeholder="UPBD"
+        style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
 
       <!-- プライバシーポリシー -->
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;font-size:0.8rem;color:var(--text-muted);line-height:1.7;max-height:160px;overflow-y:auto;">
@@ -770,19 +778,37 @@ window.confirmReset = async () => {
 };
 
 // ===== 認証状態監視 =====
+// プロフィール必須項目が揃っているか（3アプリ共通: union/area/upRuby/upBd）
+function profileComplete(d) {
+  return !!(d && d.union && d.area && d.upRuby && d.upBd);
+}
 onAuthStateChanged(auth, async user => {
   if (user) {
     currentUser = user;
     // Firestoreからユーザー情報を取得
     const userDocRef = doc(db, 'users', user.uid);
     const userSnap = await getDoc(userDocRef);
-    const savedName = userSnap.exists() ? (userSnap.data().displayName || '') : '';
+    const data = userSnap.exists() ? userSnap.data() : {};
 
-    if (!savedName) {
-      // 名前未登録 → 名前入力画面へ
+    // 管理者に無効化されたアカウントはブロック
+    if (data.status === 'disabled') {
+      showToast('このアカウントは管理者により無効化されています');
+      await signOut(auth);
+      return;
+    }
+
+    const savedName = data.displayName || data.name || '';
+    if (!profileComplete(data)) {
+      // 必須項目が未入力 → 登録/補完画面へ（既存値をプリフィル）
+      const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+      set('registerName', savedName);
+      set('registerUnion', data.union);
+      set('registerArea', data.area);
+      set('registerUpRuby', data.upRuby);
+      set('registerUpBd', data.upBd);
       showScreen('nameScreen');
     } else {
-      // 名前登録済み → メイン画面へ
+      // 登録済み → メイン画面へ
       currentUser = { ...user, displayName: savedName };
       enterMainScreen(savedName);
     }
@@ -804,13 +830,25 @@ function enterMainScreen(displayName) {
 
 // ===== 名前を保存 =====
 window.saveName = async () => {
-  const name = document.getElementById('registerName').value.trim();
+  const val = id => (document.getElementById(id)?.value || '').trim();
+  const name   = val('registerName');
+  const union  = val('registerUnion');
+  const area   = val('registerArea');
+  const upRuby = val('registerUpRuby');
+  const upBd   = val('registerUpBd');
   const errEl = document.getElementById('nameError');
-  if (!name) { errEl.textContent = '名前を入力してください'; return; }
+  if (!name)   { errEl.textContent = '名前を入力してください'; return; }
+  if (!union)  { errEl.textContent = '所属ユニオンを入力してください'; return; }
+  if (!area)   { errEl.textContent = '活動地域を入力してください'; return; }
+  if (!upRuby) { errEl.textContent = 'UPルビーを入力してください'; return; }
+  if (!upBd)   { errEl.textContent = 'UPBDを入力してください'; return; }
   try {
+    // role/status は送らない（merge更新で既存管理者を降格しない／本人はルール上変更不可）
     await setDoc(doc(db, 'users', currentUser.uid), {
       email: currentUser.email,
-      displayName: name,
+      displayName: name, name: name,
+      union: union, area: area, upRuby: upRuby, upBd: upBd,
+      registrationComplete: true,
       updatedAt: serverTimestamp()
     }, { merge: true });
     currentUser = { ...currentUser, displayName: name };
