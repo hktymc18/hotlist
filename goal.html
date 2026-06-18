@@ -1235,13 +1235,13 @@ function updateFBCalc(orgByMonth) {}
 
 // ===== Goal Setup Wizard =====
 var GW_QUESTIONS = [
-  // Phase 1: 理想のライフスタイル
+  // Phase 1: 理想のライフスタイル → 目標月収・期限
   { id: 'housing_type', phase: 1, cat: '住まい', icon: '🏠', q: '理想の住まいは？', type: 'select',
     opts: [{v:'持ち家',icon:'🏡'},{v:'賃貸',icon:'🏢'},{v:'まだ決めてない',icon:'🤔'}] },
   { id: 'housing_style', phase: 1, cat: '住まい', icon: '🏠', q: 'どんなタイプ？', type: 'select',
     opts: [{v:'タワマン',icon:'🏙️'},{v:'マンション',icon:'🏢'},{v:'一軒家',icon:'🏡'},{v:'まだ決めてない',icon:'🤔'}] },
   { id: 'housing_area', phase: 1, cat: '住まい', icon: '🏠', q: 'どのあたりに住みたい？', type: 'input', placeholder: '例：港区、渋谷、大阪...', hint: '具体的な場所が決まってなくても大丈夫！' },
-  { id: 'housing_cost', phase: 1, cat: '住まい', icon: '🏠', q: '住居費は月いくらのイメージ？', type: 'slider', min: 5, max: 50, step: 1, unit: '万円', defaultVal: 15, costKey: true },
+  { id: 'housing_cost', phase: 1, cat: '住まい', icon: '🏠', q: '住居費は月いくらのイメージ？', type: 'slider', min: 5, max: 100, step: 1, unit: '万円', defaultVal: 15, costKey: true },
   { id: 'food_style', phase: 1, cat: '食', icon: '🍽️', q: '理想の食生活は？', type: 'select',
     opts: [{v:'好きなものを自由に',icon:'🍣'},{v:'健康重視のこだわり食',icon:'🥗'},{v:'高級レストラン中心',icon:'🥂'}] },
   { id: 'food_cost', phase: 1, cat: '食', icon: '🍽️', q: '月の食費イメージは？', type: 'slider', min: 3, max: 30, step: 1, unit: '万円', defaultVal: 8, costKey: true },
@@ -1254,9 +1254,10 @@ var GW_QUESTIONS = [
   { id: 'travel_cost', phase: 1, cat: '旅行', icon: '✈️', q: '旅行に月いくら積み立てたい？', type: 'slider', min: 1, max: 20, step: 1, unit: '万円', defaultVal: 5, costKey: true },
   { id: 'hobby', phase: 1, cat: '趣味', icon: '🎮', q: '趣味にいくらかけたい？', type: 'slider', min: 1, max: 20, step: 1, unit: '万円', defaultVal: 3, costKey: true },
   { id: 'parents_cost', phase: 1, cat: '親孝行', icon: '👨‍👩‍👦', q: '月いくら仕送りしたい？', type: 'slider', min: 0, max: 20, step: 1, unit: '万円', defaultVal: 3, costKey: true },
+  { id: 'beauty_cost', phase: 1, cat: '美容', icon: '💅', q: '美容に月いくらかけたい？', type: 'slider', min: 0, max: 20, step: 1, unit: '万円', defaultVal: 3, costKey: true },
+  { id: 'health_cost', phase: 1, cat: '健康', icon: '💪', q: '健康に月いくらかけたい？', type: 'slider', min: 0, max: 20, step: 1, unit: '万円', defaultVal: 2, costKey: true, hint: 'ジム、サプリ、整体など' },
   { id: 'savings', phase: 1, cat: '貯金', icon: '🏦', q: '月いくら貯金したい？', type: 'slider', min: 1, max: 50, step: 1, unit: '万円', defaultVal: 10, costKey: true },
-  { id: 'social_packs', phase: 1, cat: '社会貢献', icon: '🤝', q: 'ビタミール何パック送りたい？', type: 'slider', min: 0, max: 200, step: 10, unit: 'パック', defaultVal: 50, hint: '1パック約100円。栄養不足の子どもたちに届きます' },
-  { id: 'social_cost', phase: 1, cat: '社会貢献', icon: '🤝', q: '社会貢献に月いくらかけたい？', type: 'slider', min: 0, max: 10, step: 1, unit: '万円', defaultVal: 1, costKey: true, hint: 'ビタミール以外も含めて' },
+  { id: 'social_packs', phase: 1, cat: '社会貢献', icon: '🤝', q: 'ビタミール何パック送りたい？', type: 'slider', min: 1, max: 100, step: 1, unit: 'パック', defaultVal: 30, hint: '栄養不足の子どもたちに届きます' },
   { id: 'deadline', phase: 1, cat: 'まとめ', icon: '📅', q: '__TOTAL__', type: 'input_date', hint: '目標の期日を入力してね' },
   // Phase 2: やりたいこと/なりたい自分
   { id: 'want_do', phase: 2, cat: 'やりたいこと', icon: '🔥', q: 'やりたいことを5つ教えて！', type: 'multi5', hint: 'お金も時間も無限にあったら何する？' },
@@ -1283,9 +1284,10 @@ function gwSaveAnswer(id, val) {
   saveData({ goalAnswers: gwState.answers });
 }
 
-function gwIsComplete() {
+function gwIsComplete(phase) {
   var d = loadData();
-  return d.goalComplete === true;
+  if (phase) return d['goalPhase' + phase + 'Done'] === true;
+  return d.goalPhase1Done === true;
 }
 
 function gwCalcMonthlyTotal() {
@@ -1334,8 +1336,10 @@ function gwClose() {
   document.getElementById('goalWizard').style.display = 'none';
 }
 
-function gwFinish() {
-  saveData({ goalComplete: true });
+function gwFinishPhase(phase) {
+  var obj = {};
+  obj['goalPhase' + phase + 'Done'] = true;
+  saveData(obj);
   gwClose();
   renderGoalSummary();
 }
@@ -1346,14 +1350,19 @@ function gwRender() {
   var ans = gwState.answers[q.id];
   var avatar = gwGetAvatar();
 
+  var phaseQs = GW_QUESTIONS.filter(function(x) { return x.phase === q.phase; });
+  var phaseIdx = 0;
+  for (var pi = 0; pi < phaseQs.length; pi++) { if (phaseQs[pi].id === q.id) { phaseIdx = pi; break; } }
+  var phaseTotal = phaseQs.length;
+
   var dotsHtml = '';
-  for (var i = 0; i < total; i++) {
-    var cls = i < gwState.step ? 'done' : (i === gwState.step ? 'current' : '');
+  for (var i = 0; i < phaseTotal; i++) {
+    var cls = i < phaseIdx ? 'done' : (i === phaseIdx ? 'current' : '');
     dotsHtml += '<div class="gw-dot ' + cls + '"></div>';
   }
 
   var phaseNames = {1:'理想のライフスタイル',2:'やりたいこと・なりたい自分',3:'やる理由作文'};
-  var phaseLabel = 'Phase ' + q.phase + ': ' + phaseNames[q.phase] + ' (' + (gwState.step + 1) + '/' + total + ')';
+  var phaseLabel = phaseNames[q.phase] + ' (' + (phaseIdx + 1) + '/' + phaseTotal + ')';
 
   var questionText = q.q;
   if (q.q === '__TOTAL__') {
@@ -1403,7 +1412,7 @@ function gwRender() {
   }
 
   var canNext = gwCanNext(q, ans);
-  var isLast = gwState.step === total - 1;
+  var isLast = phaseIdx === phaseTotal - 1;
 
   var html = '<div class="goal-wizard">';
   html += '<div class="gw-progress">' + dotsHtml + '</div>';
@@ -1469,11 +1478,16 @@ function gwNext() {
   if (q.type === 'slider' && ans === undefined) {
     gwSaveAnswer(q.id, q.defaultVal);
   }
-  if (gwState.step >= GW_QUESTIONS.length - 1) {
-    gwFinish();
+  var currentPhase = q.phase;
+  var nextStep = gwState.step + 1;
+  var isLastOverall = nextStep >= GW_QUESTIONS.length;
+  var isLastInPhase = isLastOverall || GW_QUESTIONS[nextStep].phase !== currentPhase;
+
+  if (isLastInPhase) {
+    gwFinishPhase(currentPhase);
     return;
   }
-  gwState.step++;
+  gwState.step = nextStep;
   gwRender();
   var body = document.querySelector('.gw-body');
   if (body) body.scrollTop = 0;
@@ -1487,7 +1501,7 @@ function gwBack() {
 }
 
 function gwRestart() {
-  saveData({ goalComplete: false });
+  saveData({ goalPhase1Done: false, goalPhase2Done: false, goalPhase3Done: false });
   gwOpen(0);
 }
 
@@ -1502,12 +1516,13 @@ function gwEditPhase(phase) {
 function renderGoalSummary() {
   var container = document.getElementById('goalSummary');
   var data = loadData();
+  var p1 = gwIsComplete(1), p2 = gwIsComplete(2), p3 = gwIsComplete(3);
 
-  if (!gwIsComplete()) {
+  if (!p1) {
     container.innerHTML = '<div class="section"><div class="goal-start-btn" onclick="gwOpen(0)">' +
       '<div class="goal-start-icon">🎯</div>' +
       '<div class="goal-start-text">目標を設定する</div>' +
-      '<div class="goal-start-sub">3分で完了！質問に答えるだけ</div>' +
+      '<div class="goal-start-sub">2分で完了！質問に答えるだけ</div>' +
       '</div></div>';
     return;
   }
@@ -1531,8 +1546,10 @@ function renderGoalSummary() {
     { icon: '✈️', label: '旅行積立', val: ans.travel_cost ? ans.travel_cost + '万円/月' : '' },
     { icon: '🎮', label: '趣味', val: ans.hobby ? ans.hobby + '万円/月' : '' },
     { icon: '👨‍👩‍👦', label: '親孝行', val: ans.parents_cost ? ans.parents_cost + '万円/月' : '' },
+    { icon: '💅', label: '美容', val: ans.beauty_cost ? ans.beauty_cost + '万円/月' : '' },
+    { icon: '💪', label: '健康', val: ans.health_cost ? ans.health_cost + '万円/月' : '' },
     { icon: '🏦', label: '貯金', val: ans.savings ? ans.savings + '万円/月' : '' },
-    { icon: '🤝', label: '社会貢献', val: (ans.social_packs ? 'ビタミール' + ans.social_packs + 'パック' : '') + (ans.social_cost ? '（' + ans.social_cost + '万円/月）' : '') },
+    { icon: '🤝', label: '社会貢献', val: ans.social_packs ? 'ビタミール' + ans.social_packs + 'パック/月' : '' },
   ];
 
   lifestyleRows.forEach(function(r) {
@@ -1545,7 +1562,7 @@ function renderGoalSummary() {
   html += '</div>';
 
   var monthTotal = gwCalcMonthlyTotal();
-  html += '<div class="goal-total-row"><span class="goal-total-label">💰 月合計</span>';
+  html += '<div class="goal-total-row"><span class="goal-total-label">💰 目標月収</span>';
   html += '<span class="goal-total-value">' + monthTotal + '万円</span></div>';
   if (ans.deadline) {
     var parts = ans.deadline.split('-');
@@ -1554,43 +1571,60 @@ function renderGoalSummary() {
   html += '</div>';
 
   // Phase 2: やりたいこと/なりたい自分
-  var phase2sets = [
-    { key: 'want_do', title: '🔥 やりたいこと' },
-    { key: 'not_want_do', title: '🚫 やりたくないこと' },
-    { key: 'want_be', title: '⭐ なりたい自分' },
-    { key: 'not_want_be', title: '💀 なりたくない自分' },
-  ];
-  html += '<div class="section"><div class="goal-summary-header"><h3>🎯 やりたいこと・なりたい自分</h3>';
-  html += '<button class="goal-edit-btn" onclick="gwEditPhase(2)">編集</button></div>';
-  phase2sets.forEach(function(s) {
-    var items = ans[s.key] || [];
-    var filled = items.filter(function(x) { return x && x.trim(); });
-    if (filled.length > 0) {
-      html += '<div class="goal-card"><div style="font-size:0.75rem;color:var(--accent);font-weight:700;margin-bottom:6px;">' + s.title + '</div>';
-      filled.forEach(function(item) {
-        html += '<div class="goal-list-item">' + item + '</div>';
-      });
-      html += '</div>';
-    }
-  });
+  html += '<div class="section">';
+  if (p2) {
+    html += '<div class="goal-summary-header"><h3>🎯 やりたいこと・なりたい自分</h3>';
+    html += '<button class="goal-edit-btn" onclick="gwEditPhase(2)">編集</button></div>';
+    var phase2sets = [
+      { key: 'want_do', title: '🔥 やりたいこと' },
+      { key: 'not_want_do', title: '🚫 やりたくないこと' },
+      { key: 'want_be', title: '⭐ なりたい自分' },
+      { key: 'not_want_be', title: '💀 なりたくない自分' },
+    ];
+    phase2sets.forEach(function(s) {
+      var items = ans[s.key] || [];
+      var filled = items.filter(function(x) { return x && x.trim(); });
+      if (filled.length > 0) {
+        html += '<div class="goal-card"><div style="font-size:0.75rem;color:var(--accent);font-weight:700;margin-bottom:6px;">' + s.title + '</div>';
+        filled.forEach(function(item) {
+          html += '<div class="goal-list-item">' + item + '</div>';
+        });
+        html += '</div>';
+      }
+    });
+  } else {
+    html += '<div class="goal-start-btn" onclick="gwEditPhase(2)" style="padding:24px 20px;">';
+    html += '<div class="goal-start-icon" style="font-size:2rem;">🎯</div>';
+    html += '<div class="goal-start-text" style="font-size:0.85rem;">やりたいこと・なりたい自分を設定</div>';
+    html += '<div class="goal-start-sub">4つの質問に答えるだけ</div></div>';
+  }
   html += '</div>';
 
   // Phase 3: やる理由
-  html += '<div class="section"><div class="goal-summary-header"><h3>📝 やる理由</h3>';
-  html += '<button class="goal-edit-btn" onclick="gwEditPhase(3)">編集</button></div>';
-  html += '<div class="goal-card">';
-  var essays = [
-    { key: 'reason_why', label: 'なぜ今全力で動く必要があるか' },
-    { key: 'reason_if_not', label: '動かなかったらどうなるか' },
-    { key: 'reason_success', label: '成功してどうなりたいか' },
-  ];
-  essays.forEach(function(e) {
-    if (ans[e.key]) {
-      html += '<div class="goal-essay-q">' + e.label + '</div>';
-      html += '<div class="goal-essay-text">' + ans[e.key] + '</div>';
-    }
-  });
-  html += '</div></div>';
+  html += '<div class="section">';
+  if (p3) {
+    html += '<div class="goal-summary-header"><h3>📝 やる理由</h3>';
+    html += '<button class="goal-edit-btn" onclick="gwEditPhase(3)">編集</button></div>';
+    html += '<div class="goal-card">';
+    var essays = [
+      { key: 'reason_why', label: 'なぜ今全力で動く必要があるか' },
+      { key: 'reason_if_not', label: '動かなかったらどうなるか' },
+      { key: 'reason_success', label: '成功してどうなりたいか' },
+    ];
+    essays.forEach(function(e) {
+      if (ans[e.key]) {
+        html += '<div class="goal-essay-q">' + e.label + '</div>';
+        html += '<div class="goal-essay-text">' + ans[e.key] + '</div>';
+      }
+    });
+    html += '</div>';
+  } else {
+    html += '<div class="goal-start-btn" onclick="gwEditPhase(3)" style="padding:24px 20px;">';
+    html += '<div class="goal-start-icon" style="font-size:2rem;">📝</div>';
+    html += '<div class="goal-start-text" style="font-size:0.85rem;">やる理由を書く</div>';
+    html += '<div class="goal-start-sub">3つの質問に答えるだけ</div></div>';
+  }
+  html += '</div>';
 
   // やり直しボタン
   html += '<div class="section" style="text-align:center;padding-bottom:20px;">';
