@@ -233,21 +233,198 @@
     }
     .check-toast-rainbow { animation: rainbow 1s linear infinite; }
 
-    /* Current vs Ideal Table */
-    .cv-table { width: 100%; border-collapse: collapse; }
-    .cv-table th {
-      font-size: 0.65rem; color: var(--text-muted); padding: 6px 4px;
-      text-align: center; font-weight: 500; border-bottom: 1px solid var(--border);
+    /* ===== Goal Setup Wizard ===== */
+    .goal-wizard {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--bg); z-index: 1000; display: flex; flex-direction: column;
+      overflow: hidden;
     }
-    .cv-table td { padding: 4px; }
-    .cv-table td:nth-child(2) {
-      font-size: 0.72rem; color: var(--text); text-align: center;
-      white-space: nowrap; min-width: 55px;
+    .gw-progress {
+      display: flex; gap: 4px; padding: 16px 20px 8px; justify-content: center;
     }
-    .cv-table input {
-      font-size: 0.75rem; padding: 6px 8px;
-      background: var(--surface2);
+    .gw-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--surface3); transition: all 0.3s;
     }
+    .gw-dot.done { background: var(--accent); }
+    .gw-dot.current { background: var(--accent); transform: scale(1.3); }
+    .gw-phase-label {
+      text-align: center; font-size: 0.65rem; color: var(--text-muted);
+      padding: 0 20px 8px;
+    }
+    .gw-body {
+      flex: 1; display: flex; flex-direction: column;
+      padding: 0 20px; overflow-y: auto;
+    }
+    .gw-avatar {
+      font-size: 2.5rem; text-align: center; margin: 12px 0 4px;
+      animation: gw-bounce 0.5s ease;
+    }
+    @keyframes gw-bounce {
+      0% { transform: scale(0.5); opacity: 0; }
+      60% { transform: scale(1.1); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .gw-bubble {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 16px; border-top-left-radius: 4px;
+      padding: 14px 18px; margin: 8px 0 16px;
+      font-size: 0.9rem; line-height: 1.6; color: var(--text);
+      animation: gw-fade 0.4s ease;
+    }
+    @keyframes gw-fade {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .gw-hint {
+      font-size: 0.7rem; color: var(--text-muted); margin: -8px 0 12px;
+      padding-left: 4px;
+    }
+    .gw-options {
+      display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;
+    }
+    .gw-opt {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 16px; background: var(--surface2);
+      border: 2px solid var(--border); border-radius: var(--radius);
+      font-size: 0.85rem; color: var(--text); cursor: pointer;
+      transition: all 0.2s; -webkit-tap-highlight-color: transparent;
+    }
+    .gw-opt:active { transform: scale(0.97); }
+    .gw-opt.selected { border-color: var(--accent); background: rgba(232,255,71,0.08); }
+    .gw-opt-icon { font-size: 1.3rem; }
+    .gw-slider-wrap {
+      margin-bottom: 16px; padding: 0 4px;
+    }
+    .gw-slider-val {
+      text-align: center; font-size: 1.8rem; font-weight: 900;
+      color: var(--accent); font-family: 'Bebas Neue', sans-serif;
+      letter-spacing: 1px; margin-bottom: 8px;
+    }
+    .gw-slider-val small { font-size: 0.9rem; color: var(--text-muted); font-family: 'Noto Sans JP'; }
+    .gw-slider {
+      width: 100%; -webkit-appearance: none; height: 6px;
+      border-radius: 3px; background: var(--surface3); outline: none;
+    }
+    .gw-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 28px; height: 28px;
+      border-radius: 50%; background: var(--accent); cursor: pointer;
+      box-shadow: 0 2px 8px rgba(232,255,71,0.3);
+    }
+    .gw-slider-labels {
+      display: flex; justify-content: space-between;
+      font-size: 0.6rem; color: var(--text-muted); margin-top: 4px;
+    }
+    .gw-input-wrap { margin-bottom: 16px; }
+    .gw-input {
+      width: 100%; padding: 14px 16px; background: var(--surface2);
+      border: 2px solid var(--border); border-radius: var(--radius);
+      font-size: 0.9rem; color: var(--text); outline: none;
+      transition: border-color 0.2s;
+    }
+    .gw-input:focus { border-color: var(--accent); }
+    .gw-textarea {
+      width: 100%; padding: 14px 16px; background: var(--surface2);
+      border: 2px solid var(--border); border-radius: var(--radius);
+      font-size: 0.85rem; color: var(--text); outline: none;
+      min-height: 100px; resize: none; line-height: 1.6;
+      transition: border-color 0.2s;
+    }
+    .gw-textarea:focus { border-color: var(--accent); }
+    .gw-multi-inputs { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+    .gw-multi-row {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .gw-multi-num {
+      font-family: 'Bebas Neue'; font-size: 1.1rem; color: var(--orange);
+      width: 20px; text-align: center;
+    }
+    .gw-multi-row input {
+      flex: 1; padding: 12px 14px; background: var(--surface2);
+      border: 2px solid var(--border); border-radius: var(--radius);
+      font-size: 0.85rem; color: var(--text); outline: none;
+    }
+    .gw-multi-row input:focus { border-color: var(--accent); }
+    .gw-footer {
+      padding: 12px 20px 24px; display: flex; gap: 10px;
+    }
+    .gw-btn-back {
+      padding: 14px 20px; border-radius: var(--radius);
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text-muted); font-size: 0.85rem; cursor: pointer;
+    }
+    .gw-btn-next {
+      flex: 1; padding: 14px; border-radius: var(--radius);
+      background: var(--accent); border: none; color: #000;
+      font-size: 0.9rem; font-weight: 700; cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .gw-btn-next:disabled { opacity: 0.3; cursor: default; }
+    .gw-btn-next:active:not(:disabled) { opacity: 0.8; }
+    .gw-reaction {
+      text-align: center; font-size: 0.75rem; color: var(--accent);
+      margin: -8px 0 8px; animation: gw-fade 0.3s ease;
+      min-height: 20px;
+    }
+
+    /* Goal Summary Cards */
+    .goal-summary-section { margin-bottom: 16px; }
+    .goal-summary-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 8px;
+    }
+    .goal-summary-header h3 {
+      font-size: 0.85rem; color: var(--text); font-weight: 700;
+    }
+    .goal-edit-btn {
+      font-size: 0.7rem; color: var(--accent); cursor: pointer;
+      background: none; border: none; padding: 4px 8px;
+    }
+    .goal-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 14px; margin-bottom: 8px;
+    }
+    .goal-card-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 6px 0; border-bottom: 1px solid rgba(42,42,56,0.5);
+    }
+    .goal-card-row:last-child { border: none; }
+    .goal-card-icon { font-size: 1.1rem; width: 28px; }
+    .goal-card-label { flex: 1; font-size: 0.78rem; color: var(--text-muted); }
+    .goal-card-value { font-size: 0.78rem; color: var(--text); font-weight: 500; text-align: right; }
+    .goal-total-row {
+      display: flex; justify-content: space-between; padding: 10px 14px;
+      background: linear-gradient(135deg, rgba(232,255,71,0.08), rgba(255,159,67,0.05));
+      border: 1px solid var(--accent); border-radius: var(--radius);
+      margin-top: 8px;
+    }
+    .goal-total-label { font-size: 0.85rem; color: var(--text); font-weight: 700; }
+    .goal-total-value { font-size: 1rem; color: var(--accent); font-weight: 900; }
+    .goal-list-item {
+      padding: 8px 0; border-bottom: 1px solid rgba(42,42,56,0.5);
+      font-size: 0.8rem; color: var(--text);
+    }
+    .goal-list-item:last-child { border: none; }
+    .goal-essay-text {
+      font-size: 0.8rem; color: var(--text); line-height: 1.7;
+      white-space: pre-wrap;
+    }
+    .goal-essay-q {
+      font-size: 0.72rem; color: var(--accent); font-weight: 700;
+      margin-top: 12px; margin-bottom: 4px;
+    }
+    .goal-essay-q:first-child { margin-top: 0; }
+    .goal-start-btn {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding: 40px 20px; cursor: pointer;
+      background: linear-gradient(135deg, rgba(232,255,71,0.05), rgba(255,159,67,0.05));
+      border: 2px dashed var(--border); border-radius: var(--radius);
+      transition: all 0.3s; -webkit-tap-highlight-color: transparent;
+    }
+    .goal-start-btn:active { transform: scale(0.98); border-color: var(--accent); }
+    .goal-start-icon { font-size: 3rem; margin-bottom: 12px; }
+    .goal-start-text { font-size: 0.9rem; color: var(--text); font-weight: 700; }
+    .goal-start-sub { font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; }
 
     /* Commitment */
     .commitment-box {
@@ -269,21 +446,6 @@
     .commitment-box input.name-input { width: 140px; }
     .commitment-box input.amount-input { width: 100px; }
 
-    /* Wishlist */
-    .wish-item {
-      display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
-    }
-    .wish-rank {
-      font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem;
-      color: var(--orange); width: 30px; text-align: center;
-    }
-    .wish-item input.wish-name { flex: 1; }
-    .wish-item input.wish-price { width: 90px; text-align: right; }
-    .wish-total {
-      text-align: right; font-size: 0.85rem; color: var(--accent);
-      font-weight: 700; padding-top: 8px; border-top: 1px solid var(--border);
-    }
-
     /* Sim Config */
     .sim-config {
       background: var(--surface); border: 1px solid var(--border);
@@ -303,28 +465,6 @@
     }
     .sim-preset-btn.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 700; }
 
-    /* Monthly Target Table */
-    .target-table {
-      width: 100%; border-collapse: collapse; font-size: 0.75rem;
-      overflow-x: auto; display: block;
-    }
-    .target-table::-webkit-scrollbar { display: none; }
-    .target-table th, .target-table td {
-      padding: 6px 4px; text-align: center; white-space: nowrap;
-      border-bottom: 1px solid var(--border);
-    }
-    .target-table th {
-      color: var(--text-muted); font-weight: 500; font-size: 0.65rem;
-      position: sticky; left: 0; background: var(--surface); z-index: 1;
-    }
-    .target-table td:first-child {
-      text-align: left; font-size: 0.7rem; color: var(--text);
-      position: sticky; left: 0; background: var(--surface); z-index: 1;
-      min-width: 85px;
-    }
-    .target-table input {
-      width: 50px; text-align: center; padding: 4px; font-size: 0.75rem;
-    }
 
     /* Bonus Table Display */
     .bonus-table-grid {
@@ -604,57 +744,9 @@
 
 <!-- ==================== TAB 2: 目標設定 ==================== -->
 <div class="tab-panel" id="tab-goal">
-
-  <div class="section">
-    <div class="section-title">月別目標</div>
-    <div class="card" style="overflow-x:auto;">
-      <table class="target-table" id="targetTable">
-        <thead><tr id="targetHeader"></tr></thead>
-        <tbody id="targetBody"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="section-title">現状と理想</div>
-    <div class="card" style="overflow-x:auto;">
-      <table class="cv-table" id="cvTable">
-        <thead><tr><th style="width:30%;">現状</th><th style="width:15%;">項目</th><th style="width:30%;">理想</th></tr></thead>
-        <tbody id="cvBody"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="section-title">First Bonus で手に入れるものリスト</div>
-    <div class="card">
-      <div id="wishList"></div>
-      <div class="wish-total" id="wishTotal">合計: ¥0</div>
-    </div>
-  </div>
-
-  <div class="section">
-    <div class="section-title">Commitment</div>
-    <div class="commitment-box">
-      <div class="line">私 <input type="text" class="name-input" id="cmtName" placeholder="○○○○"> は、</div>
-      <div class="line">月収 <input type="text" class="amount-input" id="cmtAmount" placeholder="30万円"> を目標として</div>
-      <div class="line">
-        <select class="date-input" id="cmtYear" style="width:75px;"></select> 年
-        <select class="date-input" id="cmtMonth" style="width:55px;"></select> 月 1日で、
-      </div>
-      <div class="line">
-        <select class="title-input" id="cmtTitle" style="width:150px;">
-          <option value="">選択</option>
-          <option value="RUBY">RUBY</option>
-          <option value="EMERALD">EMERALD</option>
-          <option value="DIAMOND">DIAMOND</option>
-          <option value="BLUE DIAMOND">BLUE DIAMOND</option>
-          <option value="TEAM ELITE">TEAM ELITE</option>
-        </select> を達成します。
-      </div>
-    </div>
-  </div>
+  <div id="goalSummary"></div>
 </div>
+<div id="goalWizard"></div>
 
 <!-- ==================== TAB 3: チェックリスト ==================== -->
 <div class="tab-panel" id="tab-check">
@@ -1140,112 +1232,372 @@ function updateSimFB(orgByMonth, startYear, startMonth) {
 
 function updateFBCalc(orgByMonth) {}
 
-// ===== Monthly Target Table =====
-const TARGET_ROWS = [
-  { key: 'b1', label: 'B1数' },
-  { key: 'ft', label: 'FT数' },
-  { key: 'user', label: 'ユーザー数' },
-  { key: 'idshare', label: 'IDシェア数(PR)' },
-  { key: 'seed', label: 'SEED動員数' },
-  { key: 'ur', label: 'UR動員数' },
+
+// ===== Goal Setup Wizard =====
+var GW_QUESTIONS = [
+  // Phase 1: 理想のライフスタイル
+  { id: 'housing_type', phase: 1, cat: '住まい', icon: '🏠', q: '理想の住まいは？', type: 'select',
+    opts: [{v:'持ち家',icon:'🏡'},{v:'賃貸',icon:'🏢'},{v:'まだ決めてない',icon:'🤔'}] },
+  { id: 'housing_style', phase: 1, cat: '住まい', icon: '🏠', q: 'どんなタイプ？', type: 'select',
+    opts: [{v:'タワマン',icon:'🏙️'},{v:'マンション',icon:'🏢'},{v:'一軒家',icon:'🏡'},{v:'まだ決めてない',icon:'🤔'}] },
+  { id: 'housing_area', phase: 1, cat: '住まい', icon: '🏠', q: 'どのあたりに住みたい？', type: 'input', placeholder: '例：港区、渋谷、大阪...', hint: '具体的な場所が決まってなくても大丈夫！' },
+  { id: 'housing_cost', phase: 1, cat: '住まい', icon: '🏠', q: '住居費は月いくらのイメージ？', type: 'slider', min: 5, max: 50, step: 1, unit: '万円', defaultVal: 15, costKey: true },
+  { id: 'food_style', phase: 1, cat: '食', icon: '🍽️', q: '理想の食生活は？', type: 'select',
+    opts: [{v:'好きなものを自由に',icon:'🍣'},{v:'健康重視のこだわり食',icon:'🥗'},{v:'高級レストラン中心',icon:'🥂'}] },
+  { id: 'food_cost', phase: 1, cat: '食', icon: '🍽️', q: '月の食費イメージは？', type: 'slider', min: 3, max: 30, step: 1, unit: '万円', defaultVal: 8, costKey: true },
+  { id: 'clothes_cost', phase: 1, cat: '服', icon: '👔', q: 'ファッションに月いくらかけたい？', type: 'slider', min: 1, max: 30, step: 1, unit: '万円', defaultVal: 5, costKey: true },
+  { id: 'transport', phase: 1, cat: '車', icon: '🚗', q: '理想の移動手段は？', type: 'select',
+    opts: [{v:'高級車（ベンツ・BMW等）',icon:'🏎️'},{v:'SUV',icon:'🚙'},{v:'電車・自転車で十分',icon:'🚃'},{v:'タクシー生活',icon:'🚕'}] },
+  { id: 'travel_freq', phase: 1, cat: '旅行', icon: '✈️', q: 'どのくらい旅行したい？', type: 'select',
+    opts: [{v:'月1で国内旅行',icon:'🗾'},{v:'年数回は海外',icon:'🌏'},{v:'毎月どこかへ',icon:'🌍'},{v:'年1で十分',icon:'📅'}] },
+  { id: 'travel_first', phase: 1, cat: '旅行', icon: '✈️', q: '一発目どこに行きたい？', type: 'input', placeholder: '例：ハワイ、パリ、沖縄...', hint: '夢の旅行先を教えて！' },
+  { id: 'travel_cost', phase: 1, cat: '旅行', icon: '✈️', q: '旅行に月いくら積み立てたい？', type: 'slider', min: 1, max: 20, step: 1, unit: '万円', defaultVal: 5, costKey: true },
+  { id: 'hobby', phase: 1, cat: '趣味', icon: '🎮', q: '趣味にいくらかけたい？', type: 'slider', min: 1, max: 20, step: 1, unit: '万円', defaultVal: 3, costKey: true },
+  { id: 'parents_cost', phase: 1, cat: '親孝行', icon: '👨‍👩‍👦', q: '月いくら仕送りしたい？', type: 'slider', min: 0, max: 20, step: 1, unit: '万円', defaultVal: 3, costKey: true },
+  { id: 'savings', phase: 1, cat: '貯金', icon: '🏦', q: '月いくら貯金したい？', type: 'slider', min: 1, max: 50, step: 1, unit: '万円', defaultVal: 10, costKey: true },
+  { id: 'social_packs', phase: 1, cat: '社会貢献', icon: '🤝', q: 'ビタミール何パック送りたい？', type: 'slider', min: 0, max: 200, step: 10, unit: 'パック', defaultVal: 50, hint: '1パック約100円。栄養不足の子どもたちに届きます' },
+  { id: 'social_cost', phase: 1, cat: '社会貢献', icon: '🤝', q: '社会貢献に月いくらかけたい？', type: 'slider', min: 0, max: 10, step: 1, unit: '万円', defaultVal: 1, costKey: true, hint: 'ビタミール以外も含めて' },
+  { id: 'deadline', phase: 1, cat: 'まとめ', icon: '📅', q: '__TOTAL__', type: 'input_date', hint: '目標の期日を入力してね' },
+  // Phase 2: やりたいこと/なりたい自分
+  { id: 'want_do', phase: 2, cat: 'やりたいこと', icon: '🔥', q: 'やりたいことを5つ教えて！', type: 'multi5', hint: 'お金も時間も無限にあったら何する？' },
+  { id: 'not_want_do', phase: 2, cat: 'やりたくないこと', icon: '🚫', q: 'やりたくないことを5つ教えて！', type: 'multi5', hint: '絶対に続けたくないことは？' },
+  { id: 'want_be', phase: 2, cat: 'なりたい自分', icon: '⭐', q: 'なりたい自分を5つ教えて！', type: 'multi5', hint: '3年後、周りにどう思われたい？' },
+  { id: 'not_want_be', phase: 2, cat: 'なりたくない自分', icon: '💀', q: 'なりたくない自分を5つ教えて！', type: 'multi5', hint: 'こうはなりたくない、ってどんな自分？' },
+  // Phase 3: やる理由作文
+  { id: 'reason_why', phase: 3, cat: 'やる理由', icon: '🔥', q: 'なぜ"今"全力で動く必要がある？', type: 'textarea', hint: '1年後に始めたら間に合う？それとも今じゃないとダメ？' },
+  { id: 'reason_if_not', phase: 3, cat: 'やる理由', icon: '😰', q: 'もし動かなかったら、1年後どうなってる？', type: 'textarea', hint: '今の生活がそのまま続くとしたら...' },
+  { id: 'reason_success', phase: 3, cat: 'やる理由', icon: '🏆', q: '成功したら、どんな毎日を送ってる？', type: 'textarea', hint: '朝起きてから寝るまで、理想の1日を想像してみて' },
 ];
 
-const EXAMPLE_TARGETS = {
-  b1:      ['-', '2', '2', '', '', ''],
-  ft:      ['5', '20', '20', '', '', ''],
-  user:    ['5', '2', '2', '', '', ''],
-  idshare: ['-', '5', '5', '', '', ''],
-  seed:    ['1', '5', '10', '', '', ''],
-  ur:      ['1', '5', '10', '', '', ''],
+var gwState = { step: 0, answers: {} };
+
+function gwLoadAnswers() {
+  var d = loadData();
+  var ans = d.goalAnswers || {};
+  gwState.answers = ans;
+  return ans;
+}
+
+function gwSaveAnswer(id, val) {
+  gwState.answers[id] = val;
+  saveData({ goalAnswers: gwState.answers });
+}
+
+function gwIsComplete() {
+  var d = loadData();
+  return d.goalComplete === true;
+}
+
+function gwCalcMonthlyTotal() {
+  var total = 0;
+  GW_QUESTIONS.forEach(function(q) {
+    if (q.costKey) total += parseInt(gwState.answers[q.id]) || 0;
+  });
+  return total;
+}
+
+var GW_AVATARS = ['😎','🔥','💪','🎯','✨','🚀','👊','🌟'];
+var GW_REACTIONS = {
+  select: ['いいね！','かっこいい！','最高！','センスある！','おっ！'],
+  slider_high: ['でかく行こう！','攻めてるね！','夢がでかい！'],
+  slider_low: ['堅実だね！','しっかりしてる！','賢い選択！'],
+  input: ['いいね！','素敵！','ワクワクする！'],
+  multi: ['熱い！','どんどん出てくるね！','いい感じ！'],
+  textarea: ['その気持ち忘れないで！','熱い想いだね！','心に響く！'],
 };
 
-function renderTargetTable() {
-  const data = loadData();
-  const startYear = parseInt(document.getElementById('simStartYear')?.value || 2026);
-  const startMonth = parseInt(document.getElementById('simStartMonth')?.value || 6);
-
-  let headerHtml = '<th></th>';
-  for (let i = 0; i < 6; i++) {
-    const y = startYear + Math.floor((startMonth - 1 + i) / 12);
-    const m = ((startMonth - 1 + i) % 12) + 1;
-    headerHtml += `<th>${m}月</th>`;
+function gwGetReaction(type, val) {
+  var pool;
+  if (type === 'slider' && val !== undefined) {
+    var q = GW_QUESTIONS[gwState.step];
+    var mid = (q.min + q.max) / 2;
+    pool = val > mid ? GW_REACTIONS.slider_high : GW_REACTIONS.slider_low;
+  } else {
+    pool = GW_REACTIONS[type] || GW_REACTIONS.select;
   }
-  document.getElementById('targetHeader').innerHTML = headerHtml;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
 
-  let bodyHtml = '';
-  TARGET_ROWS.forEach(row => {
-    bodyHtml += `<tr><td>${row.label}</td>`;
-    for (let i = 0; i < 6; i++) {
-      const saved = data[`target_${row.key}_${i}`] || '';
-      const example = EXAMPLE_TARGETS[row.key]?.[i] || '';
-      bodyHtml += `<td><input type="text" value="${saved}" placeholder="${example}" data-key="target_${row.key}_${i}" onchange="saveField(this.dataset.key, this.value)"></td>`;
+function gwGetAvatar() {
+  return GW_AVATARS[gwState.step % GW_AVATARS.length];
+}
+
+function gwOpen(startStep) {
+  gwState.step = startStep || 0;
+  gwLoadAnswers();
+  var el = document.getElementById('goalWizard');
+  el.style.display = 'block';
+  gwRender();
+}
+
+function gwClose() {
+  document.getElementById('goalWizard').style.display = 'none';
+}
+
+function gwFinish() {
+  saveData({ goalComplete: true });
+  gwClose();
+  renderGoalSummary();
+}
+
+function gwRender() {
+  var q = GW_QUESTIONS[gwState.step];
+  var total = GW_QUESTIONS.length;
+  var ans = gwState.answers[q.id];
+  var avatar = gwGetAvatar();
+
+  var dotsHtml = '';
+  for (var i = 0; i < total; i++) {
+    var cls = i < gwState.step ? 'done' : (i === gwState.step ? 'current' : '');
+    dotsHtml += '<div class="gw-dot ' + cls + '"></div>';
+  }
+
+  var phaseNames = {1:'理想のライフスタイル',2:'やりたいこと・なりたい自分',3:'やる理由作文'};
+  var phaseLabel = 'Phase ' + q.phase + ': ' + phaseNames[q.phase] + ' (' + (gwState.step + 1) + '/' + total + ')';
+
+  var questionText = q.q;
+  if (q.q === '__TOTAL__') {
+    var monthTotal = gwCalcMonthlyTotal();
+    questionText = '全部合わせると月 ' + monthTotal + '万円 必要だね！いつまでに実現したい？';
+  }
+
+  var bodyHtml = '';
+  bodyHtml += '<div class="gw-avatar">' + avatar + '</div>';
+  bodyHtml += '<div class="gw-bubble">' + questionText + '</div>';
+  if (q.hint) bodyHtml += '<div class="gw-hint">💡 ' + q.hint + '</div>';
+  bodyHtml += '<div class="gw-reaction" id="gwReaction"></div>';
+
+  if (q.type === 'select') {
+    bodyHtml += '<div class="gw-options">';
+    q.opts.forEach(function(o) {
+      var sel = ans === o.v ? ' selected' : '';
+      bodyHtml += '<div class="gw-opt' + sel + '" onclick="gwSelectOpt(this,\'' + o.v.replace(/'/g, "\\'") + '\')">';
+      bodyHtml += '<span class="gw-opt-icon">' + o.icon + '</span>';
+      bodyHtml += '<span>' + o.v + '</span></div>';
+    });
+    bodyHtml += '</div>';
+  } else if (q.type === 'slider') {
+    var val = ans !== undefined ? parseInt(ans) : q.defaultVal;
+    bodyHtml += '<div class="gw-slider-wrap">';
+    bodyHtml += '<div class="gw-slider-val" id="gwSliderVal">' + val + '<small> ' + q.unit + '</small></div>';
+    bodyHtml += '<input type="range" class="gw-slider" id="gwSlider" min="' + q.min + '" max="' + q.max + '" step="' + q.step + '" value="' + val + '" oninput="gwSliderChange(this.value)">';
+    bodyHtml += '<div class="gw-slider-labels"><span>' + q.min + q.unit + '</span><span>' + q.max + q.unit + '+</span></div>';
+    bodyHtml += '</div>';
+  } else if (q.type === 'input') {
+    var v = ans || '';
+    bodyHtml += '<div class="gw-input-wrap"><input class="gw-input" id="gwInput" type="text" placeholder="' + (q.placeholder || '') + '" value="' + v.replace(/"/g, '&quot;') + '" oninput="gwInputChange(this.value)"></div>';
+  } else if (q.type === 'input_date') {
+    var v = ans || '';
+    bodyHtml += '<div class="gw-input-wrap"><input class="gw-input" id="gwInput" type="month" value="' + v + '" oninput="gwInputChange(this.value)" style="font-size:1.1rem;text-align:center;"></div>';
+  } else if (q.type === 'multi5') {
+    var vals = ans || ['','','','',''];
+    bodyHtml += '<div class="gw-multi-inputs">';
+    for (var j = 0; j < 5; j++) {
+      bodyHtml += '<div class="gw-multi-row"><span class="gw-multi-num">' + (j+1) + '</span>';
+      bodyHtml += '<input type="text" value="' + (vals[j] || '').replace(/"/g, '&quot;') + '" data-idx="' + j + '" oninput="gwMultiChange(this)" placeholder="..."></div>';
     }
-    bodyHtml += '</tr>';
-  });
-  document.getElementById('targetBody').innerHTML = bodyHtml;
-}
-
-// ===== Current vs Ideal =====
-const CV_ITEMS = [
-  { key: 'home', label: '住まい', exCurrent: '実家', exIdeal: '1人暮らし2LDK' },
-  { key: 'food', label: '食生活', exCurrent: 'スーパーで買う', exIdeal: '好きなものを食べる' },
-  { key: 'clothes', label: '洋服', exCurrent: '月1万円', exIdeal: '月10万円以上' },
-
-  { key: 'transport', label: '移動手段', exCurrent: 'バス・自転車', exIdeal: 'ベンツ・タクシー' },
-  { key: 'travel', label: '旅行', exCurrent: '年1回 国内旅行', exIdeal: '年1回 海外旅行' },
-  { key: 'people', label: '人間関係', exCurrent: '昼の仕事の人', exIdeal: '成功者、仲間とつるむ' },
-  { key: 'character', label: '性格', exCurrent: '飽きっぽい', exIdeal: '勉強家・素直・プラス思考' },
-  { key: 'reputation', label: '評判', exCurrent: '適当な性格', exIdeal: '頼りになる' },
-  { key: 'health', label: '健康状態', exCurrent: '低血圧', exIdeal: '超健康' },
-  { key: 'hobby', label: '趣味', exCurrent: '逃げ出すスキル', exIdeal: 'クルージング' },
-  { key: 'love', label: '恋愛', exCurrent: 'その場のノリ', exIdeal: '年収1億円稼ぐ男性' },
-  { key: 'social', label: '社会貢献', exCurrent: 'できない', exIdeal: 'ビタミール100袋/月' },
-  { key: 'parents', label: '親孝行', exCurrent: 'できていない', exIdeal: '月1回食事に連れて行く' },
-];
-
-function renderCvTable() {
-  const data = loadData();
-  let html = '';
-  CV_ITEMS.forEach(item => {
-    const cVal = data[`cv_current_${item.key}`] || '';
-    const iVal = data[`cv_ideal_${item.key}`] || '';
-    html += `<tr>
-      <td><input type="text" value="${cVal}" placeholder="${item.exCurrent}" data-key="cv_current_${item.key}" onchange="saveField(this.dataset.key,this.value)" style="font-size:0.72rem;"></td>
-      <td>${item.label}</td>
-      <td><input type="text" value="${iVal}" placeholder="${item.exIdeal}" data-key="cv_ideal_${item.key}" onchange="saveField(this.dataset.key,this.value)" style="font-size:0.72rem;"></td>
-    </tr>`;
-  });
-  document.getElementById('cvBody').innerHTML = html;
-}
-
-// ===== Wishlist =====
-function renderWishList() {
-  const data = loadData();
-  let html = '';
-  for (let i = 1; i <= 5; i++) {
-    const name = data[`wish_name_${i}`] || '';
-    const price = data[`wish_price_${i}`] || '';
-    const exNames = ['引越し(2LDK)', 'シャネルのピアス', 'MacBookAir（ブラック）', '美容代', 'オーダースーツ'];
-    const exPrices = ['200000', '150000', '200000', '200000', '150000'];
-    html += `
-      <div class="wish-item">
-        <span class="wish-rank">${i}</span>
-        <input type="text" class="wish-name" value="${name}" placeholder="${exNames[i-1]}" data-key="wish_name_${i}" onchange="saveField(this.dataset.key,this.value);updateWishTotal();">
-        <input type="number" class="wish-price" value="${price}" placeholder="${exPrices[i-1]}" data-key="wish_price_${i}" onchange="saveField(this.dataset.key,this.value);updateWishTotal();">
-        <span style="font-size:0.7rem;color:var(--text-muted);">円</span>
-      </div>`;
+    bodyHtml += '</div>';
+  } else if (q.type === 'textarea') {
+    var v = ans || '';
+    bodyHtml += '<div class="gw-input-wrap"><textarea class="gw-textarea" id="gwTextarea" oninput="gwInputChange(this.value)" placeholder="自由に書いてね...">' + v + '</textarea></div>';
   }
-  document.getElementById('wishList').innerHTML = html;
-  updateWishTotal();
+
+  var canNext = gwCanNext(q, ans);
+  var isLast = gwState.step === total - 1;
+
+  var html = '<div class="goal-wizard">';
+  html += '<div class="gw-progress">' + dotsHtml + '</div>';
+  html += '<div class="gw-phase-label">' + phaseLabel + '</div>';
+  html += '<div class="gw-body">' + bodyHtml + '</div>';
+  html += '<div class="gw-footer">';
+  if (gwState.step > 0) html += '<button class="gw-btn-back" onclick="gwBack()">←</button>';
+  html += '<button class="gw-btn-next" id="gwNextBtn" onclick="gwNext()"' + (canNext ? '' : ' disabled') + '>' + (isLast ? '完了！🎉' : '次へ →') + '</button>';
+  html += '</div></div>';
+
+  document.getElementById('goalWizard').innerHTML = html;
 }
 
-function updateWishTotal() {
-  const data = loadData();
-  let total = 0;
-  for (let i = 1; i <= 5; i++) {
-    total += parseInt(data[`wish_price_${i}`]) || 0;
+function gwCanNext(q, ans) {
+  if (q.type === 'select') return !!ans;
+  if (q.type === 'slider') return true;
+  if (q.type === 'input' || q.type === 'input_date') return !!(ans && ans.trim());
+  if (q.type === 'multi5') {
+    if (!ans) return false;
+    var filled = 0;
+    for (var i = 0; i < ans.length; i++) { if (ans[i] && ans[i].trim()) filled++; }
+    return filled >= 1;
   }
-  document.getElementById('wishTotal').textContent = `合計: ¥${total.toLocaleString()}`;
+  if (q.type === 'textarea') return !!(ans && ans.trim());
+  return true;
+}
+
+function gwSelectOpt(el, val) {
+  var q = GW_QUESTIONS[gwState.step];
+  gwSaveAnswer(q.id, val);
+  var opts = el.parentNode.querySelectorAll('.gw-opt');
+  for (var i = 0; i < opts.length; i++) opts[i].classList.remove('selected');
+  el.classList.add('selected');
+  document.getElementById('gwReaction').textContent = gwGetReaction('select');
+  document.getElementById('gwNextBtn').disabled = false;
+  setTimeout(function() { gwNext(); }, 400);
+}
+
+function gwSliderChange(val) {
+  var q = GW_QUESTIONS[gwState.step];
+  document.getElementById('gwSliderVal').innerHTML = val + '<small> ' + q.unit + '</small>';
+  gwSaveAnswer(q.id, val);
+}
+
+function gwInputChange(val) {
+  var q = GW_QUESTIONS[gwState.step];
+  gwSaveAnswer(q.id, val);
+  document.getElementById('gwNextBtn').disabled = !gwCanNext(q, val);
+}
+
+function gwMultiChange(el) {
+  var q = GW_QUESTIONS[gwState.step];
+  var inputs = el.closest('.gw-multi-inputs').querySelectorAll('input');
+  var vals = [];
+  for (var i = 0; i < inputs.length; i++) vals.push(inputs[i].value);
+  gwSaveAnswer(q.id, vals);
+  document.getElementById('gwNextBtn').disabled = !gwCanNext(q, vals);
+}
+
+function gwNext() {
+  var q = GW_QUESTIONS[gwState.step];
+  var ans = gwState.answers[q.id];
+  if (q.type === 'slider' && ans === undefined) {
+    gwSaveAnswer(q.id, q.defaultVal);
+  }
+  if (gwState.step >= GW_QUESTIONS.length - 1) {
+    gwFinish();
+    return;
+  }
+  gwState.step++;
+  gwRender();
+  var body = document.querySelector('.gw-body');
+  if (body) body.scrollTop = 0;
+}
+
+function gwBack() {
+  if (gwState.step > 0) {
+    gwState.step--;
+    gwRender();
+  }
+}
+
+function gwRestart() {
+  saveData({ goalComplete: false });
+  gwOpen(0);
+}
+
+function gwEditPhase(phase) {
+  var first = 0;
+  for (var i = 0; i < GW_QUESTIONS.length; i++) {
+    if (GW_QUESTIONS[i].phase === phase) { first = i; break; }
+  }
+  gwOpen(first);
+}
+
+function renderGoalSummary() {
+  var container = document.getElementById('goalSummary');
+  var data = loadData();
+
+  if (!gwIsComplete()) {
+    container.innerHTML = '<div class="section"><div class="goal-start-btn" onclick="gwOpen(0)">' +
+      '<div class="goal-start-icon">🎯</div>' +
+      '<div class="goal-start-text">目標を設定する</div>' +
+      '<div class="goal-start-sub">3分で完了！質問に答えるだけ</div>' +
+      '</div></div>';
+    return;
+  }
+
+  gwLoadAnswers();
+  var ans = gwState.answers;
+  var html = '';
+
+  // Phase 1: ライフスタイルサマリー
+  html += '<div class="section"><div class="goal-summary-header"><h3>🏠 理想のライフスタイル</h3>';
+  html += '<button class="goal-edit-btn" onclick="gwEditPhase(1)">編集</button></div>';
+  html += '<div class="goal-card">';
+
+  var lifestyleRows = [
+    { icon: '🏠', label: '住まい', val: [ans.housing_type, ans.housing_style, ans.housing_area].filter(Boolean).join('・') },
+    { icon: '🏠', label: '住居費', val: ans.housing_cost ? ans.housing_cost + '万円/月' : '' },
+    { icon: '🍽️', label: '食生活', val: (ans.food_style || '') + (ans.food_cost ? '（' + ans.food_cost + '万円/月）' : '') },
+    { icon: '👔', label: 'ファッション', val: ans.clothes_cost ? ans.clothes_cost + '万円/月' : '' },
+    { icon: '🚗', label: '移動手段', val: ans.transport || '' },
+    { icon: '✈️', label: '旅行', val: (ans.travel_freq || '') + (ans.travel_first ? '（一発目: ' + ans.travel_first + '）' : '') },
+    { icon: '✈️', label: '旅行積立', val: ans.travel_cost ? ans.travel_cost + '万円/月' : '' },
+    { icon: '🎮', label: '趣味', val: ans.hobby ? ans.hobby + '万円/月' : '' },
+    { icon: '👨‍👩‍👦', label: '親孝行', val: ans.parents_cost ? ans.parents_cost + '万円/月' : '' },
+    { icon: '🏦', label: '貯金', val: ans.savings ? ans.savings + '万円/月' : '' },
+    { icon: '🤝', label: '社会貢献', val: (ans.social_packs ? 'ビタミール' + ans.social_packs + 'パック' : '') + (ans.social_cost ? '（' + ans.social_cost + '万円/月）' : '') },
+  ];
+
+  lifestyleRows.forEach(function(r) {
+    if (r.val) {
+      html += '<div class="goal-card-row"><span class="goal-card-icon">' + r.icon + '</span>';
+      html += '<span class="goal-card-label">' + r.label + '</span>';
+      html += '<span class="goal-card-value">' + r.val + '</span></div>';
+    }
+  });
+  html += '</div>';
+
+  var monthTotal = gwCalcMonthlyTotal();
+  html += '<div class="goal-total-row"><span class="goal-total-label">💰 月合計</span>';
+  html += '<span class="goal-total-value">' + monthTotal + '万円</span></div>';
+  if (ans.deadline) {
+    var parts = ans.deadline.split('-');
+    html += '<div style="text-align:right;font-size:0.75rem;color:var(--text-muted);margin-top:6px;">📅 目標期日: ' + parts[0] + '年' + parseInt(parts[1]) + '月</div>';
+  }
+  html += '</div>';
+
+  // Phase 2: やりたいこと/なりたい自分
+  var phase2sets = [
+    { key: 'want_do', title: '🔥 やりたいこと' },
+    { key: 'not_want_do', title: '🚫 やりたくないこと' },
+    { key: 'want_be', title: '⭐ なりたい自分' },
+    { key: 'not_want_be', title: '💀 なりたくない自分' },
+  ];
+  html += '<div class="section"><div class="goal-summary-header"><h3>🎯 やりたいこと・なりたい自分</h3>';
+  html += '<button class="goal-edit-btn" onclick="gwEditPhase(2)">編集</button></div>';
+  phase2sets.forEach(function(s) {
+    var items = ans[s.key] || [];
+    var filled = items.filter(function(x) { return x && x.trim(); });
+    if (filled.length > 0) {
+      html += '<div class="goal-card"><div style="font-size:0.75rem;color:var(--accent);font-weight:700;margin-bottom:6px;">' + s.title + '</div>';
+      filled.forEach(function(item) {
+        html += '<div class="goal-list-item">' + item + '</div>';
+      });
+      html += '</div>';
+    }
+  });
+  html += '</div>';
+
+  // Phase 3: やる理由
+  html += '<div class="section"><div class="goal-summary-header"><h3>📝 やる理由</h3>';
+  html += '<button class="goal-edit-btn" onclick="gwEditPhase(3)">編集</button></div>';
+  html += '<div class="goal-card">';
+  var essays = [
+    { key: 'reason_why', label: 'なぜ今全力で動く必要があるか' },
+    { key: 'reason_if_not', label: '動かなかったらどうなるか' },
+    { key: 'reason_success', label: '成功してどうなりたいか' },
+  ];
+  essays.forEach(function(e) {
+    if (ans[e.key]) {
+      html += '<div class="goal-essay-q">' + e.label + '</div>';
+      html += '<div class="goal-essay-text">' + ans[e.key] + '</div>';
+    }
+  });
+  html += '</div></div>';
+
+  // やり直しボタン
+  html += '<div class="section" style="text-align:center;padding-bottom:20px;">';
+  html += '<button onclick="gwRestart()" style="background:none;border:1px solid var(--border);color:var(--text-muted);padding:10px 24px;border-radius:var(--radius);font-size:0.75rem;cursor:pointer;">最初からやり直す</button>';
+  html += '</div>';
+
+  container.innerHTML = html;
 }
 
 // ===== Checklists =====
@@ -1380,32 +1732,6 @@ function renderBonusTable() {
 }
 
 
-// ===== Commitment save/load =====
-function initCommitment() {
-  const data = loadData();
-  const now = new Date();
-  const thisYear = now.getFullYear();
-
-  const yearEl = document.getElementById('cmtYear');
-  yearEl.innerHTML = `<option value="${thisYear}">${thisYear}</option><option value="${thisYear + 1}">${thisYear + 1}</option>`;
-
-  const monthEl = document.getElementById('cmtMonth');
-  monthEl.innerHTML = '';
-  for (let i = 1; i <= 12; i++) monthEl.innerHTML += `<option value="${i}">${i}</option>`;
-
-  const nameEl = document.getElementById('cmtName');
-  if (!data.cmtName) {
-    const userName = document.getElementById('userNameDisplay')?.textContent || '';
-    if (userName && userName !== '') nameEl.value = userName;
-  }
-
-  ['cmtName', 'cmtAmount', 'cmtYear', 'cmtMonth', 'cmtTitle'].forEach(id => {
-    const el = document.getElementById(id);
-    if (data[id]) el.value = data[id];
-    el.addEventListener('change', () => saveField(id, el.value));
-  });
-}
-
 // ===== Toast =====
 function showToast(msg) {
   const t = document.getElementById('toast');
@@ -1416,13 +1742,10 @@ function showToast(msg) {
 
 // ===== Init =====
 function init() {
-  renderTargetTable();
-  renderCvTable();
-  renderWishList();
+  renderGoalSummary();
   renderChecklists();
   renderBonusTable();
   calcBonus();
-  initCommitment();
   runSimulation();
 }
 
