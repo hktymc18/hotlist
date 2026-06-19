@@ -616,13 +616,28 @@
     .auth-link { font-size: 0.72rem; color: var(--text-muted); text-align: center; cursor: pointer; text-decoration: underline; }
     #mainApp { display: none; }
     .loading-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; color: var(--text-muted); font-size: 0.85rem; }
+    .share-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 3000; display: none; align-items: flex-end; justify-content: center; }
+    .share-overlay.open { display: flex; }
+    .share-panel { background: var(--surface); border-radius: 16px 16px 0 0; width: 100%; max-width: 480px; max-height: 80vh; overflow-y: auto; padding: 24px 20px; }
+    .share-title { display: flex; justify-content: space-between; align-items: center; font-size: 1rem; font-weight: 700; margin-bottom: 16px; }
+    .share-close { background: none; border: none; color: var(--text-muted); font-size: 1.2rem; cursor: pointer; }
+    .share-section { padding: 4px 0; }
+    .share-section-title { font-size: 0.9rem; font-weight: 700; color: var(--accent); margin-bottom: 6px; }
+    .share-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.55; margin-bottom: 4px; }
+    .share-divider { height: 1px; background: var(--border); margin: 14px 0; }
+    .share-member-list { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+    .share-member-item { display: flex; align-items: center; justify-content: space-between; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 0.85rem; }
+    .share-member-email { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .share-btn-danger { background: var(--danger); color: #fff; border: none; border-radius: 6px; padding: 4px 10px; font-size: 0.72rem; cursor: pointer; }
+    .share-btn-add { background: var(--accent); color: #000; border: none; border-radius: 6px; padding: 8px 14px; font-size: 0.82rem; font-weight: 600; cursor: pointer; }
   </style>
 </head>
 <body>
 
 <!-- ===== ログイン画面 ===== -->
 <div id="loginScreen" style="display:none;">
-  <div class="login-title">GOAL SHEET<small>目標設定シート</small></div>
+  <div class="login-title">GOAL SETTING<small>目標設定シート</small></div>
+  <div style="font-size:12px;color:var(--text-muted);margin-top:6px;font-family:'IBM Plex Mono',monospace;">ver.1.0</div>
   <div class="login-subtitle">ATTACK LISTと同じアカウントでログイン</div>
   <div class="auth-tabs">
     <button class="auth-tab" id="tabLogin" style="background:var(--accent);color:#000;" onclick="setAuthMode('login')">ログイン</button>
@@ -660,11 +675,12 @@
 <div class="header">
   <button class="back" onclick="location.href='index.html'">←</button>
   <div class="title">
-    GOAL SHEET
+    GOAL SETTING
     <small>目標設定シート</small>
   </div>
   <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
     <span id="userNameDisplay" style="font-size:0.7rem;color:var(--text-muted);"></span>
+    <button onclick="openShareModal()" style="background:none;border:1px solid var(--border);color:var(--text-muted);font-size:0.65rem;padding:4px 10px;border-radius:6px;cursor:pointer;">共有</button>
     <button onclick="confirmSignOut()" style="background:none;border:1px solid var(--border);color:var(--text-muted);font-size:0.65rem;padding:4px 10px;border-radius:6px;cursor:pointer;">ログアウト</button>
   </div>
 </div>
@@ -800,11 +816,36 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- ===== 共有モーダル ===== -->
+<div class="share-overlay" id="shareModal" onclick="if(event.target===this)closeShareModal()">
+  <div class="share-panel">
+    <div class="share-title">
+      <span>目標シートを共有する</span>
+      <button class="share-close" onclick="closeShareModal()">✕</button>
+    </div>
+    <div class="share-section">
+      <div class="share-section-title">メンバーを追加する</div>
+      <p class="share-desc">共有したい相手のメールアドレスを入力してください。そのメンバーだけが自分の目標シートを閲覧できます。</p>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <input type="email" id="shareEmailInput" placeholder="例：friend@gmail.com" style="flex:1;font-size:0.92rem;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);">
+        <button class="share-btn-add" onclick="addShareMember()">追加</button>
+      </div>
+      <div class="share-member-list" id="shareMemberList"></div>
+    </div>
+    <div class="share-divider"></div>
+    <div class="share-section">
+      <div class="share-section-title">閲覧できるシート</div>
+      <p class="share-desc">他のメンバーから共有されている目標シートです。</p>
+      <div id="sharedWithMeList" style="margin-top:8px;font-size:0.85rem;color:var(--text-muted);">読み込み中...</div>
+    </div>
+  </div>
+</div>
+
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, doc, getDoc, setDoc, serverTimestamp }
+import { getFirestore, doc, getDoc, setDoc, getDocs, collection, serverTimestamp }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const firebaseConfig = {
@@ -983,6 +1024,99 @@ window.saveToFirestore = function() {
       });
     } catch(e) { console.error('Save error:', e); }
   }, 1500);
+};
+
+// ===== 共有機能 =====
+function escShareHtml(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+window.openShareModal = async () => {
+  document.getElementById('shareModal').classList.add('open');
+  renderShareMemberList();
+  loadSharedWithMe();
+};
+window.closeShareModal = () => document.getElementById('shareModal').classList.remove('open');
+
+window.addShareMember = async () => {
+  const email = document.getElementById('shareEmailInput').value.trim().toLowerCase();
+  if (!email || !email.includes('@')) { window.showToast('正しいメールアドレスを入力してください'); return; }
+  if (email === currentUser.email) { window.showToast('自分自身は追加できません'); return; }
+  try {
+    const shareRef = doc(firedb, 'users', currentUser.uid, 'settings', 'share');
+    const shareSnap = await getDoc(shareRef);
+    const current = shareSnap.exists() ? (shareSnap.data().sharedWith || []) : [];
+    if (current.includes(email)) { window.showToast('すでに追加済みです'); return; }
+    await setDoc(shareRef, { sharedWith: [...current, email] }, { merge: true });
+    document.getElementById('shareEmailInput').value = '';
+    window.showToast('追加しました');
+    renderShareMemberList();
+  } catch(e) { window.showToast('追加に失敗しました'); }
+};
+
+window.removeShareMember = async (email) => {
+  try {
+    const shareRef = doc(firedb, 'users', currentUser.uid, 'settings', 'share');
+    const shareSnap = await getDoc(shareRef);
+    const current = shareSnap.exists() ? (shareSnap.data().sharedWith || []) : [];
+    await setDoc(shareRef, { sharedWith: current.filter(e => e !== email) }, { merge: true });
+    window.showToast(email + ' の共有を解除しました');
+    renderShareMemberList();
+  } catch(e) { window.showToast('削除に失敗しました'); }
+};
+
+async function renderShareMemberList() {
+  if (!currentUser) return;
+  const el = document.getElementById('shareMemberList');
+  const shareSnap = await getDoc(doc(firedb, 'users', currentUser.uid, 'settings', 'share'));
+  const members = shareSnap.exists() ? (shareSnap.data().sharedWith || []) : [];
+  if (members.length === 0) {
+    el.innerHTML = '<div style="font-size:0.82rem;color:var(--text-muted);margin-top:6px;">まだ共有していません</div>';
+    return;
+  }
+  el.innerHTML = members.map(em =>
+    '<div class="share-member-item"><span class="share-member-email">' + escShareHtml(em) + '</span>' +
+    '<button class="share-btn-danger" onclick="removeShareMember(\'' + escShareHtml(em) + '\')">削除</button></div>'
+  ).join('');
+}
+
+async function loadSharedWithMe() {
+  if (!currentUser) return;
+  const el = document.getElementById('sharedWithMeList');
+  try {
+    const usersSnap = await getDocs(collection(firedb, 'users'));
+    const others = usersSnap.docs.filter(d => d.id !== currentUser.uid);
+    const results = await Promise.all(
+      others.map(userDoc =>
+        getDoc(doc(firedb, 'users', userDoc.id, 'settings', 'share'))
+          .then(shareSnap => ({ userDoc, shareSnap }))
+      )
+    );
+    const shared = results
+      .filter(({ shareSnap }) => shareSnap.exists() && (shareSnap.data().sharedWith || []).includes(currentUser.email))
+      .map(({ userDoc }) => ({ uid: userDoc.id, name: userDoc.data().displayName || userDoc.data().email || userDoc.id }));
+    if (shared.length === 0) {
+      el.textContent = 'まだ共有されているシートはありません';
+      return;
+    }
+    el.innerHTML = shared.map(s =>
+      '<div class="share-member-item" style="cursor:pointer;" onclick="viewSharedGoal(\'' + s.uid + '\',\'' + escShareHtml(s.name) + '\')">' +
+      '<span class="share-member-email">' + escShareHtml(s.name) + '</span>' +
+      '<span style="font-size:0.75rem;color:var(--accent);">閲覧する →</span></div>'
+    ).join('');
+  } catch(e) { el.textContent = '読み込みに失敗しました'; }
+}
+
+window.viewSharedGoal = async (uid, name) => {
+  try {
+    const snap = await getDoc(doc(firedb, 'users', uid, 'appData', 'goalSheet'));
+    if (snap.exists()) {
+      localStorage.setItem('goalSheetData', JSON.stringify(snap.data().data || {}));
+      if (typeof init === 'function') init();
+      window.showToast(name + ' の目標シートを表示中');
+    } else {
+      window.showToast('データが見つかりません');
+    }
+    closeShareModal();
+  } catch(e) { window.showToast('読み込みに失敗しました'); }
 };
 </script>
 
@@ -1244,19 +1378,19 @@ var GW_QUESTIONS = [
   { id: 'housing_cost', phase: 1, cat: '住まい', icon: '🏠', q: '住居費は月いくらのイメージ？', type: 'slider', min: 5, max: 100, step: 1, unit: '万円', defaultVal: 15, costKey: true },
   { id: 'food_style', phase: 1, cat: '食', icon: '🍽️', q: '理想の食生活は？', type: 'select',
     opts: [{v:'好きなものを自由に',icon:'🍣'},{v:'健康重視のこだわり食',icon:'🥗'},{v:'高級レストラン中心',icon:'🥂'}] },
-  { id: 'food_cost', phase: 1, cat: '食', icon: '🍽️', q: '月の食費イメージは？', type: 'slider', min: 3, max: 30, step: 1, unit: '万円', defaultVal: 8, costKey: true },
-  { id: 'clothes_cost', phase: 1, cat: '服', icon: '👔', q: 'ファッションに月いくらかけたい？', type: 'slider', min: 1, max: 30, step: 1, unit: '万円', defaultVal: 5, costKey: true },
+  { id: 'food_cost', phase: 1, cat: '食', icon: '🍽️', q: '月の食費イメージは？', type: 'slider', min: 3, max: 300, step: 1, unit: '万円', defaultVal: 8, costKey: true },
+  { id: 'clothes_cost', phase: 1, cat: '服', icon: '👔', q: 'ファッションに月いくらかけたい？', type: 'slider', min: 1, max: 300, step: 1, unit: '万円', defaultVal: 5, costKey: true },
   { id: 'transport', phase: 1, cat: '車', icon: '🚗', q: '理想の移動手段は？', type: 'select',
     opts: [{v:'高級車（ベンツ・BMW等）',icon:'🏎️'},{v:'SUV',icon:'🚙'},{v:'電車・自転車で十分',icon:'🚃'},{v:'タクシー生活',icon:'🚕'}] },
   { id: 'travel_freq', phase: 1, cat: '旅行', icon: '✈️', q: 'どのくらい旅行したい？', type: 'select',
     opts: [{v:'月1で国内旅行',icon:'🗾'},{v:'年数回は海外',icon:'🌏'},{v:'毎月どこかへ',icon:'🌍'},{v:'年1で十分',icon:'📅'}] },
   { id: 'travel_first', phase: 1, cat: '旅行', icon: '✈️', q: '一発目どこに行きたい？', type: 'input', placeholder: '例：ハワイ、パリ、沖縄...', hint: '夢の旅行先を教えて！' },
-  { id: 'travel_cost', phase: 1, cat: '旅行', icon: '✈️', q: '旅行に月いくら積み立てたい？', type: 'slider', min: 1, max: 20, step: 1, unit: '万円', defaultVal: 5, costKey: true },
-  { id: 'hobby', phase: 1, cat: '趣味', icon: '🎮', q: '趣味にいくらかけたい？', type: 'slider', min: 1, max: 20, step: 1, unit: '万円', defaultVal: 3, costKey: true },
-  { id: 'parents_cost', phase: 1, cat: '親孝行', icon: '👨‍👩‍👦', q: '月いくら仕送りしたい？', type: 'slider', min: 0, max: 20, step: 1, unit: '万円', defaultVal: 3, costKey: true },
-  { id: 'beauty_cost', phase: 1, cat: '美容', icon: '💅', q: '美容に月いくらかけたい？', type: 'slider', min: 0, max: 20, step: 1, unit: '万円', defaultVal: 3, costKey: true },
-  { id: 'health_cost', phase: 1, cat: '健康', icon: '💪', q: '健康に月いくらかけたい？', type: 'slider', min: 0, max: 20, step: 1, unit: '万円', defaultVal: 2, costKey: true, hint: 'ジム、サプリ、整体など' },
-  { id: 'savings', phase: 1, cat: '貯金', icon: '🏦', q: '月いくら貯金したい？', type: 'slider', min: 1, max: 50, step: 1, unit: '万円', defaultVal: 10, costKey: true },
+  { id: 'travel_cost', phase: 1, cat: '旅行', icon: '✈️', q: '旅行に月いくら積み立てたい？', type: 'slider', min: 1, max: 100, step: 1, unit: '万円', defaultVal: 5, costKey: true },
+  { id: 'hobby', phase: 1, cat: '趣味', icon: '🎮', q: '趣味にいくらかけたい？', type: 'slider', min: 1, max: 100, step: 1, unit: '万円', defaultVal: 3, costKey: true },
+  { id: 'parents_cost', phase: 1, cat: '親孝行', icon: '👨‍👩‍👦', q: '月いくら仕送りしたい？', type: 'slider', min: 0, max: 100, step: 1, unit: '万円', defaultVal: 3, costKey: true },
+  { id: 'beauty_cost', phase: 1, cat: '美容', icon: '💅', q: '美容に月いくらかけたい？', type: 'slider', min: 0, max: 100, step: 1, unit: '万円', defaultVal: 3, costKey: true },
+  { id: 'health_cost', phase: 1, cat: '健康', icon: '💪', q: '健康に月いくらかけたい？', type: 'slider', min: 0, max: 100, step: 1, unit: '万円', defaultVal: 2, costKey: true, hint: 'ジム、サプリ、整体など', bioHack: 10 },
+  { id: 'savings', phase: 1, cat: '貯金', icon: '🏦', q: '月いくら貯金したい？', type: 'slider', min: 1, max: 100, step: 1, unit: '万円', defaultVal: 10, costKey: true },
   { id: 'social_packs', phase: 1, cat: '社会貢献', icon: '🤝', q: 'ビタミール何パック送りたい？', type: 'slider', min: 1, max: 100, step: 1, unit: 'パック', defaultVal: 30, hint: '栄養不足の子どもたちに届きます' },
   { id: 'deadline', phase: 1, cat: 'まとめ', icon: '📅', q: '__TOTAL__', type: 'input_date', hint: '目標の期日を入力してね' },
   // Phase 2: やりたいこと/なりたい自分
@@ -1391,6 +1525,10 @@ function gwRender() {
     bodyHtml += '<div class="gw-slider-val" id="gwSliderVal">' + val + '<small> ' + q.unit + '</small></div>';
     bodyHtml += '<input type="range" class="gw-slider" id="gwSlider" min="' + q.min + '" max="' + q.max + '" step="' + q.step + '" value="' + val + '" oninput="gwSliderChange(this.value)">';
     bodyHtml += '<div class="gw-slider-labels"><span>' + q.min + q.unit + '</span><span>' + q.max + q.unit + '+</span></div>';
+    if (q.bioHack) {
+      var show = val >= q.bioHack;
+      bodyHtml += '<div id="gwBioHack" style="text-align:center;margin-top:12px;font-size:1.1rem;font-weight:800;color:#00ff88;letter-spacing:2px;' + (show ? '' : 'display:none;') + '">🧬 BIO HACK!! 🧬</div>';
+    }
     bodyHtml += '</div>';
   } else if (q.type === 'input') {
     var v = ans || '';
@@ -1455,6 +1593,10 @@ function gwSliderChange(val) {
   var q = GW_QUESTIONS[gwState.step];
   document.getElementById('gwSliderVal').innerHTML = val + '<small> ' + q.unit + '</small>';
   gwSaveAnswer(q.id, val);
+  if (q.bioHack) {
+    var el = document.getElementById('gwBioHack');
+    if (el) el.style.display = parseInt(val) >= q.bioHack ? '' : 'none';
+  }
 }
 
 function gwInputChange(val) {
