@@ -105,7 +105,9 @@
     .status-未着手   { background: rgba(107,107,128,0.2); color: var(--text-muted); border: 1px solid var(--border); }
     .status-連絡中   { background: rgba(74,158,255,0.15); color: #4a9eff; border: 1px solid rgba(74,158,255,0.3); }
     .status-CT予定  { background: rgba(255,165,0,0.15); color: #ffa500; border: 1px solid rgba(255,165,0,0.3); }
+    .status-CT済み  { background: rgba(255,200,0,0.15); color: #ffc800; border: 1px solid rgba(255,200,0,0.3); }
     .status-つながった { background: rgba(232,255,71,0.15); color: var(--accent); border: 1px solid rgba(232,255,71,0.3); }
+    .status-体感済み { background: rgba(0,210,180,0.15); color: #00d2b4; border: 1px solid rgba(0,210,180,0.3); }
     .status-BC済み  { background: rgba(46,204,113,0.15); color: var(--success); border: 1px solid rgba(46,204,113,0.3); }
     .status-ユーザー { background: rgba(162,155,254,0.15); color: #a29bfe; border: 1px solid rgba(162,155,254,0.3); }
     .status-NG      { background: rgba(255,71,87,0.15); color: var(--accent2); border: 1px solid rgba(255,71,87,0.3); }
@@ -422,6 +424,7 @@
         <option value="job">職業</option>
         <option value="living">住まい</option>
         <option value="partner">パートナー</option>
+        <option value="type">タイプ</option>
         <option value="lastcontact">最終連絡</option>
         <option value="address">現住所（都道府県）</option>
         <option value="hometown">出身地（都道府県）</option>
@@ -440,6 +443,7 @@
         <select id="searchSelectValue1" onchange="renderList()" style="width:100%;"></select>
       </div>
       <button class="btn-star-filter" id="starFilterBtn" onclick="toggleStarFilter()" title="お気に入りのみ表示">☆</button>
+      <button class="btn-star-filter" id="ngFilterBtn" onclick="toggleNGFilter()" title="NGアーカイブ" style="font-size:0.75rem;font-weight:700;padding:10px 11px;">NG</button>
       <button class="btn-filter" id="addConditionBtn" onclick="toggleAdvancedFilters()">条件追加 ▾</button>
       <button class="btn-reset" onclick="resetSearch()">リセット</button>
     </div>
@@ -506,7 +510,7 @@
     <form id="personForm" onsubmit="savePerson(event)">
       <div class="form-grid">
         <div class="form-group full"><label>名前 *</label><input type="text" id="f_name" required placeholder="例：田中 太郎"></div>
-        <div class="form-group full"><label>ステータス</label><select id="f_status"><option value="未着手">未着手</option><option value="連絡中">連絡中</option><option value="CT予定">CT予定</option><option value="つながった">つながった</option><option value="BC済み">BC済み</option><option value="ユーザー">ユーザー</option><option value="NG">NG</option></select></div>
+        <div class="form-group full"><label>ステータス</label><select id="f_status"><option value="未着手">未着手</option><option value="連絡中">連絡中</option><option value="CT予定">CT予定</option><option value="CT済み">CT済み</option><option value="つながった">つながった</option><option value="体感済み">体感済み</option><option value="BC済み">BC済み</option><option value="ユーザー">ユーザー</option><option value="NG">NG</option></select></div>
         <div class="form-group">
           <label>年齢</label>
           <select id="f_age">
@@ -640,6 +644,7 @@ let viewingUserName = '';
 const FIELDS = ['name','status','age','gender','insta','relation','job','trust','position','needs',
                 'address','address_city','hometown','hometown_city','living','partner','type','lastcontact','memo','writer'];
 let favoriteFilter = false;
+let showNG = false;
 
 // ===== メール認証エラーメッセージ =====
 function authErrMsg(code) {
@@ -1108,6 +1113,8 @@ window.renderList = function() {
   const isReadOnly = viewingUserId !== currentUser?.uid;
 
   const filtered = people.filter(p => {
+    if (showNG) { if (p.status !== 'NG') return false; }
+    else        { if (p.status === 'NG') return false; }
     if (favoriteFilter && !p.favorite) return false;
     const m1 = matchCondition(p, 'searchCategory',  '1');
     const m2 = matchCondition(p, 'searchCategory2', '2');
@@ -1116,7 +1123,7 @@ window.renderList = function() {
 
   document.getElementById('countBadge').textContent = `${filtered.length}人`;
   document.getElementById('totalCount').textContent = people.filter(p => p.status !== 'NG').length;
-  document.getElementById('activeCount').textContent = people.filter(p => ['連絡中','CT予定','つながった'].includes(p.status)).length;
+  document.getElementById('activeCount').textContent = people.filter(p => ['連絡中','CT予定','CT済み','つながった','体感済み'].includes(p.status)).length;
   document.getElementById('wonCount').textContent = people.filter(p => ['BC済み','ユーザー'].includes(p.status)).length;
   const container = document.getElementById('listContainer');
 
@@ -1150,7 +1157,7 @@ window.renderList = function() {
         <div class="card-badges">
           ${p.trust?`<span class="badge trust-${p.trust}">${p.trust}</span>`:''}
           <select class="status-badge status-${p.status||'未着手'}" onchange="changeStatus('${p.id}', this.value)" onclick="event.stopPropagation()">
-            ${['未着手','連絡中','CT予定','つながった','BC済み','ユーザー','NG'].map(s=>`<option value="${s}" ${(p.status||'未着手')===s?'selected':''}>${s}</option>`).join('')}
+            ${['未着手','連絡中','CT予定','CT済み','つながった','体感済み','BC済み','ユーザー','NG'].map(s=>`<option value="${s}" ${(p.status||'未着手')===s?'selected':''}>${s}</option>`).join('')}
           </select>
           <span class="chevron" id="chev-${p.id}">▼</span>
         </div>
@@ -1168,10 +1175,11 @@ window.renderList = function() {
           ${p.memo?`<div class="detail-item full"><div class="detail-label">備考</div><div class="detail-value" style="white-space:pre-wrap;">${escHtml(p.memo)}</div></div>`:''}
           ${p.writer?detailItem('記入者',`<span style="color:var(--primary);font-weight:600;">${escHtml(p.writer)}</span>`):''}
         </div>
-        ${canEdit?`<div class="card-actions">
-          <button class="btn btn-outline btn-sm" onclick="openEditModal('${p.id}')">編集</button>
-          <button class="btn btn-danger btn-sm" onclick="askDelete('${p.id}')">削除</button>
-        </div>`:''}
+        <div class="card-actions">
+          <button class="btn btn-outline btn-sm" onclick="copyCardText('${p.id}')">📋 コピー</button>
+          ${canEdit?`<button class="btn btn-outline btn-sm" onclick="openEditModal('${p.id}')">編集</button>
+          <button class="btn btn-danger btn-sm" onclick="askDelete('${p.id}')">削除</button>`:''}
+        </div>
       </div>
     </div>`;
   }).join('');
@@ -1214,6 +1222,30 @@ window.openEditModal = (id) => {
   setTimeout(()=>{ document.getElementById('editModal').scrollTop=0; },0);
 };
 
+window.copyCardText = (id) => {
+  const p = people.find(x => x.id === id);
+  if (!p) return;
+  const lines = [];
+  if (p.name)         lines.push(`【${p.name}】`);
+  if (p.status)       lines.push(`ステータス: ${p.status}`);
+  if (p.type)         lines.push(`タイプ: ${p.type}`);
+  const basic = [p.age ? p.age+'歳' : '', p.gender, p.job].filter(Boolean).join(' / ');
+  if (basic)          lines.push(basic);
+  if (p.relation)     lines.push(`関係性: ${p.relation}`);
+  if (p.needs)        lines.push(`ニーズ: ${p.needs}`);
+  const addr = [p.address, p.address_city].filter(Boolean).join(' ');
+  if (addr)           lines.push(`現住所: ${addr}`);
+  const home = [p.hometown, p.hometown_city].filter(Boolean).join(' ');
+  if (home)           lines.push(`出身地: ${home}`);
+  if (p.living)       lines.push(`住まい: ${p.living}`);
+  if (p.partner)      lines.push(`パートナー: ${p.partner}`);
+  if (p.insta)        lines.push(`Instagram: ${p.insta}`);
+  if (p.memo)         lines.push(`備考: ${p.memo}`);
+  navigator.clipboard.writeText(lines.join('\n'))
+    .then(() => showToast('コピーしました！'))
+    .catch(() => showToast('コピーに失敗しました'));
+};
+
 window.toggleFavorite = async (id) => {
   if (!currentUser || viewingUserId !== currentUser.uid) return;
   const p = people.find(x => x.id === id);
@@ -1228,6 +1260,15 @@ window.toggleStarFilter = () => {
   const btn = document.getElementById('starFilterBtn');
   btn.textContent = favoriteFilter ? '★' : '☆';
   btn.classList.toggle('active', favoriteFilter);
+  renderList();
+};
+
+window.toggleNGFilter = () => {
+  showNG = !showNG;
+  const btn = document.getElementById('ngFilterBtn');
+  btn.classList.toggle('active', showNG);
+  const ngCount = people.filter(p => p.status === 'NG').length;
+  btn.textContent = showNG ? `NG ${ngCount}` : 'NG';
   renderList();
 };
 
@@ -1246,6 +1287,7 @@ window.resetSearch = () => {
     btn.classList.remove('active');
   }
   if (favoriteFilter) toggleStarFilter();
+  if (showNG) toggleNGFilter();
   renderList();
 };
 
