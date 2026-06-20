@@ -1241,7 +1241,7 @@ window.copyCardText = (id) => {
   if (p.partner)      lines.push(`パートナー: ${p.partner}`);
   if (p.insta)        lines.push(`Instagram: ${p.insta}`);
   if (p.memo)         lines.push(`備考: ${p.memo}`);
-  navigator.clipboard.writeText(lines.join('\n'))
+  navigator.clipboard.writeText(lines.join('\n\n'))
     .then(() => showToast('コピーしました！'))
     .catch(() => showToast('コピーに失敗しました'));
 };
