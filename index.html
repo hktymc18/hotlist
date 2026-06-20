@@ -1292,9 +1292,9 @@ window.resetSearch = () => {
 };
 
 window.changeStatus = async (id, newStatus) => {
-  if (!currentUser || viewingUserId !== currentUser.uid) return;
+  if (!currentUser || !viewingUserId) return;
   try {
-    await updateDoc(doc(db,'users',currentUser.uid,'people',id), { status: newStatus, updatedAt: serverTimestamp() });
+    await updateDoc(doc(db,'users',viewingUserId,'people',id), { status: newStatus, updatedAt: serverTimestamp() });
   } catch(e) { showToast('更新に失敗しました'); }
 };
 
