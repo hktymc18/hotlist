@@ -1237,7 +1237,7 @@ function setupDragDrop() {
     drag.timer = setTimeout(() => {
       if (drag.moved) return;
       drag.active = true;
-      if (navigator.vibrate) navigator.vibrate(40);
+      if (navigator.vibrate) navigator.vibrate([60, 30, 60]);
       const ghost = card.cloneNode(true);
       ghost.className = 'card-drag-ghost';
       ghost.style.width  = card.offsetWidth + 'px';
