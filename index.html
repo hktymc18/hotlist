@@ -218,6 +218,8 @@
 
     /* ===== ドラッグ並び替え ===== */
     .card-dragging { opacity: 0.3 !important; pointer-events: none; }
+    @keyframes dragActivate { 0%{box-shadow:0 0 0 0 rgba(232,255,71,0);} 40%{box-shadow:0 0 0 8px rgba(232,255,71,0.45);} 100%{box-shadow:0 0 0 0 rgba(232,255,71,0);} }
+    .card-drag-activate { animation: dragActivate 0.4s ease-out forwards; }
     .card-drag-ghost { position: fixed; z-index: 9999; pointer-events: none; opacity: 0.95; transform: scale(1.02); box-shadow: 0 12px 40px rgba(0,0,0,0.6); border: 1.5px solid var(--accent) !important; border-radius: var(--radius); background: var(--surface); overflow: hidden; }
     .card-drop-indicator { height: 3px; background: var(--accent); border-radius: 2px; margin: 0 14px; box-shadow: 0 0 10px rgba(232,255,71,0.7); }
 
@@ -1238,6 +1240,8 @@ function setupDragDrop() {
       if (drag.moved) return;
       drag.active = true;
       if (navigator.vibrate) navigator.vibrate([60, 30, 60]);
+      card.classList.add('card-drag-activate');
+      setTimeout(() => card.classList.remove('card-drag-activate'), 400);
       const ghost = card.cloneNode(true);
       ghost.className = 'card-drag-ghost';
       ghost.style.width  = card.offsetWidth + 'px';
