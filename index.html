@@ -213,8 +213,13 @@
     /* ===== ハイライト ===== */
     .card-highlight1 { border: 1.5px solid rgba(100,200,255,0.5) !important; animation: glow1 2.5s ease-in-out infinite; }
     @keyframes glow1 { 0%,100%{box-shadow:0 0 8px rgba(100,200,255,0.15),var(--shadow);}50%{box-shadow:0 0 18px rgba(100,200,255,0.35),var(--shadow);} }
-    .card-highlight2 { border: 1.5px solid rgba(255,165,0,0.7) !important; animation: glow2 1.8s ease-in-out infinite; }
-    @keyframes glow2 { 0%,100%{box-shadow:0 0 10px rgba(255,140,0,0.25),var(--shadow);}50%{box-shadow:0 0 26px rgba(255,140,0,0.55),0 0 6px rgba(255,200,0,0.3),var(--shadow);} }
+    .card-highlight2 { border: 1.5px solid rgba(255,215,0,0.7) !important; animation: glow2 1.8s ease-in-out infinite; }
+    @keyframes glow2 { 0%,100%{box-shadow:0 0 10px rgba(255,200,0,0.25),var(--shadow);}50%{box-shadow:0 0 28px rgba(255,215,0,0.6),0 0 8px rgba(255,230,80,0.3),var(--shadow);} }
+
+    /* ===== ドラッグ並び替え ===== */
+    .card-dragging { opacity: 0.3 !important; pointer-events: none; }
+    .card-drag-ghost { position: fixed; z-index: 9999; pointer-events: none; opacity: 0.95; transform: rotate(1.5deg) scale(1.03); box-shadow: 0 12px 40px rgba(0,0,0,0.6); border: 1.5px solid var(--accent) !important; border-radius: var(--radius); background: var(--surface); overflow: hidden; }
+    .card-drop-indicator { height: 3px; background: var(--accent); border-radius: 2px; margin: 0 14px; box-shadow: 0 0 10px rgba(232,255,71,0.7); }
 
     /* ===== 最終連絡バッジ ===== */
     .lc-badge { display: inline-block; padding: 2px 8px; border-radius: 5px; font-size: 0.8rem; font-weight: 700; }
@@ -425,6 +430,7 @@
         <option value="living">住まい</option>
         <option value="partner">パートナー</option>
         <option value="type">タイプ</option>
+        <option value="friends">友だち</option>
         <option value="lastcontact">最終連絡</option>
         <option value="address">現住所（都道府県）</option>
         <option value="hometown">出身地（都道府県）</option>
@@ -471,6 +477,7 @@
           <option value="job">職業</option>
           <option value="living">住まい</option>
           <option value="partner">パートナー</option>
+          <option value="friends">友だち</option>
           <option value="type">タイプ</option>
           <option value="lastcontact">最終連絡</option>
           <option value="address">現住所（都道府県）</option>
@@ -545,6 +552,7 @@
         <div class="form-group full"><label>仕事（社名）</label><input type="text" id="f_job" placeholder="例：営業 / 株式会社〇〇"></div>
         <div class="form-group"><label>信用度</label><select id="f_trust"><option value="">-</option><option value="S">S（100%）</option><option value="A">A（80%以上）</option><option value="B">B（50%以上）</option><option value="C">C（それ以下）</option><option value="D">D（全くなし）</option></select></div>
         <div class="form-group"><label>立場</label><select id="f_position"><option value="">-</option><option value="↑">↑ 自分が上</option><option value="↓">↓ 自分が下</option><option value="ー">ー 同じ</option></select></div>
+        <div class="form-group"><label>友だち</label><select id="f_friends"><option value="">-</option><option value="多そう">多そう</option><option value="普通">普通</option><option value="少なそう">少なそう</option></select></div>
         <div class="form-group full"><label>ニーズ</label><input type="text" id="f_needs" placeholder="例：お金を稼ぎたい、仕事を辞めたい"></div>
         <div class="form-group"><label>現住所（都道府県）</label><input type="text" id="f_address" placeholder="例：福岡"></div>
         <div class="form-group"><label>現住所（市）</label><input type="text" id="f_address_city" placeholder="例：福岡市"></div>
@@ -642,7 +650,7 @@ let unsubscribeSnapshot = null;
 let viewingUserId = null; // 他人のリストを閲覧中のUID
 let viewingUserName = '';
 
-const FIELDS = ['name','status','age','gender','insta','relation','job','trust','position','needs',
+const FIELDS = ['name','status','age','gender','insta','relation','job','trust','position','friends','needs',
                 'address','address_city','hometown','hometown_city','living','partner','type','lastcontact','memo','writer'];
 let favoriteFilter = false;
 let showNG = false;
@@ -875,7 +883,12 @@ function loadMyList(uid) {
   const colRef = collection(db, 'users', targetUid, 'people');
   unsubscribeSnapshot = onSnapshot(colRef, snapshot => {
     people = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-    people.sort((a, b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
+    people.sort((a, b) => {
+      if (a.sortOrder != null && b.sortOrder != null) return a.sortOrder - b.sortOrder;
+      if (a.sortOrder != null) return -1;
+      if (b.sortOrder != null) return 1;
+      return (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0);
+    });
     renderList();
   });
 }
@@ -1018,14 +1031,15 @@ function lastcontactClass(v) {
 }
 
 function getHighlightClass(p) {
-  const age = parseInt(p.age,10);
-  const ageOk = !isNaN(age) && age>=20 && age<=26;
-  const livingOk = p.living==='一人暮らし';
-  const addressOk = (p.address||'').includes('福岡');
-  const hometownOk = (p.hometown||'').includes('福岡');
-  if (!ageOk||!livingOk||!addressOk||!hometownOk) return '';
-  if ((p.trust==='S'||p.trust==='A') && p.position==='↑') return 'card-highlight2';
-  return 'card-highlight1';
+  const livingOk  = p.living === '一人暮らし';
+  const friendsOk = p.friends === '多そう';
+  const trustGold = p.trust === 'S' || p.trust === 'A';
+  const trustBlue = trustGold || p.trust === 'B';
+  const posGold   = p.position === '↑';
+  const posBlue   = p.position === '↑' || p.position === 'ー';
+  if (livingOk && friendsOk && trustGold && posGold) return 'card-highlight2';
+  if (livingOk && friendsOk && trustBlue && posBlue) return 'card-highlight1';
+  return '';
 }
 
 // ===== 年齢セレクト初期化 =====
@@ -1047,6 +1061,7 @@ const FIXED_OPTIONS = {
   gender:      ['男性','女性','その他'],
   trust:       ['S','A','B','C','D'],
   position:    ['↑','↓','ー'],
+  friends:     ['多そう','普通','少なそう'],
   living:      ['一人暮らし','実家','同棲','その他'],
   partner:     ['いる','いない'],
   type:        ['プロモーター','コントローラー','アナライザー','サポーター'],
@@ -1103,7 +1118,7 @@ function matchCondition(p, catId, suffix) {
   const val = document.getElementById('searchSelectValue'+suffix)?.value || '';
   if (!val) return true;
   const fieldMap = {
-    gender:p.gender, trust:p.trust, position:p.position, relation:p.relation,
+    gender:p.gender, trust:p.trust, position:p.position, friends:p.friends, relation:p.relation,
     job:p.job, living:p.living, partner:p.partner, type:p.type,
     lastcontact:p.lastcontact, address:p.address, hometown:p.hometown,
   };
@@ -1168,6 +1183,7 @@ window.renderList = function() {
       </div>
       <div class="card-detail" id="detail-${p.id}">
         <div class="detail-grid">
+          ${p.friends?detailItem('友だち',escHtml(p.friends)):''}
           ${p.type?detailItem('４つのタイプ',escHtml(p.type)):''}
           ${p.needs?detailItem('ニーズ',escHtml(p.needs)):''}
           ${addressFull?detailItem('現住所',escHtml(addressFull)):''}
@@ -1187,6 +1203,7 @@ window.renderList = function() {
       </div>
     </div>`;
   }).join('');
+  setupDragDrop();
 };
 
 function detailItem(label,value) {
@@ -1194,9 +1211,106 @@ function detailItem(label,value) {
 }
 
 window.toggleCard = (id) => {
+  if (drag.didDrag) { drag.didDrag = false; return; }
   document.getElementById('detail-'+id).classList.toggle('open');
   document.getElementById('chev-'+id).classList.toggle('open');
 };
+
+// ===== 長押しドラッグ並び替え =====
+const drag = { active:false, id:null, ghost:null, srcCard:null, timer:null,
+               startX:0, startY:0, moved:false, didDrag:false, insertBefore:null };
+
+function setupDragDrop() {
+  const c = document.getElementById('listContainer');
+  if (!c || c._dragSetup) return;
+  c._dragSetup = true;
+  c.addEventListener('touchstart', e => {
+    const header = e.target.closest('.card-header');
+    if (!header) return;
+    const card = header.closest('.person-card');
+    if (!card) return;
+    const t = e.touches[0];
+    drag.id = card.id.replace('card-','');
+    drag.srcCard = card;
+    drag.startX = t.clientX; drag.startY = t.clientY;
+    drag.moved = false; drag.didDrag = false;
+    drag.timer = setTimeout(() => {
+      if (drag.moved) return;
+      drag.active = true;
+      if (navigator.vibrate) navigator.vibrate(40);
+      const ghost = card.cloneNode(true);
+      ghost.className = 'card-drag-ghost';
+      ghost.style.width  = card.offsetWidth + 'px';
+      ghost.style.left   = card.getBoundingClientRect().left + 'px';
+      ghost.style.top    = (t.clientY - card.offsetHeight/2) + 'px';
+      document.body.appendChild(ghost);
+      drag.ghost = ghost;
+      card.classList.add('card-dragging');
+    }, 550);
+  }, {passive:true});
+
+  c.addEventListener('touchmove', e => {
+    const t = e.touches[0];
+    if (!drag.active) {
+      if (Math.abs(t.clientX-drag.startX)>8 || Math.abs(t.clientY-drag.startY)>8) {
+        drag.moved = true; clearTimeout(drag.timer);
+      }
+      return;
+    }
+    e.preventDefault();
+    drag.ghost.style.top = (t.clientY - drag.ghost.offsetHeight/2) + 'px';
+    // drop indicator
+    c.querySelectorAll('.card-drop-indicator').forEach(el=>el.remove());
+    const cards = [...c.querySelectorAll('.person-card:not(.card-dragging)')];
+    let ib = null;
+    for (const card of cards) {
+      const r = card.getBoundingClientRect();
+      if (t.clientY < r.top + r.height/2) { ib = card; break; }
+    }
+    drag.insertBefore = ib;
+    const ind = document.createElement('div');
+    ind.className = 'card-drop-indicator';
+    ib ? c.insertBefore(ind, ib) : c.appendChild(ind);
+  }, {passive:false});
+
+  const endDrag = async () => {
+    clearTimeout(drag.timer);
+    if (!drag.active) { drag.active=false; return; }
+    if (drag.ghost) { drag.ghost.remove(); drag.ghost=null; }
+    if (drag.srcCard) drag.srcCard.classList.remove('card-dragging');
+    c.querySelectorAll('.card-drop-indicator').forEach(el=>el.remove());
+    drag.active = false;
+    drag.didDrag = true;
+
+    // build new order from DOM
+    const cards = [...c.querySelectorAll('.person-card:not(.card-dragging)')];
+    const ib = drag.insertBefore;
+    const newOrder = [];
+    let inserted = false;
+    for (const card of cards) {
+      if (card === ib && !inserted) { newOrder.push(drag.id); inserted=true; }
+      const cid = card.id.replace('card-','');
+      if (cid !== drag.id) newOrder.push(cid);
+    }
+    if (!inserted) newOrder.push(drag.id);
+
+    drag.id=null; drag.srcCard=null; drag.insertBefore=null;
+    if (!viewingUserId) return;
+    try {
+      await Promise.all(newOrder.map((id,i) =>
+        updateDoc(doc(db,'users',viewingUserId,'people',id), {sortOrder:i})
+      ));
+    } catch(err) { showToast('並び替えに失敗しました'); }
+  };
+  c.addEventListener('touchend',   endDrag, {passive:true});
+  c.addEventListener('touchcancel', () => {
+    clearTimeout(drag.timer);
+    if (drag.ghost) { drag.ghost.remove(); drag.ghost=null; }
+    if (drag.srcCard) drag.srcCard.classList.remove('card-dragging');
+    c.querySelectorAll('.card-drop-indicator').forEach(el=>el.remove());
+    drag.active=false;
+  }, {passive:true});
+}
 
 function escHtml(s) {
   return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -1237,6 +1351,7 @@ window.copyCardText = (id) => {
   if (basic)          lines.push(basic);
   if (p.trust)        lines.push(`信用度: ${p.trust}`);
   if (p.position)     lines.push(`立場: ${p.position}`);
+  if (p.friends)      lines.push(`友だち: ${p.friends}`);
   if (p.relation)     lines.push(`関係性: ${p.relation}`);
   if (p.needs)        lines.push(`ニーズ: ${p.needs}`);
   const addr = [p.address, p.address_city].filter(Boolean).join(' ');
