@@ -175,9 +175,9 @@
 
     /* ===== カード ===== */
     .list-container { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
-    .person-card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; border: 1px solid var(--border); }
+    .person-card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; border: 1px solid var(--border); -webkit-user-select: none; user-select: none; }
     .person-card.card-ng { opacity: 0.35; filter: grayscale(60%); }
-    .card-header { padding: 10px 14px 8px; display: flex; align-items: center; gap: 11px; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
+    .card-header { padding: 10px 14px 8px; display: flex; align-items: center; gap: 11px; cursor: pointer; -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; }
     .avatar { width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; font-weight: 700; color: #fff; flex-shrink: 0; }
     .card-info { flex: 1; min-width: 0; }
     .card-name { font-size: 1.05rem; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
@@ -218,7 +218,7 @@
 
     /* ===== ドラッグ並び替え ===== */
     .card-dragging { opacity: 0.3 !important; pointer-events: none; }
-    .card-drag-ghost { position: fixed; z-index: 9999; pointer-events: none; opacity: 0.95; transform: rotate(1.5deg) scale(1.03); box-shadow: 0 12px 40px rgba(0,0,0,0.6); border: 1.5px solid var(--accent) !important; border-radius: var(--radius); background: var(--surface); overflow: hidden; }
+    .card-drag-ghost { position: fixed; z-index: 9999; pointer-events: none; opacity: 0.95; transform: scale(1.02); box-shadow: 0 12px 40px rgba(0,0,0,0.6); border: 1.5px solid var(--accent) !important; border-radius: var(--radius); background: var(--surface); overflow: hidden; }
     .card-drop-indicator { height: 3px; background: var(--accent); border-radius: 2px; margin: 0 14px; box-shadow: 0 0 10px rgba(232,255,71,0.7); }
 
     /* ===== 最終連絡バッジ ===== */
