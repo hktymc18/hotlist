@@ -619,6 +619,47 @@
     .auth-link { font-size: 0.72rem; color: var(--text-muted); text-align: center; cursor: pointer; text-decoration: underline; }
     #mainApp { display: none; }
     .loading-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; color: var(--text-muted); font-size: 0.85rem; }
+    /* ===== 夢100リスト ===== */
+    .dream-header { text-align: center; padding: 16px 0 8px; }
+    .dream-achieved { font-size: 2.2rem; font-weight: 800; color: var(--accent); }
+    .dream-total { font-size: 1rem; color: var(--text-muted); }
+    .dream-progress-label { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
+    .dream-progress-bar-wrap { height: 6px; background: var(--surface); border-radius: 3px; margin-top: 10px; overflow: hidden; }
+    .dream-progress-bar { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.4s ease; }
+    .dream-tabs { display: flex; gap: 0; margin: 16px 0 12px; background: var(--surface); border-radius: 10px; padding: 3px; }
+    .dream-tab { flex: 1; padding: 10px; font-size: 0.82rem; font-weight: 600; border: none; background: none; color: var(--text-muted); border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+    .dream-tab.active { background: var(--accent); color: #000; }
+    .dream-item { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 8px; transition: opacity 0.3s; }
+    .dream-item.achieved { opacity: 0.6; }
+    .dream-item-top { display: flex; align-items: flex-start; gap: 10px; }
+    .dream-check { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--border); background: none; cursor: pointer; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: transparent; transition: all 0.2s; }
+    .dream-check.checked { background: var(--accent); border-color: var(--accent); color: #000; }
+    .dream-item-body { flex: 1; min-width: 0; }
+    .dream-item-title { font-size: 0.88rem; font-weight: 600; color: var(--text); word-break: break-word; }
+    .dream-item-title a { color: var(--accent); text-decoration: none; }
+    .dream-item-title a:hover { text-decoration: underline; }
+    .dream-item.achieved .dream-item-title { text-decoration: line-through; color: var(--text-muted); }
+    .dream-item-meta { display: flex; gap: 12px; margin-top: 4px; font-size: 0.72rem; color: var(--text-muted); }
+    .dream-item-actions { display: flex; gap: 4px; flex-shrink: 0; }
+    .dream-item-actions button { background: none; border: none; color: var(--text-muted); font-size: 0.8rem; cursor: pointer; padding: 4px; }
+    .dream-add-btn { position: fixed; bottom: 24px; right: 24px; width: 56px; height: 56px; border-radius: 50%; background: var(--accent); color: #000; font-size: 1.5rem; font-weight: 700; border: none; cursor: pointer; box-shadow: 0 4px 16px rgba(232,255,71,0.3); z-index: 90; display: none; }
+    .tab-panel#tab-dream.active ~ .dream-add-btn-show { display: block; }
+    .dream-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 3000; display: none; align-items: center; justify-content: center; padding: 16px; }
+    .dream-modal-overlay.open { display: flex; }
+    .dream-modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 420px; padding: 24px 20px; }
+    .dream-modal-title { font-size: 1rem; font-weight: 700; margin-bottom: 16px; }
+    .dream-form-group { margin-bottom: 14px; }
+    .dream-form-group label { display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; }
+    .dream-form-group input { width: 100%; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 0.9rem; box-sizing: border-box; }
+    .dream-form-row { display: flex; gap: 10px; }
+    .dream-cat-toggle { display: flex; gap: 0; background: var(--surface); border-radius: 8px; padding: 2px; }
+    .dream-cat-btn { flex: 1; padding: 8px; font-size: 0.8rem; font-weight: 600; border: none; background: none; color: var(--text-muted); border-radius: 6px; cursor: pointer; }
+    .dream-cat-btn.active { background: var(--accent); color: #000; }
+    .dream-form-actions { display: flex; gap: 8px; margin-top: 18px; }
+    .dream-form-cancel { flex: 1; padding: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; color: var(--text-muted); font-size: 0.85rem; cursor: pointer; }
+    .dream-form-save { flex: 1; padding: 12px; background: var(--accent); border: none; border-radius: 8px; color: #000; font-size: 0.85rem; font-weight: 700; cursor: pointer; }
+    .dream-empty { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 0.85rem; }
+
     .share-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 3000; display: none; align-items: flex-end; justify-content: center; }
     .share-overlay.open { display: flex; }
     .share-panel { background: var(--surface); border-radius: 16px 16px 0 0; width: 100%; max-width: 480px; max-height: 80vh; overflow-y: auto; padding: 24px 20px; }
@@ -691,6 +732,7 @@
 <div class="tab-bar" id="tabBar">
   <button class="tab-btn active" data-tab="sim">シミュレーション</button>
   <button class="tab-btn" data-tab="goal">目標設定</button>
+  <button class="tab-btn" data-tab="dream">夢100</button>
   <button class="tab-btn" data-tab="check">チェックリスト</button>
   <button class="tab-btn" data-tab="bonus">BB早見表</button>
 </div>
@@ -783,7 +825,68 @@
 </div>
 <div id="goalWizard"></div>
 
-<!-- ==================== TAB 3: チェックリスト ==================== -->
+<!-- ==================== TAB 3: 夢100リスト ==================== -->
+<div class="tab-panel" id="tab-dream">
+  <div class="dream-header">
+    <div class="dream-progress-ring" id="dreamRing"></div>
+    <div class="dream-progress-text">
+      <span class="dream-achieved" id="dreamAchieved">0</span>
+      <span class="dream-total">/ <span id="dreamTotal">0</span></span>
+      <div class="dream-progress-label">達成</div>
+    </div>
+    <div class="dream-progress-bar-wrap">
+      <div class="dream-progress-bar" id="dreamBar" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="dream-tabs">
+    <button class="dream-tab active" onclick="switchDreamCat('want')" id="dreamTabWant">ほしいもの</button>
+    <button class="dream-tab" onclick="switchDreamCat('do')" id="dreamTabDo">やりたいこと</button>
+  </div>
+
+  <div id="dreamList"></div>
+
+  <button class="dream-add-btn" onclick="openDreamModal()">＋</button>
+</div>
+
+<!-- ===== 夢100 追加/編集モーダル ===== -->
+<div class="dream-modal-overlay" id="dreamModal" onclick="if(event.target===this)closeDreamModal()">
+  <div class="dream-modal">
+    <div class="dream-modal-title" id="dreamModalTitle">夢を追加</div>
+    <input type="hidden" id="dreamEditId">
+    <div class="dream-form-group">
+      <label>カテゴリ</label>
+      <div class="dream-cat-toggle">
+        <button class="dream-cat-btn active" onclick="setDreamFormCat('want')" id="dreamFormCatWant">ほしいもの</button>
+        <button class="dream-cat-btn" onclick="setDreamFormCat('do')" id="dreamFormCatDo">やりたいこと</button>
+      </div>
+    </div>
+    <div class="dream-form-group">
+      <label>タイトル</label>
+      <input type="text" id="dreamFormTitle" placeholder="例：MacBook Pro、ハワイ旅行...">
+    </div>
+    <div class="dream-form-group">
+      <label>URL（任意）</label>
+      <input type="url" id="dreamFormUrl" placeholder="https://...">
+    </div>
+    <div class="dream-form-row">
+      <div class="dream-form-group" style="flex:1">
+        <label>金額（万円）</label>
+        <input type="number" id="dreamFormAmount" placeholder="0" min="0">
+      </div>
+      <div class="dream-form-group" style="flex:1">
+        <label>いつまでに</label>
+        <input type="month" id="dreamFormDeadline">
+      </div>
+    </div>
+    <div class="dream-form-actions">
+      <button class="dream-form-cancel" onclick="closeDreamModal()">キャンセル</button>
+      <button class="dream-form-save" onclick="saveDream()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB 4: チェックリスト ==================== -->
 <div class="tab-panel" id="tab-check">
 
   <div class="section">
@@ -1213,6 +1316,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.classList.add('active');
     document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
     window.scrollTo(0, 0);
+    if (typeof updateDreamAddBtn === 'function') updateDreamAddBtn();
   });
 });
 
@@ -1936,12 +2040,194 @@ function showToast(msg) {
 }
 
 // ===== Init =====
+// ===== 夢100リスト =====
+var dreamCat = 'want';
+var dreamFormCat = 'want';
+
+function getDreams() {
+  var d = loadData();
+  return d.dreams || [];
+}
+
+function saveDreams(list) {
+  saveData({ dreams: list });
+}
+
+function switchDreamCat(cat) {
+  dreamCat = cat;
+  document.getElementById('dreamTabWant').classList.toggle('active', cat === 'want');
+  document.getElementById('dreamTabDo').classList.toggle('active', cat === 'do');
+  renderDreamList();
+}
+
+function setDreamFormCat(cat) {
+  dreamFormCat = cat;
+  document.getElementById('dreamFormCatWant').classList.toggle('active', cat === 'want');
+  document.getElementById('dreamFormCatDo').classList.toggle('active', cat === 'do');
+}
+
+function renderDreamProgress() {
+  var dreams = getDreams();
+  var total = dreams.length;
+  var achieved = dreams.filter(function(d) { return d.done; }).length;
+  var pct = total > 0 ? Math.round(achieved / total * 100) : 0;
+  document.getElementById('dreamAchieved').textContent = achieved;
+  document.getElementById('dreamTotal').textContent = total;
+  document.getElementById('dreamBar').style.width = pct + '%';
+}
+
+function renderDreamList() {
+  var list = document.getElementById('dreamList');
+  var dreams = getDreams();
+  var filtered = dreams.filter(function(d) { return d.cat === dreamCat; });
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="dream-empty">' + (dreamCat === 'want' ? 'ほしいものを追加しよう！' : 'やりたいことを追加しよう！') + '</div>';
+    return;
+  }
+
+  var undone = filtered.filter(function(d) { return !d.done; });
+  var done = filtered.filter(function(d) { return d.done; });
+  var sorted = undone.concat(done);
+
+  var html = '';
+  sorted.forEach(function(item) {
+    var titleHtml = item.url
+      ? '<a href="' + item.url.replace(/"/g, '&quot;') + '" target="_blank" rel="noopener">' + escHtml(item.title) + ' ↗</a>'
+      : escHtml(item.title);
+    var meta = [];
+    if (item.amount) meta.push('💰 ' + Number(item.amount).toLocaleString() + '万円');
+    if (item.deadline) {
+      var parts = item.deadline.split('-');
+      meta.push('📅 ' + parts[0] + '年' + parseInt(parts[1]) + '月');
+    }
+    html += '<div class="dream-item' + (item.done ? ' achieved' : '') + '">';
+    html += '<div class="dream-item-top">';
+    html += '<button class="dream-check' + (item.done ? ' checked' : '') + '" onclick="toggleDream(\'' + item.id + '\')">' + (item.done ? '✓' : '') + '</button>';
+    html += '<div class="dream-item-body">';
+    html += '<div class="dream-item-title">' + titleHtml + '</div>';
+    if (meta.length) html += '<div class="dream-item-meta">' + meta.map(function(m) { return '<span>' + m + '</span>'; }).join('') + '</div>';
+    html += '</div>';
+    html += '<div class="dream-item-actions">';
+    html += '<button onclick="editDream(\'' + item.id + '\')">✏️</button>';
+    html += '<button onclick="deleteDream(\'' + item.id + '\')">🗑</button>';
+    html += '</div>';
+    html += '</div></div>';
+  });
+
+  list.innerHTML = html;
+}
+
+function escHtml(s) {
+  var d = document.createElement('div');
+  d.textContent = s || '';
+  return d.innerHTML;
+}
+
+function toggleDream(id) {
+  var dreams = getDreams();
+  for (var i = 0; i < dreams.length; i++) {
+    if (dreams[i].id === id) {
+      dreams[i].done = !dreams[i].done;
+      break;
+    }
+  }
+  saveDreams(dreams);
+  renderDreamList();
+  renderDreamProgress();
+}
+
+function openDreamModal(editId) {
+  document.getElementById('dreamModal').classList.add('open');
+  document.getElementById('dreamEditId').value = editId || '';
+  if (editId) {
+    document.getElementById('dreamModalTitle').textContent = '夢を編集';
+    var dreams = getDreams();
+    var item = dreams.filter(function(d) { return d.id === editId; })[0];
+    if (item) {
+      setDreamFormCat(item.cat);
+      document.getElementById('dreamFormTitle').value = item.title;
+      document.getElementById('dreamFormUrl').value = item.url || '';
+      document.getElementById('dreamFormAmount').value = item.amount || '';
+      document.getElementById('dreamFormDeadline').value = item.deadline || '';
+    }
+  } else {
+    document.getElementById('dreamModalTitle').textContent = '夢を追加';
+    setDreamFormCat(dreamCat);
+    document.getElementById('dreamFormTitle').value = '';
+    document.getElementById('dreamFormUrl').value = '';
+    document.getElementById('dreamFormAmount').value = '';
+    document.getElementById('dreamFormDeadline').value = '';
+  }
+}
+
+function closeDreamModal() {
+  document.getElementById('dreamModal').classList.remove('open');
+}
+
+function editDream(id) { openDreamModal(id); }
+
+function deleteDream(id) {
+  if (!confirm('この夢を削除しますか？')) return;
+  var dreams = getDreams().filter(function(d) { return d.id !== id; });
+  saveDreams(dreams);
+  renderDreamList();
+  renderDreamProgress();
+  showToast('削除しました');
+}
+
+function saveDream() {
+  var title = document.getElementById('dreamFormTitle').value.trim();
+  if (!title) { showToast('タイトルを入力してください'); return; }
+  var editId = document.getElementById('dreamEditId').value;
+  var dreams = getDreams();
+
+  var entry = {
+    cat: dreamFormCat,
+    title: title,
+    url: document.getElementById('dreamFormUrl').value.trim(),
+    amount: document.getElementById('dreamFormAmount').value,
+    deadline: document.getElementById('dreamFormDeadline').value,
+  };
+
+  if (editId) {
+    for (var i = 0; i < dreams.length; i++) {
+      if (dreams[i].id === editId) {
+        dreams[i].cat = entry.cat;
+        dreams[i].title = entry.title;
+        dreams[i].url = entry.url;
+        dreams[i].amount = entry.amount;
+        dreams[i].deadline = entry.deadline;
+        break;
+      }
+    }
+  } else {
+    entry.id = 'd' + Date.now() + Math.random().toString(36).substr(2, 5);
+    entry.done = false;
+    dreams.push(entry);
+  }
+
+  saveDreams(dreams);
+  closeDreamModal();
+  renderDreamList();
+  renderDreamProgress();
+  showToast(editId ? '更新しました' : '追加しました');
+}
+
+function updateDreamAddBtn() {
+  var btn = document.querySelector('.dream-add-btn');
+  if (btn) btn.style.display = document.getElementById('tab-dream').classList.contains('active') ? 'block' : 'none';
+}
+
 function init() {
   renderGoalSummary();
+  renderDreamList();
+  renderDreamProgress();
   renderChecklists();
   renderBonusTable();
   calcBonus();
   runSimulation();
+  updateDreamAddBtn();
 }
 
 // init() is called from Firebase onAuthStateChanged
