@@ -318,6 +318,12 @@
       display: flex; justify-content: space-between;
       font-size: 0.6rem; color: var(--text-muted); margin-top: 4px;
     }
+    .gw-loan-wrap { padding: 8px 0; }
+    .gw-loan-row { margin-bottom: 12px; }
+    .gw-loan-row label { display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; }
+    .gw-loan-row input, .gw-loan-row select { width: 100%; padding: 10px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 0.9rem; box-sizing: border-box; }
+    .gw-loan-result { text-align: center; font-size: 1rem; color: var(--text); padding: 14px; background: linear-gradient(135deg, rgba(232,255,71,0.08), rgba(255,159,67,0.05)); border: 1px solid var(--accent); border-radius: 10px; margin-top: 8px; }
+    .gw-loan-result span { font-size: 1.6rem; font-weight: 800; color: var(--accent); }
     .gw-input-wrap { margin-bottom: 16px; }
     .gw-input {
       width: 100%; padding: 14px 16px; background: var(--surface2);
@@ -689,7 +695,7 @@
 <!-- ===== ログイン画面 ===== -->
 <div id="loginScreen" style="display:none;">
   <div class="login-title">GOAL SETTING<small>目標設定シート</small></div>
-  <div style="font-size:12px;color:var(--text-muted);margin-top:6px;font-family:'IBM Plex Mono',monospace;">v26</div>
+  <div style="font-size:12px;color:var(--text-muted);margin-top:6px;font-family:'IBM Plex Mono',monospace;">v27</div>
   <div class="login-subtitle">ATTACK LISTと同じアカウントでログイン</div>
   <div class="auth-tabs">
     <button class="auth-tab" id="tabLogin" style="background:var(--accent);color:#000;" onclick="setAuthMode('login')">ログイン</button>
@@ -728,7 +734,7 @@
   <div class="title">GOAL SETTING</div>
   <span id="userNameDisplay" style="display:none;"></span>
   <div style="margin-left:auto;display:flex;align-items:center;gap:6px;">
-    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.55rem;color:var(--text-muted);opacity:0.5;">v26</span>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.55rem;color:var(--text-muted);opacity:0.5;">v27</span>
     <button onclick="openShareModal()" style="background:none;border:1px solid var(--border);color:var(--text-muted);font-size:0.65rem;padding:4px 8px;border-radius:6px;cursor:pointer;">共有</button>
     <button onclick="confirmSignOut()" style="background:none;border:1px solid var(--border);color:var(--text-muted);font-size:0.65rem;padding:4px 8px;border-radius:6px;cursor:pointer;">ログアウト</button>
   </div>
@@ -1523,7 +1529,13 @@ var GW_QUESTIONS = [
   { id: 'food_cost', phase: 1, cat: '食', icon: '🍽️', q: '月の食費イメージは？', type: 'slider', min: 3, max: 300, step: 1, unit: '万円', defaultVal: 8, costKey: true },
   { id: 'clothes_cost', phase: 1, cat: '服', icon: '👔', q: 'ファッションに月いくらかけたい？', type: 'slider', min: 1, max: 300, step: 1, unit: '万円', defaultVal: 5, costKey: true },
   { id: 'transport', phase: 1, cat: '車', icon: '🚗', q: '理想の移動手段は？', type: 'select',
-    opts: [{v:'高級車（ベンツ・BMW等）',icon:'🏎️'},{v:'SUV',icon:'🚙'},{v:'電車・自転車で十分',icon:'🚃'},{v:'タクシー生活',icon:'🚕'}] },
+    opts: [{v:'外車',icon:'🏎️'},{v:'国産車',icon:'🚙'},{v:'電車・自転車で十分',icon:'🚃'},{v:'タクシー生活',icon:'🚕'}] },
+  { id: 'car_name', phase: 1, cat: '車', icon: '🚗', q: '何買う？', type: 'input', placeholder: '例：ポルシェ911、レクサスLS...', hint: '夢の一台を書こう！',
+    showIf: function(a) { return a.transport === '外車' || a.transport === '国産車'; } },
+  { id: 'car_loan', phase: 1, cat: '車', icon: '🚗', q: 'ローンシミュレーション', type: 'car_loan',
+    showIf: function(a) { return a.transport === '外車' || a.transport === '国産車'; } },
+  { id: 'transport_cost', phase: 1, cat: '車', icon: '🚗', q: '月々の移動にかける金額は？', type: 'slider', min: 0, max: 30, step: 1, unit: '万円', defaultVal: 2, costKey: true,
+    showIf: function(a) { return a.transport !== '外車' && a.transport !== '国産車'; } },
   { id: 'travel_freq', phase: 1, cat: '旅行', icon: '✈️', q: 'どのくらい旅行したい？', type: 'select',
     opts: [{v:'月1で国内旅行',icon:'🗾'},{v:'年数回は海外',icon:'🌏'},{v:'毎月どこかへ',icon:'🌍'},{v:'年1で十分',icon:'📅'}] },
   { id: 'travel_first', phase: 1, cat: '旅行', icon: '✈️', q: '一発目どこに行きたい？', type: 'input', placeholder: '例：ハワイ、パリ、沖縄...', hint: '夢の旅行先を教えて！' },
@@ -1569,8 +1581,14 @@ function gwIsComplete(phase) {
 function gwCalcMonthlyTotal() {
   var total = 0;
   GW_QUESTIONS.forEach(function(q) {
-    if (q.costKey) total += parseInt(gwState.answers[q.id]) || 0;
+    if (q.costKey && gwShouldShow(q)) total += parseInt(gwState.answers[q.id]) || 0;
   });
+  var loan = gwState.answers.car_loan;
+  if (loan && (gwState.answers.transport === '外車' || gwState.answers.transport === '国産車')) {
+    total += Math.floor(calcCarLoanMonthly(loan.price, loan.down, loan.years));
+  }
+  var packs = parseInt(gwState.answers.social_packs) || 0;
+  if (packs > 0) total += Math.floor(packs * 0.3);
   return total;
 }
 
@@ -1626,7 +1644,7 @@ function gwRender() {
   var ans = gwState.answers[q.id];
   var avatar = gwGetAvatar();
 
-  var phaseQs = GW_QUESTIONS.filter(function(x) { return x.phase === q.phase; });
+  var phaseQs = GW_QUESTIONS.filter(function(x) { return x.phase === q.phase && gwShouldShow(x); });
   var phaseIdx = 0;
   for (var pi = 0; pi < phaseQs.length; pi++) { if (phaseQs[pi].id === q.id) { phaseIdx = pi; break; } }
   var phaseTotal = phaseQs.length;
@@ -1672,6 +1690,17 @@ function gwRender() {
       bodyHtml += '<div id="gwBioHack" style="text-align:center;margin-top:12px;font-size:1.1rem;font-weight:800;color:#00ff88;letter-spacing:2px;' + (show ? '' : 'display:none;') + '">🧬 BIO HACK!! 🧬</div>';
     }
     bodyHtml += '</div>';
+  } else if (q.type === 'car_loan') {
+    var loan = ans || { price: 500, down: 0, years: 5 };
+    var monthly = calcCarLoanMonthly(loan.price, loan.down, loan.years);
+    bodyHtml += '<div class="gw-loan-wrap">';
+    bodyHtml += '<div class="gw-loan-row"><label>車両価格（万円）</label><input type="number" id="gwLoanPrice" value="' + loan.price + '" min="50" step="50" oninput="gwLoanChange()"></div>';
+    bodyHtml += '<div class="gw-loan-row"><label>頭金（万円）</label><input type="number" id="gwLoanDown" value="' + loan.down + '" min="0" step="10" oninput="gwLoanChange()"></div>';
+    bodyHtml += '<div class="gw-loan-row"><label>ローン年数</label><select id="gwLoanYears" onchange="gwLoanChange()">';
+    [3,5,7,10].forEach(function(y) { bodyHtml += '<option value="' + y + '"' + (loan.years == y ? ' selected' : '') + '>' + y + '年</option>'; });
+    bodyHtml += '</select></div>';
+    bodyHtml += '<div class="gw-loan-result">月々 <span id="gwLoanMonthly">' + monthly.toLocaleString() + '</span> 万円</div>';
+    bodyHtml += '</div>';
   } else if (q.type === 'input') {
     var v = ans || '';
     bodyHtml += '<div class="gw-input-wrap"><input class="gw-input" id="gwInput" type="text" placeholder="' + (q.placeholder || '') + '" value="' + v.replace(/"/g, '&quot;') + '" oninput="gwInputChange(this.value)"></div>';
@@ -1709,6 +1738,7 @@ function gwRender() {
 function gwCanNext(q, ans) {
   if (q.type === 'select') return !!ans;
   if (q.type === 'slider') return true;
+  if (q.type === 'car_loan') return true;
   if (q.type === 'input' || q.type === 'input_date') return !!(ans && ans.trim());
   if (q.type === 'multi5') {
     if (!ans) return false;
@@ -1741,6 +1771,22 @@ function gwSliderChange(val) {
   }
 }
 
+function calcCarLoanMonthly(price, down, years) {
+  var loan = (parseInt(price) || 0) - (parseInt(down) || 0);
+  if (loan <= 0 || !years) return 0;
+  var months = parseInt(years) * 12;
+  return Math.round(loan / months * 10) / 10;
+}
+
+function gwLoanChange() {
+  var price = document.getElementById('gwLoanPrice').value;
+  var down = document.getElementById('gwLoanDown').value;
+  var years = document.getElementById('gwLoanYears').value;
+  var monthly = calcCarLoanMonthly(price, down, years);
+  document.getElementById('gwLoanMonthly').textContent = monthly.toLocaleString();
+  gwSaveAnswer('car_loan', { price: parseInt(price) || 0, down: parseInt(down) || 0, years: parseInt(years) || 5 });
+}
+
 function gwInputChange(val) {
   var q = GW_QUESTIONS[gwState.step];
   gwSaveAnswer(q.id, val);
@@ -1756,6 +1802,11 @@ function gwMultiChange(el) {
   document.getElementById('gwNextBtn').disabled = !gwCanNext(q, vals);
 }
 
+function gwShouldShow(q) {
+  if (!q.showIf) return true;
+  return q.showIf(gwState.answers);
+}
+
 function gwNext() {
   var q = GW_QUESTIONS[gwState.step];
   var ans = gwState.answers[q.id];
@@ -1764,6 +1815,9 @@ function gwNext() {
   }
   var currentPhase = q.phase;
   var nextStep = gwState.step + 1;
+  while (nextStep < GW_QUESTIONS.length && GW_QUESTIONS[nextStep].phase === currentPhase && !gwShouldShow(GW_QUESTIONS[nextStep])) {
+    nextStep++;
+  }
   var isLastOverall = nextStep >= GW_QUESTIONS.length;
   var isLastInPhase = isLastOverall || GW_QUESTIONS[nextStep].phase !== currentPhase;
 
@@ -1779,7 +1833,11 @@ function gwNext() {
 
 function gwBack() {
   if (gwState.step > 0) {
-    gwState.step--;
+    var prevStep = gwState.step - 1;
+    while (prevStep > 0 && !gwShouldShow(GW_QUESTIONS[prevStep])) {
+      prevStep--;
+    }
+    gwState.step = prevStep;
     gwRender();
   }
 }
@@ -1825,7 +1883,17 @@ function renderGoalSummary() {
     { icon: '🏠', label: '住居費', val: ans.housing_cost ? ans.housing_cost + '万円/月' : '' },
     { icon: '🍽️', label: '食生活', val: (ans.food_style || '') + (ans.food_cost ? '（' + ans.food_cost + '万円/月）' : '') },
     { icon: '👔', label: 'ファッション', val: ans.clothes_cost ? ans.clothes_cost + '万円/月' : '' },
-    { icon: '🚗', label: '移動手段', val: ans.transport || '' },
+    { icon: '🚗', label: '移動手段', val: (function() {
+      var t = ans.transport || '';
+      if (t === '外車' || t === '国産車') {
+        var name = ans.car_name ? '（' + ans.car_name + '）' : '';
+        var loan = ans.car_loan;
+        var m = loan ? Math.floor(calcCarLoanMonthly(loan.price, loan.down, loan.years)) : 0;
+        return t + name + (m ? ' ' + m + '万円/月' : '');
+      }
+      if (t && ans.transport_cost) return t + '（' + ans.transport_cost + '万円/月）';
+      return t;
+    })() },
     { icon: '✈️', label: '旅行', val: (ans.travel_freq || '') + (ans.travel_first ? '（一発目: ' + ans.travel_first + '）' : '') },
     { icon: '✈️', label: '旅行積立', val: ans.travel_cost ? ans.travel_cost + '万円/月' : '' },
     { icon: '🎮', label: '趣味', val: ans.hobby ? ans.hobby + '万円/月' : '' },
@@ -1833,7 +1901,7 @@ function renderGoalSummary() {
     { icon: '💅', label: '美容', val: ans.beauty_cost ? ans.beauty_cost + '万円/月' : '' },
     { icon: '💪', label: '健康', val: ans.health_cost ? ans.health_cost + '万円/月' : '' },
     { icon: '🏦', label: '貯金', val: ans.savings ? ans.savings + '万円/月' : '' },
-    { icon: '🤝', label: '社会貢献', val: ans.social_packs ? 'ビタミール' + ans.social_packs + 'パック/月' : '' },
+    { icon: '🤝', label: '社会貢献', val: ans.social_packs ? 'ビタミール' + ans.social_packs + 'パック/月（' + Math.floor(ans.social_packs * 0.3) + '万円）' : '' },
   ];
 
   lifestyleRows.forEach(function(r) {
