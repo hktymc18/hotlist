@@ -620,10 +620,18 @@
     #mainApp { display: none; }
     .loading-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; color: var(--text-muted); font-size: 0.85rem; }
     /* ===== 夢100リスト ===== */
-    .dream-header { text-align: center; padding: 16px 0 8px; }
-    .dream-achieved { font-size: 2.2rem; font-weight: 800; color: var(--accent); }
-    .dream-total { font-size: 1rem; color: var(--text-muted); }
-    .dream-progress-label { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
+    .dream-header { padding: 16px 0 8px; }
+    .dream-progress-text { text-align: center; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px; }
+    .dream-achieved { font-size: 1.8rem; font-weight: 800; color: var(--accent); }
+    .dream-total { font-size: 0.9rem; color: var(--text-muted); }
+    .dream-stats { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; margin-top: 12px; }
+    .dream-stat-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; }
+    .dream-stat-icon { font-size: 0.85rem; width: 22px; text-align: center; }
+    .dream-stat-label { flex: 1; font-size: 0.78rem; color: var(--text-muted); }
+    .dream-stat-val { font-size: 0.85rem; font-weight: 700; color: var(--text); }
+    .dream-stat-accent { color: var(--accent); }
+    .dream-period-filter { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; margin-top: 8px; }
+    .dream-period-row { display: flex; align-items: center; gap: 8px; }
     .dream-progress-bar-wrap { height: 6px; background: var(--surface); border-radius: 3px; margin-top: 10px; overflow: hidden; }
     .dream-progress-bar { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.4s ease; }
     .dream-tabs { display: flex; gap: 0; margin: 16px 0 12px; background: var(--surface); border-radius: 10px; padding: 3px; }
@@ -828,14 +836,28 @@
 <!-- ==================== TAB 3: 夢100リスト ==================== -->
 <div class="tab-panel" id="tab-dream">
   <div class="dream-header">
-    <div class="dream-progress-ring" id="dreamRing"></div>
     <div class="dream-progress-text">
-      <span class="dream-achieved" id="dreamAchieved">0</span>
+      達成 <span class="dream-achieved" id="dreamAchieved">0</span>
       <span class="dream-total">/ <span id="dreamTotal">0</span></span>
-      <div class="dream-progress-label">達成</div>
     </div>
     <div class="dream-progress-bar-wrap">
       <div class="dream-progress-bar" id="dreamBar" style="width:0%"></div>
+    </div>
+    <div class="dream-stats">
+      <div class="dream-stat-row"><span class="dream-stat-icon">💰</span><span class="dream-stat-label">総合計</span><span class="dream-stat-val" id="dreamStatTotal">0万円</span></div>
+      <div class="dream-stat-row"><span class="dream-stat-icon">✅</span><span class="dream-stat-label">達成済み</span><span class="dream-stat-val" id="dreamStatDone">0万円</span></div>
+      <div class="dream-stat-row"><span class="dream-stat-icon">📋</span><span class="dream-stat-label">残り必要</span><span class="dream-stat-val dream-stat-accent" id="dreamStatRemain">0万円</span></div>
+    </div>
+    <div class="dream-period-filter">
+      <div class="dream-period-row">
+        <span class="dream-stat-icon">📅</span>
+        <select id="dreamPeriodSelect" onchange="onDreamPeriodChange()" style="flex:1;padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.82rem;">
+          <option value="">期間を選択...</option>
+        </select>
+      </div>
+      <div class="dream-stat-row" id="dreamPeriodResult" style="display:none;">
+        <span class="dream-stat-icon">🎯</span><span class="dream-stat-label" id="dreamPeriodLabel">必要金額</span><span class="dream-stat-val dream-stat-accent" id="dreamStatPeriod">0万円</span>
+      </div>
     </div>
   </div>
 
@@ -2074,6 +2096,46 @@ function renderDreamProgress() {
   document.getElementById('dreamAchieved').textContent = achieved;
   document.getElementById('dreamTotal').textContent = total;
   document.getElementById('dreamBar').style.width = pct + '%';
+
+  var totalAmt = 0, doneAmt = 0;
+  dreams.forEach(function(d) {
+    var a = parseInt(d.amount) || 0;
+    totalAmt += a;
+    if (d.done) doneAmt += a;
+  });
+  document.getElementById('dreamStatTotal').textContent = totalAmt.toLocaleString() + '万円';
+  document.getElementById('dreamStatDone').textContent = doneAmt.toLocaleString() + '万円';
+  document.getElementById('dreamStatRemain').textContent = (totalAmt - doneAmt).toLocaleString() + '万円';
+
+  var deadlines = {};
+  dreams.forEach(function(d) {
+    if (d.deadline && !d.done) deadlines[d.deadline] = true;
+  });
+  var sorted = Object.keys(deadlines).sort();
+  var sel = document.getElementById('dreamPeriodSelect');
+  var current = sel.value;
+  sel.innerHTML = '<option value="">期間を選択...</option>';
+  sorted.forEach(function(dl) {
+    var parts = dl.split('-');
+    var label = parts[0] + '年' + parseInt(parts[1]) + '月まで';
+    sel.innerHTML += '<option value="' + dl + '"' + (dl === current ? ' selected' : '') + '>' + label + '</option>';
+  });
+  onDreamPeriodChange();
+}
+
+function onDreamPeriodChange() {
+  var val = document.getElementById('dreamPeriodSelect').value;
+  var result = document.getElementById('dreamPeriodResult');
+  if (!val) { result.style.display = 'none'; return; }
+  result.style.display = 'flex';
+  var dreams = getDreams();
+  var amt = 0;
+  dreams.forEach(function(d) {
+    if (!d.done && d.deadline && d.deadline <= val) amt += parseInt(d.amount) || 0;
+  });
+  var parts = val.split('-');
+  document.getElementById('dreamPeriodLabel').textContent = parts[0] + '年' + parseInt(parts[1]) + '月まで';
+  document.getElementById('dreamStatPeriod').textContent = amt.toLocaleString() + '万円';
 }
 
 function renderDreamList() {
