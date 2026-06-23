@@ -27,6 +27,20 @@
       --shadow: 0 2px 20px rgba(0,0,0,0.45);
       --example: #ff4757;
     }
+    body.light {
+      --primary: #c8d620;
+      --primary-dark: #b0c010;
+      --bg: #f5f5f8;
+      --bg2: #eeeef2;
+      --surface: #ffffff;
+      --surface2: #f0f0f4;
+      --surface3: #e4e4ea;
+      --border: #d0d0da;
+      --text: #1a1a2e;
+      --text-muted: #7a7a90;
+      --accent: #b0c010;
+      --shadow: 0 2px 20px rgba(0,0,0,0.08);
+    }
     body {
       font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, sans-serif;
       background: var(--bg); color: var(--text); min-height: 100vh;
@@ -717,6 +731,7 @@
   <span id="userNameDisplay" style="display:none;"></span>
   <div style="margin-left:auto;display:flex;align-items:center;gap:6px;">
     <span style="font-family:'IBM Plex Mono',monospace;font-size:0.55rem;color:var(--text-muted);opacity:0.5;">v27</span>
+    <button id="themeToggle" onclick="toggleTheme()" style="background:none;border:1px solid var(--border);color:var(--text-muted);font-size:0.75rem;padding:4px 8px;border-radius:6px;cursor:pointer;">☀️</button>
     <button onclick="openShareModal()" style="background:none;border:1px solid var(--border);color:var(--text-muted);font-size:0.65rem;padding:4px 8px;border-radius:6px;cursor:pointer;">共有</button>
     <button onclick="confirmSignOut()" style="background:none;border:1px solid var(--border);color:var(--text-muted);font-size:0.65rem;padding:4px 8px;border-radius:6px;cursor:pointer;">ログアウト</button>
   </div>
@@ -1238,6 +1253,22 @@ function lookupBuildingBonus(gsv) {
   return 0;
 }
 
+// ===== Theme =====
+function toggleTheme() {
+  var isLight = document.body.classList.toggle('light');
+  localStorage.setItem('goalTheme', isLight ? 'light' : 'dark');
+  document.getElementById('themeToggle').textContent = isLight ? '🌙' : '☀️';
+}
+(function() {
+  if (localStorage.getItem('goalTheme') === 'light') {
+    document.body.classList.add('light');
+    document.addEventListener('DOMContentLoaded', function() {
+      var btn = document.getElementById('themeToggle');
+      if (btn) btn.textContent = '🌙';
+    });
+  }
+})();
+
 // ===== Data Persistence =====
 const STORAGE_KEY = 'goalSheetData';
 
@@ -1511,6 +1542,7 @@ function gwCalcMonthlyTotal() {
   var loan = gwState.answers.car_loan;
   if (loan && (gwState.answers.transport === '外車' || gwState.answers.transport === '国産車')) {
     total += Math.floor(calcCarLoanMonthly(loan.price, loan.down, loan.years));
+    total += (parseInt(loan.insurance) || 0) + (parseInt(loan.parking) || 0) + (parseInt(loan.gas) || 0);
   }
   var packs = parseInt(gwState.answers.social_packs) || 0;
   if (packs > 0) total += Math.floor(packs * 0.3);
@@ -1616,15 +1648,23 @@ function gwRender() {
     }
     bodyHtml += '</div>';
   } else if (q.type === 'car_loan') {
-    var loan = ans || { price: 500, down: 0, years: 5 };
-    var monthly = calcCarLoanMonthly(loan.price, loan.down, loan.years);
+    var loan = ans || { price: 500, down: 0, years: 5, insurance: 3, parking: 2, gas: 2 };
+    if (loan.insurance === undefined) loan.insurance = 3;
+    if (loan.parking === undefined) loan.parking = 2;
+    if (loan.gas === undefined) loan.gas = 2;
+    var loanMonthly = calcCarLoanMonthly(loan.price, loan.down, loan.years);
+    var carTotal = Math.floor(loanMonthly) + (parseInt(loan.insurance) || 0) + (parseInt(loan.parking) || 0) + (parseInt(loan.gas) || 0);
     bodyHtml += '<div class="gw-loan-wrap">';
     bodyHtml += '<div class="gw-loan-row"><label>車両価格（万円）</label><input type="number" id="gwLoanPrice" value="' + loan.price + '" min="50" step="50" oninput="gwLoanChange()"></div>';
     bodyHtml += '<div class="gw-loan-row"><label>頭金（万円）</label><input type="number" id="gwLoanDown" value="' + loan.down + '" min="0" step="10" oninput="gwLoanChange()"></div>';
     bodyHtml += '<div class="gw-loan-row"><label>ローン年数</label><select id="gwLoanYears" onchange="gwLoanChange()">';
     [3,5,7,10].forEach(function(y) { bodyHtml += '<option value="' + y + '"' + (loan.years == y ? ' selected' : '') + '>' + y + '年</option>'; });
     bodyHtml += '</select></div>';
-    bodyHtml += '<div class="gw-loan-result">月々 <span id="gwLoanMonthly">' + monthly.toLocaleString() + '</span> 万円</div>';
+    bodyHtml += '<div style="border-top:1px solid var(--border);margin:12px 0;"></div>';
+    bodyHtml += '<div class="gw-loan-row"><label>保険（万円/月）</label><input type="number" id="gwLoanInsurance" value="' + loan.insurance + '" min="0" step="1" oninput="gwLoanChange()"></div>';
+    bodyHtml += '<div class="gw-loan-row"><label>駐車場代（万円/月）</label><input type="number" id="gwLoanParking" value="' + loan.parking + '" min="0" step="1" oninput="gwLoanChange()"></div>';
+    bodyHtml += '<div class="gw-loan-row"><label>ガソリン代（万円/月）</label><input type="number" id="gwLoanGas" value="' + loan.gas + '" min="0" step="1" oninput="gwLoanChange()"></div>';
+    bodyHtml += '<div class="gw-loan-result">月々合計 <span id="gwLoanMonthly">' + carTotal + '</span> 万円</div>';
     bodyHtml += '</div>';
   } else if (q.type === 'input') {
     var v = ans || '';
@@ -1707,9 +1747,13 @@ function gwLoanChange() {
   var price = document.getElementById('gwLoanPrice').value;
   var down = document.getElementById('gwLoanDown').value;
   var years = document.getElementById('gwLoanYears').value;
-  var monthly = calcCarLoanMonthly(price, down, years);
-  document.getElementById('gwLoanMonthly').textContent = monthly.toLocaleString();
-  gwSaveAnswer('car_loan', { price: parseInt(price) || 0, down: parseInt(down) || 0, years: parseInt(years) || 5 });
+  var insurance = document.getElementById('gwLoanInsurance').value;
+  var parking = document.getElementById('gwLoanParking').value;
+  var gas = document.getElementById('gwLoanGas').value;
+  var loanMonthly = calcCarLoanMonthly(price, down, years);
+  var carTotal = Math.floor(loanMonthly) + (parseInt(insurance) || 0) + (parseInt(parking) || 0) + (parseInt(gas) || 0);
+  document.getElementById('gwLoanMonthly').textContent = carTotal;
+  gwSaveAnswer('car_loan', { price: parseInt(price) || 0, down: parseInt(down) || 0, years: parseInt(years) || 5, insurance: parseInt(insurance) || 0, parking: parseInt(parking) || 0, gas: parseInt(gas) || 0 });
 }
 
 function gwInputChange(val) {
@@ -1813,7 +1857,7 @@ function renderGoalSummary() {
       if (t === '外車' || t === '国産車') {
         var name = ans.car_name ? '（' + ans.car_name + '）' : '';
         var loan = ans.car_loan;
-        var m = loan ? Math.floor(calcCarLoanMonthly(loan.price, loan.down, loan.years)) : 0;
+        var m = loan ? Math.floor(calcCarLoanMonthly(loan.price, loan.down, loan.years)) + (parseInt(loan.insurance) || 0) + (parseInt(loan.parking) || 0) + (parseInt(loan.gas) || 0) : 0;
         return t + name + (m ? ' ' + m + '万円/月' : '');
       }
       if (t && ans.transport_cost) return t + '（' + ans.transport_cost + '万円/月）';
@@ -2089,13 +2133,14 @@ function renderDreamProgress() {
 
   var totalAmt = 0, doneAmt = 0;
   dreams.forEach(function(d) {
-    var a = parseInt(d.amount) || 0;
+    var a = parseFloat(d.amount) || 0;
     totalAmt += a;
     if (d.done) doneAmt += a;
   });
-  document.getElementById('dreamStatTotal').textContent = totalAmt.toLocaleString() + '万円';
-  document.getElementById('dreamStatDone').textContent = doneAmt.toLocaleString() + '万円';
-  document.getElementById('dreamStatRemain').textContent = (totalAmt - doneAmt).toLocaleString() + '万円';
+  function fmtAmt(v) { return (Math.round(v * 10) / 10).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 1}); }
+  document.getElementById('dreamStatTotal').textContent = fmtAmt(totalAmt) + '万円';
+  document.getElementById('dreamStatDone').textContent = fmtAmt(doneAmt) + '万円';
+  document.getElementById('dreamStatRemain').textContent = fmtAmt(totalAmt - doneAmt) + '万円';
 
   var deadlines = {};
   dreams.forEach(function(d) {
@@ -2121,11 +2166,11 @@ function onDreamPeriodChange() {
   var dreams = getDreams();
   var amt = 0;
   dreams.forEach(function(d) {
-    if (!d.done && d.deadline && d.deadline <= val) amt += parseInt(d.amount) || 0;
+    if (!d.done && d.deadline && d.deadline <= val) amt += parseFloat(d.amount) || 0;
   });
   var parts = val.split('-');
   document.getElementById('dreamPeriodLabel').textContent = parts[0] + '年' + parseInt(parts[1]) + '月まで';
-  document.getElementById('dreamStatPeriod').textContent = amt.toLocaleString() + '万円';
+  document.getElementById('dreamStatPeriod').textContent = (Math.round(amt * 10) / 10).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 1}) + '万円';
 }
 
 function renderDreamList() {
@@ -2145,10 +2190,10 @@ function renderDreamList() {
   var html = '';
   sorted.forEach(function(item) {
     var titleHtml = item.url
-      ? '<a href="' + item.url.replace(/"/g, '&quot;') + '" target="_blank" rel="noopener">' + escHtml(item.title) + ' ↗</a>'
+      ? '<a href="' + item.url.replace(/"/g, '&quot;') + '" target="_blank" rel="noopener" style="color:#64b5f6;text-decoration:underline;">' + escHtml(item.title) + ' ↗</a>'
       : escHtml(item.title);
     var meta = [];
-    if (item.amount) meta.push('💰 ' + Number(item.amount).toLocaleString() + '万円');
+    if (item.amount) meta.push('💰 ' + (Math.round(Number(item.amount) * 10) / 10).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 1}) + '万円');
     if (item.deadline) {
       var parts = item.deadline.split('-');
       meta.push('📅 ' + parts[0] + '年' + parseInt(parts[1]) + '月');
