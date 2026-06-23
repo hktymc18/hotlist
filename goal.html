@@ -2236,7 +2236,7 @@ function renderDreamProgress() {
 function onDreamPeriodChange() {
   var val = document.getElementById('dreamPeriodSelect').value;
   var result = document.getElementById('dreamPeriodResult');
-  if (!val) { result.style.display = 'none'; return; }
+  if (!val) { result.style.display = 'none'; renderDreamList(); return; }
   result.style.display = 'flex';
   var dreams = getDreams();
   var amt = 0;
@@ -2246,15 +2246,21 @@ function onDreamPeriodChange() {
   var parts = val.split('-');
   document.getElementById('dreamPeriodLabel').textContent = parts[0] + '年' + parseInt(parts[1]) + '月まで';
   document.getElementById('dreamStatPeriod').textContent = (Math.round(amt * 10) / 10).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 1}) + '万円';
+  renderDreamList();
 }
 
 function renderDreamList() {
   var list = document.getElementById('dreamList');
   var dreams = getDreams();
-  var filtered = dreams.filter(function(d) { return d.cat === dreamCat; });
+  var periodVal = document.getElementById('dreamPeriodSelect').value;
+  var filtered = dreams.filter(function(d) {
+    if (d.cat !== dreamCat) return false;
+    if (periodVal && !d.done && (!d.deadline || d.deadline > periodVal)) return false;
+    return true;
+  });
 
   if (filtered.length === 0) {
-    list.innerHTML = '<div class="dream-empty">' + (dreamCat === 'want' ? 'ほしいものを追加しよう！' : 'やりたいことを追加しよう！') + '</div>';
+    list.innerHTML = '<div class="dream-empty">' + (periodVal ? 'この期間の項目はありません' : (dreamCat === 'want' ? 'ほしいものを追加しよう！' : 'やりたいことを追加しよう！')) + '</div>';
     return;
   }
 
