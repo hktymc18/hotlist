@@ -335,6 +335,9 @@
     .gw-loan-row input, .gw-loan-row select { width: 100%; padding: 10px 12px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 0.9rem; box-sizing: border-box; }
     .gw-loan-result { text-align: center; font-size: 1rem; color: var(--text); padding: 14px; background: linear-gradient(135deg, rgba(232,255,71,0.08), rgba(255,159,67,0.05)); border: 1px solid var(--accent); border-radius: 10px; margin-top: 8px; }
     .gw-loan-result span { font-size: 1.6rem; font-weight: 800; color: var(--accent); }
+    .gw-rank-title { text-align: center; padding: 16px; background: linear-gradient(135deg, rgba(232,255,71,0.12), rgba(255,159,67,0.08)); border: 2px solid var(--accent); border-radius: 12px; margin-bottom: 16px; }
+    .gw-rank-label { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; }
+    .gw-rank-name { font-size: 1.8rem; font-weight: 900; color: var(--accent); letter-spacing: 2px; }
     .gw-input-wrap { margin-bottom: 16px; }
     .gw-input {
       width: 100%; padding: 14px 16px; background: var(--surface2);
@@ -1541,7 +1544,7 @@ function gwCalcMonthlyTotal() {
   });
   var loan = gwState.answers.car_loan;
   if (loan && (gwState.answers.transport === '外車' || gwState.answers.transport === '国産車')) {
-    total += Math.floor(calcCarLoanMonthly(loan.price, loan.down, loan.years));
+    total += Math.floor(calcCarLoanMonthly(loan.price, loan.down, loan.years, loan.rate));
     total += (parseInt(loan.insurance) || 0) + (parseInt(loan.parking) || 0) + (parseInt(loan.gas) || 0);
   }
   var packs = parseInt(gwState.answers.social_packs) || 0;
@@ -1618,7 +1621,7 @@ function gwRender() {
   var questionText = q.q;
   if (q.q === '__TOTAL__') {
     var monthTotal = gwCalcMonthlyTotal();
-    questionText = '全部合わせると月 ' + monthTotal + '万円 必要だね！いつまでに実現したい？';
+    questionText = '全部合わせると月 ' + monthTotal + '万円 必要だね！';
   }
 
   var bodyHtml = '';
@@ -1648,11 +1651,12 @@ function gwRender() {
     }
     bodyHtml += '</div>';
   } else if (q.type === 'car_loan') {
-    var loan = ans || { price: 500, down: 0, years: 5, insurance: 3, parking: 2, gas: 2 };
+    var loan = ans || { price: 500, down: 0, years: 5, rate: 3, insurance: 3, parking: 2, gas: 2 };
     if (loan.insurance === undefined) loan.insurance = 3;
     if (loan.parking === undefined) loan.parking = 2;
     if (loan.gas === undefined) loan.gas = 2;
-    var loanMonthly = calcCarLoanMonthly(loan.price, loan.down, loan.years);
+    if (loan.rate === undefined) loan.rate = 3;
+    var loanMonthly = calcCarLoanMonthly(loan.price, loan.down, loan.years, loan.rate);
     var carTotal = Math.floor(loanMonthly) + (parseInt(loan.insurance) || 0) + (parseInt(loan.parking) || 0) + (parseInt(loan.gas) || 0);
     bodyHtml += '<div class="gw-loan-wrap">';
     bodyHtml += '<div class="gw-loan-row"><label>車両価格（万円）</label><input type="number" id="gwLoanPrice" value="' + loan.price + '" min="50" step="50" oninput="gwLoanChange()"></div>';
@@ -1660,6 +1664,7 @@ function gwRender() {
     bodyHtml += '<div class="gw-loan-row"><label>ローン年数</label><select id="gwLoanYears" onchange="gwLoanChange()">';
     [3,5,7,10].forEach(function(y) { bodyHtml += '<option value="' + y + '"' + (loan.years == y ? ' selected' : '') + '>' + y + '年</option>'; });
     bodyHtml += '</select></div>';
+    bodyHtml += '<div class="gw-loan-row"><label>金利（%）</label><input type="number" id="gwLoanRate" value="' + loan.rate + '" min="0" max="15" step="0.1" oninput="gwLoanChange()"></div>';
     bodyHtml += '<div style="border-top:1px solid var(--border);margin:12px 0;"></div>';
     bodyHtml += '<div class="gw-loan-row"><label>保険（万円/月）</label><input type="number" id="gwLoanInsurance" value="' + loan.insurance + '" min="0" step="1" oninput="gwLoanChange()"></div>';
     bodyHtml += '<div class="gw-loan-row"><label>駐車場代（万円/月）</label><input type="number" id="gwLoanParking" value="' + loan.parking + '" min="0" step="1" oninput="gwLoanChange()"></div>';
@@ -1671,6 +1676,12 @@ function gwRender() {
     bodyHtml += '<div class="gw-input-wrap"><input class="gw-input" id="gwInput" type="text" placeholder="' + (q.placeholder || '') + '" value="' + v.replace(/"/g, '&quot;') + '" oninput="gwInputChange(this.value)"></div>';
   } else if (q.type === 'input_date') {
     var v = ans || '';
+    if (q.q === '__TOTAL__') {
+      var mt = gwCalcMonthlyTotal();
+      var rankTitle = mt <= 5 ? 'BR' : mt <= 10 ? 'ゴールド' : mt <= 20 ? 'ラピス' : mt <= 30 ? 'ルビー' : mt <= 60 ? 'エメラルド' : mt <= 100 ? 'ダイヤモンド' : mt <= 300 ? 'ブルーダイヤモンド' : 'チームエリート';
+      bodyHtml += '<div class="gw-rank-title"><div class="gw-rank-label">目標タイトル</div><div class="gw-rank-name">' + rankTitle + '</div></div>';
+      bodyHtml += '<div class="gw-hint" style="margin-bottom:8px;">いつまでに実現したい？</div>';
+    }
     bodyHtml += '<div class="gw-input-wrap"><input class="gw-input" id="gwInput" type="month" value="' + v + '" oninput="gwInputChange(this.value)" style="font-size:1.1rem;text-align:center;"></div>';
   } else if (q.type === 'multi5') {
     var vals = ans || ['','','','',''];
@@ -1736,10 +1747,15 @@ function gwSliderChange(val) {
   }
 }
 
-function calcCarLoanMonthly(price, down, years) {
+function calcCarLoanMonthly(price, down, years, rate) {
   var loan = (parseInt(price) || 0) - (parseInt(down) || 0);
   if (loan <= 0 || !years) return 0;
   var months = parseInt(years) * 12;
+  var r = (parseFloat(rate) || 0) / 100 / 12;
+  if (r > 0) {
+    var payment = loan * r * Math.pow(1 + r, months) / (Math.pow(1 + r, months) - 1);
+    return Math.round(payment * 10) / 10;
+  }
   return Math.round(loan / months * 10) / 10;
 }
 
@@ -1750,10 +1766,11 @@ function gwLoanChange() {
   var insurance = document.getElementById('gwLoanInsurance').value;
   var parking = document.getElementById('gwLoanParking').value;
   var gas = document.getElementById('gwLoanGas').value;
-  var loanMonthly = calcCarLoanMonthly(price, down, years);
+  var rate = document.getElementById('gwLoanRate').value;
+  var loanMonthly = calcCarLoanMonthly(price, down, years, rate);
   var carTotal = Math.floor(loanMonthly) + (parseInt(insurance) || 0) + (parseInt(parking) || 0) + (parseInt(gas) || 0);
   document.getElementById('gwLoanMonthly').textContent = carTotal;
-  gwSaveAnswer('car_loan', { price: parseInt(price) || 0, down: parseInt(down) || 0, years: parseInt(years) || 5, insurance: parseInt(insurance) || 0, parking: parseInt(parking) || 0, gas: parseInt(gas) || 0 });
+  gwSaveAnswer('car_loan', { price: parseInt(price) || 0, down: parseInt(down) || 0, years: parseInt(years) || 5, rate: parseFloat(rate) || 0, insurance: parseInt(insurance) || 0, parking: parseInt(parking) || 0, gas: parseInt(gas) || 0 });
 }
 
 function gwInputChange(val) {
@@ -1857,7 +1874,7 @@ function renderGoalSummary() {
       if (t === '外車' || t === '国産車') {
         var name = ans.car_name ? '（' + ans.car_name + '）' : '';
         var loan = ans.car_loan;
-        var m = loan ? Math.floor(calcCarLoanMonthly(loan.price, loan.down, loan.years)) + (parseInt(loan.insurance) || 0) + (parseInt(loan.parking) || 0) + (parseInt(loan.gas) || 0) : 0;
+        var m = loan ? Math.floor(calcCarLoanMonthly(loan.price, loan.down, loan.years, loan.rate)) + (parseInt(loan.insurance) || 0) + (parseInt(loan.parking) || 0) + (parseInt(loan.gas) || 0) : 0;
         return t + name + (m ? ' ' + m + '万円/月' : '');
       }
       if (t && ans.transport_cost) return t + '（' + ans.transport_cost + '万円/月）';
@@ -1883,8 +1900,10 @@ function renderGoalSummary() {
   html += '</div>';
 
   var monthTotal = gwCalcMonthlyTotal();
+  var rankTitle = monthTotal <= 5 ? 'BR' : monthTotal <= 10 ? 'ゴールド' : monthTotal <= 20 ? 'ラピス' : monthTotal <= 30 ? 'ルビー' : monthTotal <= 60 ? 'エメラルド' : monthTotal <= 100 ? 'ダイヤモンド' : monthTotal <= 300 ? 'ブルーダイヤモンド' : 'チームエリート';
   html += '<div class="goal-total-row"><span class="goal-total-label">💰 目標月収</span>';
   html += '<span class="goal-total-value">' + monthTotal + '万円</span></div>';
+  html += '<div style="text-align:center;margin-top:8px;"><span style="font-size:0.7rem;color:var(--text-muted);">目標タイトル</span><div style="font-size:1.4rem;font-weight:900;color:var(--accent);letter-spacing:2px;">' + rankTitle + '</div></div>';
   if (ans.deadline) {
     var parts = ans.deadline.split('-');
     html += '<div style="text-align:right;font-size:0.75rem;color:var(--text-muted);margin-top:6px;">📅 目標期日: ' + parts[0] + '年' + parseInt(parts[1]) + '月</div>';
