@@ -1989,6 +1989,8 @@ function saveRoadmapData(rd) {
 
 function renderRoadmap(monthTotal, rankTitle, deadline) {
   var frontsPerMonth = simConfig.preset || 2;
+  var rankFronts = { 'BR': 0, 'ゴールド': 2, 'ラピス': 4, 'ルビー': 8, 'エメラルド': 8, 'ダイヤモンド': 10, 'ブルーダイヤモンド': 12, 'チームエリート': 15 };
+  var totalRequired = rankFronts[rankTitle] || 0;
   var now = new Date();
   var curY = now.getFullYear(), curM = now.getMonth() + 1;
   var dlParts = deadline.split('-');
@@ -2002,6 +2004,7 @@ function renderRoadmap(monthTotal, rankTitle, deadline) {
   if (months.length === 0) return '';
 
   var rd = getRoadmapData();
+  var activeMonths = Math.ceil(totalRequired / frontsPerMonth);
   var html = '';
   html += '<div class="section"><div class="goal-summary-header"><h3>📊 逆算ロードマップ</h3></div>';
 
@@ -2013,11 +2016,21 @@ function renderRoadmap(monthTotal, rankTitle, deadline) {
   html += '<div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--text-muted);">';
   html += '<span>目標月収 ' + monthTotal + '万円</span>';
   html += '<span>残り ' + months.length + 'ヶ月</span></div>';
-  html += '<div style="font-size:0.7rem;color:var(--text-muted);margin-top:6px;">前提: フロント ' + frontsPerMonth + '人/月</div>';
+  html += '<div style="font-size:0.7rem;color:var(--text-muted);margin-top:6px;">前提: フロント ' + frontsPerMonth + '人/月 × ' + activeMonths + 'ヶ月 = 合計' + totalRequired + '人</div>';
   html += '</div>';
+
+  // 累計実績を計算
+  var cumActual = 0;
+  months.forEach(function(mo) { cumActual += (rd[mo] && rd[mo].actualFronts) || 0; });
 
   // 今月のフォーカス
   var thisMonth = curY + '-' + String(curM).padStart(2, '0');
+  var thisMonthIdx = months.indexOf(thisMonth);
+  var frontsBeforeThis = 0;
+  for (var fi = 0; fi < thisMonthIdx; fi++) { frontsBeforeThis += (rd[months[fi]] && rd[months[fi]].actualFronts) || frontsPerMonth; }
+  var remaining = totalRequired - frontsBeforeThis;
+  var thisMonthTarget = Math.min(frontsPerMonth, Math.max(0, remaining));
+
   var thisWeek = Math.ceil(now.getDate() / 7);
   if (thisWeek > 4) thisWeek = 4;
   var monthRd = rd[thisMonth] || {};
@@ -2029,54 +2042,76 @@ function renderRoadmap(monthTotal, rankTitle, deadline) {
   html += '<span style="font-weight:800;font-size:0.95rem;">今月のフォーカス</span>';
   html += '<span style="margin-left:auto;font-size:0.75rem;color:var(--text-muted);">' + curY + '年' + curM + '月</span></div>';
 
-  // フロント進捗
-  html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">';
-  html += '<span style="font-size:0.8rem;">フロント進捗</span>';
-  html += '<span style="font-weight:800;color:var(--accent);font-size:1.1rem;">' + actualF + '</span>';
-  html += '<span style="font-size:0.75rem;color:var(--text-muted);">/ ' + frontsPerMonth + '人</span>';
-  html += '<button onclick="editActualFronts(\'' + thisMonth + '\')" style="margin-left:auto;background:none;border:1px solid var(--border);color:var(--text-muted);font-size:0.65rem;padding:3px 8px;border-radius:6px;cursor:pointer;">実績入力</button>';
-  html += '</div>';
-  var pct = frontsPerMonth > 0 ? Math.min(100, Math.round(actualF / frontsPerMonth * 100)) : 0;
-  html += '<div style="background:var(--surface2);border-radius:4px;height:6px;margin-bottom:12px;"><div style="background:var(--accent);height:100%;border-radius:4px;width:' + pct + '%;transition:width 0.3s;"></div></div>';
+  // 全体進捗
+  html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">';
+  html += '<span style="font-size:0.75rem;color:var(--text-muted);">全体進捗</span>';
+  html += '<span style="font-weight:700;color:var(--accent);font-size:0.85rem;">' + cumActual + ' / ' + totalRequired + '人</span></div>';
+  var totalPct = totalRequired > 0 ? Math.min(100, Math.round(cumActual / totalRequired * 100)) : 0;
+  html += '<div style="background:var(--surface2);border-radius:4px;height:4px;margin-bottom:10px;"><div style="background:var(--success);height:100%;border-radius:4px;width:' + totalPct + '%;"></div></div>';
 
-  // 今週のタスク
-  html += '<div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:6px;">第' + thisWeek + '週のタスク</div>';
-  html += renderWeekTasks(thisMonth, thisWeek, frontsPerMonth);
+  if (thisMonthTarget > 0) {
+    // フロント進捗
+    html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">';
+    html += '<span style="font-size:0.8rem;">今月フロント</span>';
+    html += '<span style="font-weight:800;color:var(--accent);font-size:1.1rem;">' + actualF + '</span>';
+    html += '<span style="font-size:0.75rem;color:var(--text-muted);">/ ' + thisMonthTarget + '人</span>';
+    html += '<button onclick="editActualFronts(\'' + thisMonth + '\')" style="margin-left:auto;background:none;border:1px solid var(--border);color:var(--text-muted);font-size:0.65rem;padding:3px 8px;border-radius:6px;cursor:pointer;">実績入力</button>';
+    html += '</div>';
+    var pct = thisMonthTarget > 0 ? Math.min(100, Math.round(actualF / thisMonthTarget * 100)) : 0;
+    html += '<div style="background:var(--surface2);border-radius:4px;height:6px;margin-bottom:12px;"><div style="background:var(--accent);height:100%;border-radius:4px;width:' + pct + '%;transition:width 0.3s;"></div></div>';
+
+    // 今週のタスク
+    html += '<div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:6px;">第' + thisWeek + '週のタスク</div>';
+    html += renderWeekTasks(thisMonth, thisWeek, thisMonthTarget);
+  } else {
+    html += '<div style="text-align:center;padding:16px 0;font-size:0.9rem;color:var(--success);font-weight:700;">🎉 フロント出し完了！あとは育成フェーズ</div>';
+  }
   html += '</div>';
 
   // 月別マイルストーン
   html += '<div style="font-size:0.8rem;font-weight:700;margin-bottom:8px;color:var(--text-muted);">月別マイルストーン</div>';
-  var cumFronts = 0;
+  var cumPlanned = 0;
   months.forEach(function(mo, idx) {
     var mrd = rd[mo] || {};
     var actual = mrd.actualFronts || 0;
-    cumFronts += actual || frontsPerMonth;
+    var remainForMonth = Math.max(0, totalRequired - cumPlanned);
+    var monthTarget = Math.min(frontsPerMonth, remainForMonth);
+    cumPlanned += actual || monthTarget;
     var mParts = mo.split('-');
     var label = parseInt(mParts[0]) + '年' + parseInt(mParts[1]) + '月';
     var isPast = mo < thisMonth;
     var isCurrent = mo === thisMonth;
     var expanded = mrd.expanded || isCurrent;
+    var isActive = monthTarget > 0;
 
     html += '<div class="goal-card" style="margin-bottom:6px;' + (isCurrent ? 'border:1px solid var(--accent);' : '') + (isPast ? 'opacity:0.6;' : '') + '">';
     html += '<div onclick="toggleRoadmapMonth(\'' + mo + '\')" style="display:flex;align-items:center;gap:8px;cursor:pointer;">';
     html += '<span style="font-size:0.8rem;font-weight:700;">' + label + '</span>';
-    html += '<span style="font-size:0.7rem;color:var(--text-muted);">フロント ' + frontsPerMonth + '人</span>';
-    if (isPast || isCurrent) {
-      html += '<span style="font-size:0.7rem;color:' + (actual >= frontsPerMonth ? 'var(--success)' : 'var(--text-muted)') + ';">実績 ' + actual + '人</span>';
+    if (isActive) {
+      html += '<span style="font-size:0.7rem;color:var(--text-muted);">フロント ' + monthTarget + '人</span>';
+      if (isPast || isCurrent) {
+        html += '<span style="font-size:0.7rem;color:' + (actual >= monthTarget ? 'var(--success)' : 'var(--text-muted)') + ';">実績 ' + actual + '人</span>';
+      }
+    } else {
+      html += '<span style="font-size:0.7rem;color:var(--success);">🌱 育成フェーズ</span>';
     }
     html += '<span style="margin-left:auto;font-size:0.7rem;color:var(--text-muted);">' + (expanded ? '▼' : '▶') + '</span>';
     html += '</div>';
 
     if (expanded) {
       html += '<div style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px;">';
-      for (var w = 1; w <= 4; w++) {
-        html += '<div style="font-size:0.7rem;color:var(--text-muted);margin:6px 0 4px;">第' + w + '週</div>';
-        html += renderWeekTasks(mo, w, frontsPerMonth);
-      }
-      if (!isPast) {
-        html += '<div style="text-align:right;margin-top:6px;">';
-        html += '<button onclick="editActualFronts(\'' + mo + '\')" style="background:none;border:1px solid var(--border);color:var(--text-muted);font-size:0.65rem;padding:3px 8px;border-radius:6px;cursor:pointer;">実績入力</button>';
-        html += '</div>';
+      if (isActive) {
+        for (var w = 1; w <= 4; w++) {
+          html += '<div style="font-size:0.7rem;color:var(--text-muted);margin:6px 0 4px;">第' + w + '週</div>';
+          html += renderWeekTasks(mo, w, monthTarget);
+        }
+        if (!isPast) {
+          html += '<div style="text-align:right;margin-top:6px;">';
+          html += '<button onclick="editActualFronts(\'' + mo + '\')" style="background:none;border:1px solid var(--border);color:var(--text-muted);font-size:0.65rem;padding:3px 8px;border-radius:6px;cursor:pointer;">実績入力</button>';
+          html += '</div>';
+        }
+      } else {
+        html += '<div style="text-align:center;padding:12px 0;font-size:0.8rem;color:var(--text-muted);">フロント出し完了。メンバー育成に集中！</div>';
       }
       html += '</div>';
     }
