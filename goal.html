@@ -1971,7 +1971,175 @@ function renderGoalSummary() {
   html += '<button onclick="gwRestart()" style="background:none;border:1px solid var(--border);color:var(--text-muted);padding:10px 24px;border-radius:var(--radius);font-size:0.75rem;cursor:pointer;">最初からやり直す</button>';
   html += '</div>';
 
+  // 逆算ロードマップ
+  if (p1 && ans.deadline) {
+    html += renderRoadmap(monthTotal, rankTitle, ans.deadline);
+  }
+
   container.innerHTML = html;
+}
+
+function getRoadmapData() {
+  var d = loadData();
+  return d.roadmap || {};
+}
+function saveRoadmapData(rd) {
+  saveData({ roadmap: rd });
+}
+
+function renderRoadmap(monthTotal, rankTitle, deadline) {
+  var frontsPerMonth = simConfig.preset || 2;
+  var now = new Date();
+  var curY = now.getFullYear(), curM = now.getMonth() + 1;
+  var dlParts = deadline.split('-');
+  var dlY = parseInt(dlParts[0]), dlM = parseInt(dlParts[1]);
+  var months = [];
+  var y = curY, m = curM;
+  while (y < dlY || (y === dlY && m <= dlM)) {
+    months.push(y + '-' + String(m).padStart(2, '0'));
+    m++; if (m > 12) { m = 1; y++; }
+  }
+  if (months.length === 0) return '';
+
+  var rd = getRoadmapData();
+  var html = '';
+  html += '<div class="section"><div class="goal-summary-header"><h3>📊 逆算ロードマップ</h3></div>';
+
+  // ゴール情報
+  html += '<div class="goal-card" style="margin-bottom:12px;">';
+  html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">';
+  html += '<span style="font-size:0.8rem;color:var(--text-muted);">ゴール</span>';
+  html += '<span style="font-size:1.1rem;font-weight:800;color:var(--accent);">' + rankTitle + '</span></div>';
+  html += '<div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--text-muted);">';
+  html += '<span>目標月収 ' + monthTotal + '万円</span>';
+  html += '<span>残り ' + months.length + 'ヶ月</span></div>';
+  html += '<div style="font-size:0.7rem;color:var(--text-muted);margin-top:6px;">前提: フロント ' + frontsPerMonth + '人/月</div>';
+  html += '</div>';
+
+  // 今月のフォーカス
+  var thisMonth = curY + '-' + String(curM).padStart(2, '0');
+  var thisWeek = Math.ceil(now.getDate() / 7);
+  if (thisWeek > 4) thisWeek = 4;
+  var monthRd = rd[thisMonth] || {};
+  var actualF = monthRd.actualFronts || 0;
+
+  html += '<div class="goal-card" style="border:1px solid var(--accent);margin-bottom:16px;">';
+  html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">';
+  html += '<span style="font-size:1.1rem;">🔥</span>';
+  html += '<span style="font-weight:800;font-size:0.95rem;">今月のフォーカス</span>';
+  html += '<span style="margin-left:auto;font-size:0.75rem;color:var(--text-muted);">' + curY + '年' + curM + '月</span></div>';
+
+  // フロント進捗
+  html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">';
+  html += '<span style="font-size:0.8rem;">フロント進捗</span>';
+  html += '<span style="font-weight:800;color:var(--accent);font-size:1.1rem;">' + actualF + '</span>';
+  html += '<span style="font-size:0.75rem;color:var(--text-muted);">/ ' + frontsPerMonth + '人</span>';
+  html += '<button onclick="editActualFronts(\'' + thisMonth + '\')" style="margin-left:auto;background:none;border:1px solid var(--border);color:var(--text-muted);font-size:0.65rem;padding:3px 8px;border-radius:6px;cursor:pointer;">実績入力</button>';
+  html += '</div>';
+  var pct = frontsPerMonth > 0 ? Math.min(100, Math.round(actualF / frontsPerMonth * 100)) : 0;
+  html += '<div style="background:var(--surface2);border-radius:4px;height:6px;margin-bottom:12px;"><div style="background:var(--accent);height:100%;border-radius:4px;width:' + pct + '%;transition:width 0.3s;"></div></div>';
+
+  // 今週のタスク
+  html += '<div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:6px;">第' + thisWeek + '週のタスク</div>';
+  html += renderWeekTasks(thisMonth, thisWeek, frontsPerMonth);
+  html += '</div>';
+
+  // 月別マイルストーン
+  html += '<div style="font-size:0.8rem;font-weight:700;margin-bottom:8px;color:var(--text-muted);">月別マイルストーン</div>';
+  var cumFronts = 0;
+  months.forEach(function(mo, idx) {
+    var mrd = rd[mo] || {};
+    var actual = mrd.actualFronts || 0;
+    cumFronts += actual || frontsPerMonth;
+    var mParts = mo.split('-');
+    var label = parseInt(mParts[0]) + '年' + parseInt(mParts[1]) + '月';
+    var isPast = mo < thisMonth;
+    var isCurrent = mo === thisMonth;
+    var expanded = mrd.expanded || isCurrent;
+
+    html += '<div class="goal-card" style="margin-bottom:6px;' + (isCurrent ? 'border:1px solid var(--accent);' : '') + (isPast ? 'opacity:0.6;' : '') + '">';
+    html += '<div onclick="toggleRoadmapMonth(\'' + mo + '\')" style="display:flex;align-items:center;gap:8px;cursor:pointer;">';
+    html += '<span style="font-size:0.8rem;font-weight:700;">' + label + '</span>';
+    html += '<span style="font-size:0.7rem;color:var(--text-muted);">フロント ' + frontsPerMonth + '人</span>';
+    if (isPast || isCurrent) {
+      html += '<span style="font-size:0.7rem;color:' + (actual >= frontsPerMonth ? 'var(--success)' : 'var(--text-muted)') + ';">実績 ' + actual + '人</span>';
+    }
+    html += '<span style="margin-left:auto;font-size:0.7rem;color:var(--text-muted);">' + (expanded ? '▼' : '▶') + '</span>';
+    html += '</div>';
+
+    if (expanded) {
+      html += '<div style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px;">';
+      for (var w = 1; w <= 4; w++) {
+        html += '<div style="font-size:0.7rem;color:var(--text-muted);margin:6px 0 4px;">第' + w + '週</div>';
+        html += renderWeekTasks(mo, w, frontsPerMonth);
+      }
+      if (!isPast) {
+        html += '<div style="text-align:right;margin-top:6px;">';
+        html += '<button onclick="editActualFronts(\'' + mo + '\')" style="background:none;border:1px solid var(--border);color:var(--text-muted);font-size:0.65rem;padding:3px 8px;border-radius:6px;cursor:pointer;">実績入力</button>';
+        html += '</div>';
+      }
+      html += '</div>';
+    }
+    html += '</div>';
+  });
+
+  html += '</div>';
+  return html;
+}
+
+function renderWeekTasks(month, week, n) {
+  var rd = getRoadmapData();
+  var mrd = rd[month] || {};
+  var done = (mrd.weeks && mrd.weeks[week]) || [];
+  var tasks = [
+    { key: 'ct_取り', label: 'CT取り', count: Math.ceil(n * 24 / 4) },
+    { key: 'ct', label: 'CT', count: Math.ceil(n * 16 / 4) },
+    { key: 'ft', label: 'FT・マケ', count: Math.ceil(n * 8 / 4) },
+    { key: 'pg', label: 'PG', count: Math.ceil(n * 4 / 4) },
+    { key: 'dlr', label: 'DLR動員', count: Math.ceil(n * 2 / 4) },
+    { key: 'front', label: 'フロント', count: Math.ceil(n / 4) },
+  ];
+  var html = '';
+  tasks.forEach(function(t) {
+    var checked = done.indexOf(t.key) !== -1;
+    html += '<div onclick="toggleRoadmapTask(\'' + month + '\',' + week + ',\'' + t.key + '\')" style="display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;">';
+    html += '<span style="width:18px;height:18px;border-radius:50%;border:2px solid ' + (checked ? 'var(--accent)' : 'var(--border)') + ';display:flex;align-items:center;justify-content:center;font-size:0.6rem;flex-shrink:0;' + (checked ? 'background:var(--accent);color:#000;' : '') + '">' + (checked ? '✓' : '') + '</span>';
+    html += '<span style="font-size:0.8rem;' + (checked ? 'text-decoration:line-through;color:var(--text-muted);' : '') + '">' + t.label + '</span>';
+    html += '<span style="margin-left:auto;font-size:0.8rem;font-weight:700;color:' + (checked ? 'var(--text-muted)' : 'var(--accent)') + ';">' + t.count + '人</span>';
+    html += '</div>';
+  });
+  return html;
+}
+
+function toggleRoadmapTask(month, week, key) {
+  var rd = getRoadmapData();
+  if (!rd[month]) rd[month] = {};
+  if (!rd[month].weeks) rd[month].weeks = {};
+  if (!rd[month].weeks[week]) rd[month].weeks[week] = [];
+  var arr = rd[month].weeks[week];
+  var idx = arr.indexOf(key);
+  if (idx === -1) arr.push(key); else arr.splice(idx, 1);
+  saveRoadmapData(rd);
+  renderGoalSummary();
+}
+
+function toggleRoadmapMonth(month) {
+  var rd = getRoadmapData();
+  if (!rd[month]) rd[month] = {};
+  rd[month].expanded = !rd[month].expanded;
+  saveRoadmapData(rd);
+  renderGoalSummary();
+}
+
+function editActualFronts(month) {
+  var rd = getRoadmapData();
+  var current = (rd[month] && rd[month].actualFronts) || 0;
+  var val = prompt('実績フロント数を入力', current);
+  if (val === null) return;
+  if (!rd[month]) rd[month] = {};
+  rd[month].actualFronts = parseInt(val) || 0;
+  saveRoadmapData(rd);
+  renderGoalSummary();
 }
 
 // ===== Checklists =====
