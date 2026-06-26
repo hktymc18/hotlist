@@ -2098,6 +2098,7 @@ function renderRoadmap(monthTotal, rankTitle, deadline) {
   var cumActual = 0;
   months.forEach(function(mo) { cumActual += (rd[mo] && rd[mo].actualFronts) || 0; });
 
+  /* === 一時非表示 ここから ===
   // 今月のフォーカス
   var thisMonth = curY + '-' + String(curM).padStart(2, '0');
   var thisMonthIdx = months.indexOf(thisMonth);
@@ -2192,6 +2193,7 @@ function renderRoadmap(monthTotal, rankTitle, deadline) {
     }
     html += '</div>';
   });
+  === 一時非表示 ここまで === */
 
   html += '</div>';
   return html;
