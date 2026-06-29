@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="gL" x1="50%" y1="5%" x2="15%" y2="95%">
+      <stop offset="0%" stop-color="#FF2233"/>
+      <stop offset="100%" stop-color="#FF0A82"/>
+    </linearGradient>
+    <linearGradient id="gR" x1="50%" y1="5%" x2="85%" y2="95%">
+      <stop offset="0%" stop-color="#FF2233"/>
+      <stop offset="100%" stop-color="#FF6022"/>
+    </linearGradient>
+    <linearGradient id="gDot" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF2233"/>
+      <stop offset="100%" stop-color="#FF5522"/>
+    </linearGradient>
+  </defs>
+  <!-- Left leg -->
+  <line x1="256" y1="108" x2="82" y2="430"
+    stroke="url(#gL)" stroke-width="78" stroke-linecap="round"/>
+  <!-- Right leg -->
+  <line x1="256" y1="108" x2="430" y2="430"
+    stroke="url(#gR)" stroke-width="78" stroke-linecap="round"/>
+  <!-- Center dot -->
+  <circle cx="256" cy="330" r="46" fill="url(#gDot)"/>
+  <!-- Gold 4-pointed sparkle star -->
+  <path d="M256,30 C256,30 262,52 282,60 C262,68 256,90 256,90 C256,90 250,68 230,60 C250,52 256,30 256,30Z"
+    fill="#C9A200"/>
+</svg>
