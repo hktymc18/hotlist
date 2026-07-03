@@ -736,6 +736,10 @@
 
 <!-- ===== メインアプリ ===== -->
 <div id="mainApp">
+<div id="sharedViewBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:2500;background:linear-gradient(135deg,#ff6b9d,#ff9f43);color:#fff;padding:10px 16px;align-items:center;justify-content:space-between;font-size:0.85rem;font-weight:700;box-shadow:0 2px 12px rgba(0,0,0,0.3);">
+  <span>📖 <span id="sharedViewName"></span> のシートを閲覧中</span>
+  <button onclick="backToMyGoal()" style="background:#fff;color:#ff6b9d;border:none;border-radius:8px;padding:6px 14px;font-size:0.8rem;font-weight:700;cursor:pointer;">自分のシートに戻る</button>
+</div>
 <div class="header">
   <div class="title">GOAL SETTING</div>
   <span id="userNameDisplay" style="display:none;"></span>
@@ -1110,7 +1114,7 @@ async function loadFromFirestore() {
 }
 
 window.saveToFirestore = function() {
-  if (!currentUser) return;
+  if (!currentUser || viewingShared) return;
   clearTimeout(saveTimer);
   saveTimer = setTimeout(async () => {
     try {
@@ -1119,12 +1123,16 @@ window.saveToFirestore = function() {
         data,
         updatedAt: serverTimestamp()
       });
+      syncSharedCopy();
     } catch(e) { console.error('Save error:', e); }
   }, 1500);
 };
 
 // ===== 共有機能 =====
 function escShareHtml(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+let viewingShared = false;
+let myBackupData = null;
 
 window.openShareModal = async () => {
   document.getElementById('shareModal').classList.add('open');
@@ -1146,8 +1154,27 @@ window.addShareMember = async () => {
     document.getElementById('shareEmailInput').value = '';
     window.showToast('追加しました');
     renderShareMemberList();
+    syncSharedCopy();
   } catch(e) { window.showToast('追加に失敗しました'); }
 };
+
+async function syncSharedCopy() {
+  if (!currentUser) return;
+  try {
+    const shareSnap = await getDoc(doc(firedb, 'users', currentUser.uid, 'settings', 'share'));
+    const members = shareSnap.exists() ? (shareSnap.data().sharedWith || []) : [];
+    const goalSnap = await getDoc(doc(firedb, 'users', currentUser.uid, 'appData', 'goalSheet'));
+    const goalData = goalSnap.exists() ? (goalSnap.data().data || {}) : {};
+    const name = currentUser.displayName || currentUser.email;
+    await setDoc(doc(firedb, 'sharedGoals', currentUser.uid), {
+      ownerEmail: currentUser.email,
+      ownerName: name,
+      sharedWith: members,
+      data: goalData,
+      updatedAt: serverTimestamp()
+    });
+  } catch(e) { console.error('syncSharedCopy error:', e); }
+}
 
 window.removeShareMember = async (email) => {
   try {
@@ -1157,6 +1184,7 @@ window.removeShareMember = async (email) => {
     await setDoc(shareRef, { sharedWith: current.filter(e => e !== email) }, { merge: true });
     window.showToast(email + ' の共有を解除しました');
     renderShareMemberList();
+    syncSharedCopy();
   } catch(e) { window.showToast('削除に失敗しました'); }
 };
 
@@ -1179,17 +1207,14 @@ async function loadSharedWithMe() {
   if (!currentUser) return;
   const el = document.getElementById('sharedWithMeList');
   try {
-    const usersSnap = await getDocs(collection(firedb, 'users'));
-    const others = usersSnap.docs.filter(d => d.id !== currentUser.uid);
-    const results = await Promise.all(
-      others.map(userDoc =>
-        getDoc(doc(firedb, 'users', userDoc.id, 'settings', 'share'))
-          .then(shareSnap => ({ userDoc, shareSnap }))
-      )
-    );
-    const shared = results
-      .filter(({ shareSnap }) => shareSnap.exists() && (shareSnap.data().sharedWith || []).includes(currentUser.email))
-      .map(({ userDoc }) => ({ uid: userDoc.id, name: userDoc.data().displayName || userDoc.data().email || userDoc.id }));
+    const allShared = await getDocs(collection(firedb, 'sharedGoals'));
+    const shared = [];
+    allShared.forEach(d => {
+      const data = d.data();
+      if (d.id !== currentUser.uid && (data.sharedWith || []).includes(currentUser.email)) {
+        shared.push({ uid: d.id, name: data.ownerName || data.ownerEmail || d.id });
+      }
+    });
     if (shared.length === 0) {
       el.textContent = 'まだ共有されているシートはありません';
       return;
@@ -1204,16 +1229,31 @@ async function loadSharedWithMe() {
 
 window.viewSharedGoal = async (uid, name) => {
   try {
-    const snap = await getDoc(doc(firedb, 'users', uid, 'appData', 'goalSheet'));
+    const snap = await getDoc(doc(firedb, 'sharedGoals', uid));
     if (snap.exists()) {
+      myBackupData = localStorage.getItem('goalSheetData');
+      viewingShared = true;
       localStorage.setItem('goalSheetData', JSON.stringify(snap.data().data || {}));
       if (typeof init === 'function') init();
-      window.showToast(name + ' の目標シートを表示中');
+      closeShareModal();
+      document.getElementById('sharedViewBanner').style.display = 'flex';
+      document.getElementById('sharedViewName').textContent = name;
+      document.getElementById('mainApp').style.paddingTop = '44px';
     } else {
       window.showToast('データが見つかりません');
     }
-    closeShareModal();
   } catch(e) { window.showToast('読み込みに失敗しました'); }
+};
+
+window.backToMyGoal = () => {
+  if (myBackupData !== null) {
+    localStorage.setItem('goalSheetData', myBackupData);
+    myBackupData = null;
+  }
+  viewingShared = false;
+  document.getElementById('sharedViewBanner').style.display = 'none';
+  document.getElementById('mainApp').style.paddingTop = '';
+  if (typeof init === 'function') init();
 };
 </script>
 
