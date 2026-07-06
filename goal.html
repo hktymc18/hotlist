@@ -1095,6 +1095,7 @@ onAuthStateChanged(auth, async user => {
     document.getElementById('mainApp').style.display = 'block';
     await loadFromFirestore();
     init();
+    syncSharedCopy();
   } else {
     currentUser = null;
     document.getElementById('mainApp').style.display = 'none';
@@ -1207,33 +1208,64 @@ async function loadSharedWithMe() {
   if (!currentUser) return;
   const el = document.getElementById('sharedWithMeList');
   try {
-    const allShared = await getDocs(collection(firedb, 'sharedGoals'));
     const shared = [];
-    allShared.forEach(d => {
-      const data = d.data();
-      if (d.id !== currentUser.uid && (data.sharedWith || []).includes(currentUser.email)) {
-        shared.push({ uid: d.id, name: data.ownerName || data.ownerEmail || d.id });
-      }
-    });
+    // 新方式: sharedGoalsコレクション
+    try {
+      const allShared = await getDocs(collection(firedb, 'sharedGoals'));
+      allShared.forEach(d => {
+        const data = d.data();
+        if (d.id !== currentUser.uid && (data.sharedWith || []).includes(currentUser.email)) {
+          shared.push({ uid: d.id, name: data.ownerName || data.ownerEmail || d.id, src: 'new' });
+        }
+      });
+    } catch(e) {}
+    // 旧方式フォールバック: users/{uid}/settings/share
+    if (shared.length === 0) {
+      try {
+        const usersSnap = await getDocs(collection(firedb, 'users'));
+        const others = usersSnap.docs.filter(d => d.id !== currentUser.uid);
+        const results = await Promise.all(
+          others.map(userDoc =>
+            getDoc(doc(firedb, 'users', userDoc.id, 'settings', 'share'))
+              .then(shareSnap => ({ userDoc, shareSnap })).catch(() => null)
+          )
+        );
+        results.filter(r => r).forEach(({ userDoc, shareSnap }) => {
+          if (shareSnap.exists() && (shareSnap.data().sharedWith || []).includes(currentUser.email)) {
+            if (!shared.find(s => s.uid === userDoc.id)) {
+              shared.push({ uid: userDoc.id, name: userDoc.data().displayName || userDoc.data().email || userDoc.id, src: 'old' });
+            }
+          }
+        });
+      } catch(e) {}
+    }
     if (shared.length === 0) {
       el.textContent = 'まだ共有されているシートはありません';
       return;
     }
     el.innerHTML = shared.map(s =>
-      '<div class="share-member-item" style="cursor:pointer;" onclick="viewSharedGoal(\'' + s.uid + '\',\'' + escShareHtml(s.name) + '\')">' +
+      '<div class="share-member-item" style="cursor:pointer;" onclick="viewSharedGoal(\'' + s.uid + '\',\'' + escShareHtml(s.name) + '\',\'' + s.src + '\')">' +
       '<span class="share-member-email">' + escShareHtml(s.name) + '</span>' +
       '<span style="font-size:0.75rem;color:var(--accent);">閲覧する →</span></div>'
     ).join('');
   } catch(e) { el.textContent = '読み込みに失敗しました'; }
 }
 
-window.viewSharedGoal = async (uid, name) => {
+window.viewSharedGoal = async (uid, name, src) => {
   try {
-    const snap = await getDoc(doc(firedb, 'sharedGoals', uid));
-    if (snap.exists()) {
+    let goalData = null;
+    if (src === 'new') {
+      const snap = await getDoc(doc(firedb, 'sharedGoals', uid));
+      if (snap.exists()) goalData = snap.data().data || {};
+    }
+    if (!goalData) {
+      const snap = await getDoc(doc(firedb, 'users', uid, 'appData', 'goalSheet'));
+      if (snap.exists()) goalData = snap.data().data || {};
+    }
+    if (goalData) {
       myBackupData = localStorage.getItem('goalSheetData');
       viewingShared = true;
-      localStorage.setItem('goalSheetData', JSON.stringify(snap.data().data || {}));
+      localStorage.setItem('goalSheetData', JSON.stringify(goalData));
       if (typeof init === 'function') init();
       closeShareModal();
       document.getElementById('sharedViewBanner').style.display = 'flex';
