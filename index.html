@@ -834,7 +834,7 @@ onAuthStateChanged(auth, async user => {
       showScreen('nameScreen');
     } else {
       // 登録済み → メイン画面へ
-      currentUser = { ...user, displayName: savedName };
+      currentUser = { ...user, displayName: savedName, area: data.area || '' };
       enterMainScreen(savedName);
     }
   } else {
@@ -876,7 +876,7 @@ window.saveName = async () => {
       registrationComplete: true,
       updatedAt: serverTimestamp()
     }, { merge: true });
-    currentUser = { ...currentUser, displayName: name };
+    currentUser = { ...currentUser, displayName: name, area: area };
     enterMainScreen(name);
     showToast('登録完了！ようこそ ' + name + ' さん');
   } catch(e) {
@@ -1334,8 +1334,8 @@ window.openAddModal = () => {
   document.getElementById('modalTitle').textContent = '新規追加';
   document.getElementById('personForm').reset();
   document.getElementById('f_age').value = '24';
-  document.getElementById('f_address').value = '福岡';
-  document.getElementById('f_hometown').value = '福岡';
+  document.getElementById('f_address').value = currentUser?.area || '';
+  document.getElementById('f_hometown').value = currentUser?.area || '';
   document.getElementById('f_writer').value = currentUser?.displayName || currentUser?.email || '';
   document.getElementById('editModal').classList.add('open');
   setTimeout(()=>{ document.getElementById('editModal').scrollTop=0; },0);
