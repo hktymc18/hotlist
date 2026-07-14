@@ -256,6 +256,17 @@
     select option { background: var(--surface); color: var(--text); }
     .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
 
+    /* ===== 備考 全画面エディタ ===== */
+    .memo-label-row { display: flex; align-items: center; justify-content: space-between; }
+    .memo-expand-btn { background: transparent; border: 1px solid var(--border); border-radius: 8px; color: var(--text-muted); font-size: 0.78rem; font-family: inherit; padding: 3px 10px; cursor: pointer; transition: all 0.15s; }
+    .memo-expand-btn:hover { border-color: var(--primary); color: var(--primary); }
+    #f_memo { overflow-y: hidden; }
+    .memo-editor { display: none; position: fixed; inset: 0; z-index: 300; background: var(--surface); flex-direction: column; }
+    .memo-editor.open { display: flex; }
+    .memo-editor-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--border); font-weight: 700; flex-shrink: 0; }
+    .memo-editor textarea { flex: 1; min-height: 0; border: none; border-radius: 0; resize: none; padding: 16px; background: var(--surface); }
+    .memo-editor textarea:focus { border: none; }
+
     /* ===== 共有パネル ===== */
     .share-section { padding: 4px 0; }
     .share-section-title { font-size: 0.9rem; font-weight: 700; color: var(--primary); margin-bottom: 6px; }
@@ -571,7 +582,10 @@
         <div class="form-group"><label>パートナー</label><select id="f_partner"><option value="">-</option><option value="有り">有り</option><option value="無し">無し</option><option value="結婚">結婚</option><option value="子供あり">子供あり</option></select></div>
         <div class="form-group full"><label>４つのタイプ</label><select id="f_type"><option value="">-</option><option value="プロモーター">プロモーター</option><option value="コントローラー">コントローラー</option><option value="アナライザー">アナライザー</option><option value="サポーター">サポーター</option></select></div>
         <div class="form-group full"><label>最終連絡日</label><select id="f_lastcontact"><option value="">-</option><option value="1週間以内">1週間以内</option><option value="1ヶ月以内">1ヶ月以内</option><option value="3ヶ月以内">3ヶ月以内</option><option value="半年以内">半年以内</option><option value="1年以内">1年以内</option><option value="3年以上前">3年以上前</option></select></div>
-        <div class="form-group full"><label>備考</label><textarea id="f_memo" placeholder="自由記述"></textarea></div>
+        <div class="form-group full">
+          <label class="memo-label-row">備考<button type="button" class="memo-expand-btn" onclick="openMemoEditor()">⤢ 全画面で書く</button></label>
+          <textarea id="f_memo" placeholder="自由記述"></textarea>
+        </div>
         <div class="form-group full"><label>記入者</label><input type="text" id="f_writer" placeholder="例：山田 太郎"></div>
       </div>
       <div class="form-actions">
@@ -580,6 +594,15 @@
       </div>
     </form>
   </div>
+</div>
+
+<!-- ===== 備考 全画面エディタ ===== -->
+<div class="memo-editor" id="memoEditor">
+  <div class="memo-editor-head">
+    <span>備考</span>
+    <button type="button" class="btn btn-primary btn-sm" onclick="closeMemoEditor()">完了</button>
+  </div>
+  <textarea id="memoEditorArea" placeholder="自由記述"></textarea>
 </div>
 
 <!-- ===== 共有管理モーダル ===== -->
@@ -1338,6 +1361,7 @@ window.openAddModal = () => {
   document.getElementById('f_hometown').value = currentUser?.area || '';
   document.getElementById('f_writer').value = currentUser?.displayName || currentUser?.email || '';
   document.getElementById('editModal').classList.add('open');
+  autoGrowMemo();
   setTimeout(()=>{ document.getElementById('editModal').scrollTop=0; },0);
 };
 
@@ -1348,7 +1372,31 @@ window.openEditModal = (id) => {
   document.getElementById('modalTitle').textContent = '編集：'+p.name;
   FIELDS.forEach(f=>{ const el=document.getElementById('f_'+f); if(el) el.value=p[f]||''; });
   document.getElementById('editModal').classList.add('open');
+  autoGrowMemo();
   setTimeout(()=>{ document.getElementById('editModal').scrollTop=0; },0);
+};
+
+// ===== 備考欄：自動伸長＋全画面エディタ =====
+function autoGrowMemo() {
+  const el = document.getElementById('f_memo');
+  const cap = window.innerHeight * 0.4;
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, cap) + 'px';
+  el.style.overflowY = el.scrollHeight > cap ? 'auto' : 'hidden';
+}
+document.getElementById('f_memo').addEventListener('input', autoGrowMemo);
+
+window.openMemoEditor = () => {
+  const ed = document.getElementById('memoEditorArea');
+  ed.value = document.getElementById('f_memo').value;
+  document.getElementById('memoEditor').classList.add('open');
+  setTimeout(()=>{ ed.focus(); },0);
+};
+
+window.closeMemoEditor = () => {
+  document.getElementById('f_memo').value = document.getElementById('memoEditorArea').value;
+  document.getElementById('memoEditor').classList.remove('open');
+  autoGrowMemo();
 };
 
 window.copyCardText = (id) => {
