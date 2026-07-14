@@ -267,6 +267,20 @@
     .memo-editor textarea { flex: 1; min-height: 0; border: none; border-radius: 0; resize: none; padding: 16px; background: var(--surface); }
     .memo-editor textarea:focus { border: none; }
 
+    /* ===== バージョン表示＆お知らせ ===== */
+    .app-version { font-size: 0.72rem; color: var(--text-muted); border: 1px solid var(--border); border-radius: 6px; padding: 1px 6px; flex-shrink: 0; }
+    .btn-notice { position: relative; background: transparent; border: 2px solid var(--border); border-radius: 12px; padding: 6px 10px; font-size: 0.95rem; cursor: pointer; line-height: 1; transition: border-color 0.15s; }
+    .btn-notice:hover { border-color: var(--primary); }
+    .notice-dot { display: none; position: absolute; top: -3px; right: -3px; width: 10px; height: 10px; border-radius: 50%; background: #ff5252; border: 2px solid var(--bg2); }
+    .notice-dot.show { display: block; }
+    .update-entry { padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .update-entry:last-child { border-bottom: none; }
+    .update-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+    .update-version { font-size: 0.85rem; font-weight: 700; color: var(--primary); }
+    .update-date { font-size: 0.78rem; color: var(--text-muted); }
+    .update-items { margin: 0; padding-left: 20px; }
+    .update-items li { font-size: 0.9rem; color: var(--text); line-height: 1.7; }
+
     /* ===== 共有パネル ===== */
     .share-section { padding: 4px 0; }
     .share-section-title { font-size: 0.9rem; font-weight: 700; color: var(--primary); margin-bottom: 6px; }
@@ -427,8 +441,10 @@
       <div class="header-left">
         <span class="header-count" id="countBadge">0人</span>
         <span class="user-name" id="userNameDisplay"></span>
+        <span class="app-version" id="appVersion"></span>
       </div>
       <div style="display:flex;gap:8px;align-items:center;">
+        <button class="btn-notice" onclick="openUpdatesModal()" title="お知らせ">🔔<span class="notice-dot" id="noticeDot"></span></button>
         <button class="btn btn-outline btn-sm" onclick="openShareModal()">共有</button>
         <button class="btn-add-header" onclick="openAddModal()">＋ 追加</button>
         <img id="userAvatar" class="user-avatar" src="" alt="" onclick="confirmSignOut()" title="ログアウト" style="display:none;">
@@ -593,6 +609,17 @@
         <button type="submit" class="btn btn-primary">保存</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- ===== お知らせモーダル ===== -->
+<div class="modal-overlay" id="updatesModal">
+  <div class="modal">
+    <div class="modal-title">
+      <span>お知らせ</span>
+      <button class="modal-close" onclick="closeUpdatesModal()">✕</button>
+    </div>
+    <div id="updatesList"></div>
   </div>
 </div>
 
@@ -1399,6 +1426,42 @@ window.closeMemoEditor = () => {
   autoGrowMemo();
 };
 
+// ===== バージョン＆お知らせ =====
+// アップデートしたら先頭に { version, date, items } を追記する（先頭の version が表示バージョンになる）
+const UPDATES = [
+  {
+    version: 'v1',
+    date: '2026/7/14',
+    items: [
+      'お知らせ機能とバージョン表示を追加',
+      'メンバーを新規追加したとき、リストの一番上に入るように変更',
+      '備考欄が入力に合わせて自動で広がるようになり、「⤢ 全画面で書く」ボタンを追加',
+      '新規追加時の現住所・出身地の初期値を、登録時に設定した活動地域に変更',
+    ],
+  },
+];
+const APP_VERSION = UPDATES[0].version;
+document.getElementById('appVersion').textContent = APP_VERSION;
+
+function refreshNoticeDot() {
+  const seen = localStorage.getItem('hotlist_seen_version');
+  document.getElementById('noticeDot').classList.toggle('show', seen !== APP_VERSION);
+}
+refreshNoticeDot();
+
+window.openUpdatesModal = () => {
+  document.getElementById('updatesList').innerHTML = UPDATES.map(u => `
+    <div class="update-entry">
+      <div class="update-head"><span class="update-version">${escHtml(u.version)}</span><span class="update-date">${escHtml(u.date)}</span></div>
+      <ul class="update-items">${u.items.map(i=>`<li>${escHtml(i)}</li>`).join('')}</ul>
+    </div>`).join('');
+  localStorage.setItem('hotlist_seen_version', APP_VERSION);
+  refreshNoticeDot();
+  document.getElementById('updatesModal').classList.add('open');
+  setTimeout(()=>{ document.getElementById('updatesModal').scrollTop=0; },0);
+};
+window.closeUpdatesModal = () => document.getElementById('updatesModal').classList.remove('open');
+
 window.copyCardText = (id) => {
   const p = people.find(x => x.id === id);
   if (!p) return;
@@ -1516,7 +1579,9 @@ window.savePerson = async (e) => {
     } else {
       // 新規追加時に記入者を自動セット
       const writerName = currentUser.displayName || currentUser.email || '';
-      await addDoc(collection(db,'users',currentUser.uid,'people'), { ...data, writer: data.writer || writerName, createdAt: serverTimestamp() });
+      // 既存の最小 sortOrder より小さい値を付けてリストの一番上に表示する
+      const minOrder = people.reduce((m,p)=> (p.sortOrder!=null && p.sortOrder<m) ? p.sortOrder : m, 0);
+      await addDoc(collection(db,'users',currentUser.uid,'people'), { ...data, writer: data.writer || writerName, sortOrder: minOrder-1, createdAt: serverTimestamp() });
       showToast('追加しました');
     }
     closeEditModal();
