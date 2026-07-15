@@ -738,7 +738,7 @@
   <div style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px;">
     <div style="font-size:0.85rem;color:var(--accent);line-height:1.6;background:var(--surface2);border:1px solid var(--accent);border-radius:10px;padding:10px 12px;">続けるには、お名前・所属ユニオン・活動地域・UPルビー・UPBD の入力が必要です。</div>
     <input id="profName" type="text" placeholder="お名前">
-    <input id="profUnion" type="text" placeholder="所属ユニオン">
+    <select id="profUnion" data-union-select data-ph="所属ユニオンを選択" onchange="onUnionSelect(this,'profUpBd')" style="-webkit-appearance:none;appearance:none;"><option value="">所属ユニオンを選択</option></select>
     <input id="profArea" type="text" placeholder="活動地域（例：東京・大阪）">
     <input id="profUpRuby" type="text" placeholder="UPルビー">
     <input id="profUpBd" type="text" placeholder="UPBD">
@@ -1099,9 +1099,40 @@ window.confirmSignOut = async () => {
   await signOut(auth);
 };
 
+// ===== ユニオン選択制（3アプリ共通）＋デフォルトUPBD（ユニオン管理者） =====
+const UNION_LIST = [
+  { name:'GRANT', upbd:'木村妃咲' }, { name:'PRESTO', upbd:'中原賢三' },
+  { name:'LIEN', upbd:'小川拓郎' }, { name:'BEYOND', upbd:'堀田めぐみ' },
+  { name:'FELIN', upbd:'平井凛太郎' }, { name:'FORMULA', upbd:'木下文貴' },
+  { name:'REVITALIZE', upbd:'藤原拓晶' }, { name:'INFLUENCE', upbd:'高島健佑' },
+  { name:'BASE ANTARES', upbd:'馬越雅哉' }, { name:'BASE REVE', upbd:'井上美沙子' },
+  { name:'LIEN LOAD', upbd:'松田郁愛' }, { name:'DEFI', upbd:'中原賢三' },
+  { name:'GRANDIR', upbd:'嶽本尚希' }, { name:'SFIDA', upbd:'' }
+];
+function unionOptionsHtml(ph) {
+  let h = '<option value="">' + (ph || 'ユニオンを選択') + '</option>';
+  UNION_LIST.forEach(u => { h += '<option value="' + u.name + '" data-upbd="' + u.upbd + '">' + u.name + '</option>'; });
+  return h;
+}
+function populateUnionSelects() {
+  document.querySelectorAll('select[data-union-select]').forEach(s => {
+    if (s.options.length <= 1) s.innerHTML = unionOptionsHtml(s.getAttribute('data-ph'));
+  });
+}
+// ユニオン選択時：デフォルトで管理者名をUPBD欄へ（あとから編集可）
+window.onUnionSelect = function(sel, upbdId) {
+  if (!sel) return;
+  const opt = sel.options[sel.selectedIndex];
+  const mgr = opt ? (opt.getAttribute('data-upbd') || '') : '';
+  const t = document.getElementById(upbdId);
+  if (t) t.value = mgr;
+};
+populateUnionSelects();
+
 // ===== Auth State =====
+// unionSelectedV2＝選択制ユニオンで選び直したか。旧ユーザーは強制で選び直させる
 function profileCompleteGoal(d) {
-  return !!(d && d.union && d.area && d.upRuby && d.upBd);
+  return !!(d && d.union && d.area && d.upRuby && d.upBd && d.unionSelectedV2);
 }
 onAuthStateChanged(auth, async user => {
   document.getElementById('loadingScreen').style.display = 'none';
@@ -1123,8 +1154,10 @@ onAuthStateChanged(auth, async user => {
     // 必須項目ゲート
     if (!profileCompleteGoal(data)) {
       const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+      populateUnionSelects();
       set('profName', data.displayName || data.name || '');
-      set('profUnion', data.union); set('profArea', data.area);
+      // 選択制ユニオン：選び直し済みユーザーのみ現在値を復元。旧ユーザーは未選択にして選び直しを強制。
+      set('profUnion', data.unionSelectedV2 ? data.union : ''); set('profArea', data.area);
       set('profUpRuby', data.upRuby); set('profUpBd', data.upBd);
       document.getElementById('loginScreen').style.display = 'none';
       document.getElementById('mainApp').style.display = 'none';
@@ -1163,7 +1196,7 @@ window.saveProfileGoal = async () => {
   try {
     await setDoc(doc(firedb, 'users', currentUser.uid), {
       email: currentUser.email, displayName: name, name: name,
-      union, area, upRuby, upBd,
+      union, area, upRuby, upBd, unionSelectedV2: true,
       registrationComplete: true, updatedAt: serverTimestamp()
     }, { merge: true });
     document.getElementById('profileScreen').style.display = 'none';

@@ -370,8 +370,8 @@
     <div style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px;">
       <input id="registerName" type="text" placeholder="例：山田 太郎" autocomplete="name"
         style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
-      <input id="registerUnion" type="text" placeholder="所属ユニオン"
-        style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
+      <select id="registerUnion" data-union-select data-ph="所属ユニオンを選択" onchange="onUnionSelect(this,'registerUpBd')"
+        style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;-webkit-appearance:none;appearance:none;"><option value="">所属ユニオンを選択</option></select>
       <input id="registerArea" type="text" placeholder="活動地域（例：東京・大阪）"
         style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
       <input id="registerUpRuby" type="text" placeholder="UPルビー"
@@ -852,10 +852,41 @@ window.confirmReset = async () => {
   }
 };
 
+// ===== ユニオン選択制（3アプリ共通）＋デフォルトUPBD（ユニオン管理者） =====
+const UNION_LIST = [
+  { name:'GRANT', upbd:'木村妃咲' }, { name:'PRESTO', upbd:'中原賢三' },
+  { name:'LIEN', upbd:'小川拓郎' }, { name:'BEYOND', upbd:'堀田めぐみ' },
+  { name:'FELIN', upbd:'平井凛太郎' }, { name:'FORMULA', upbd:'木下文貴' },
+  { name:'REVITALIZE', upbd:'藤原拓晶' }, { name:'INFLUENCE', upbd:'高島健佑' },
+  { name:'BASE ANTARES', upbd:'馬越雅哉' }, { name:'BASE REVE', upbd:'井上美沙子' },
+  { name:'LIEN LOAD', upbd:'松田郁愛' }, { name:'DEFI', upbd:'中原賢三' },
+  { name:'GRANDIR', upbd:'嶽本尚希' }, { name:'SFIDA', upbd:'' }
+];
+function unionOptionsHtml(ph) {
+  let h = '<option value="">' + (ph || 'ユニオンを選択') + '</option>';
+  UNION_LIST.forEach(u => { h += '<option value="' + u.name + '" data-upbd="' + u.upbd + '">' + u.name + '</option>'; });
+  return h;
+}
+function populateUnionSelects() {
+  document.querySelectorAll('select[data-union-select]').forEach(s => {
+    if (s.options.length <= 1) s.innerHTML = unionOptionsHtml(s.getAttribute('data-ph'));
+  });
+}
+// ユニオン選択時：デフォルトで管理者名をUPBD欄へ（あとから編集可）
+window.onUnionSelect = function(sel, upbdId) {
+  if (!sel) return;
+  const opt = sel.options[sel.selectedIndex];
+  const mgr = opt ? (opt.getAttribute('data-upbd') || '') : '';
+  const t = document.getElementById(upbdId);
+  if (t) t.value = mgr;
+};
+populateUnionSelects();
+
 // ===== 認証状態監視 =====
 // プロフィール必須項目が揃っているか（3アプリ共通: union/area/upRuby/upBd）
+// unionSelectedV2＝選択制ユニオンで選び直したか。旧ユーザーは強制で選び直させる
 function profileComplete(d) {
-  return !!(d && d.union && d.area && d.upRuby && d.upBd);
+  return !!(d && d.union && d.area && d.upRuby && d.upBd && d.unionSelectedV2);
 }
 onAuthStateChanged(auth, async user => {
   if (user) {
@@ -876,8 +907,10 @@ onAuthStateChanged(auth, async user => {
     if (!profileComplete(data)) {
       // 必須項目が未入力 → 登録/補完画面へ（既存値をプリフィル）
       const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+      populateUnionSelects();
       set('registerName', savedName);
-      set('registerUnion', data.union);
+      // 選択制ユニオン：選び直し済みユーザーのみ現在値を復元。旧ユーザーは未選択にして選び直しを強制。
+      set('registerUnion', data.unionSelectedV2 ? data.union : '');
       set('registerArea', data.area);
       set('registerUpRuby', data.upRuby);
       set('registerUpBd', data.upBd);
@@ -922,7 +955,7 @@ window.saveName = async () => {
     await setDoc(doc(db, 'users', currentUser.uid), {
       email: currentUser.email,
       displayName: name, name: name,
-      union: union, area: area, upRuby: upRuby, upBd: upBd,
+      union: union, area: area, upRuby: upRuby, upBd: upBd, unionSelectedV2: true,
       registrationComplete: true,
       updatedAt: serverTimestamp()
     }, { merge: true });
