@@ -647,7 +647,14 @@
         <input type="email" id="shareEmailInput" placeholder="例：friend@gmail.com" style="flex:1;font-size:0.92rem;padding:10px 12px;">
         <button class="btn btn-primary btn-sm" onclick="addShareMember()">追加</button>
       </div>
-      <div class="share-member-list" id="shareMemberList" style="display:none;"></div>
+    </div>
+
+    <div class="share-divider"></div>
+
+    <div class="share-section">
+      <div class="share-section-title">共有中のメンバー</div>
+      <p class="share-desc">現在あなたのリストを閲覧できる人です。間違えて共有した場合は「解除」で取り消せます。</p>
+      <div class="share-member-list" id="shareMemberList" style="margin-top:8px;"></div>
     </div>
 
     <div class="share-divider"></div>
@@ -1076,7 +1083,7 @@ async function renderShareMemberList() {
   el.innerHTML = members.map(email => `
     <div class="share-member-item">
       <span class="share-member-email">${escHtml(email)}</span>
-      <button class="btn btn-danger btn-sm" onclick="removeShareMember('${escHtml(email)}')">削除</button>
+      <button class="btn btn-danger btn-sm" onclick="removeShareMember('${escHtml(email)}')">解除</button>
     </div>`).join('');
 }
 
