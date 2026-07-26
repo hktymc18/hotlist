@@ -690,7 +690,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, confirmPasswordReset, verifyPasswordResetCode, onAuthStateChanged, signOut }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, collection, doc, getDocs, getDoc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, query, where, serverTimestamp }
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, getDocs, getDoc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, query, where, serverTimestamp }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 // ===== Firebase設定 =====
@@ -705,7 +705,14 @@ const firebaseConfig = {
 
 const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db   = getFirestore(app);
+// オフライン永続キャッシュ：2回目以降の起動はローカルから読み、差分だけサーバー読み取り
+// （Firestoreの読み取り課金を大幅削減。非対応ブラウザは従来どおり）
+let db;
+try {
+  db = initializeFirestore(app, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) });
+} catch (e) {
+  db = getFirestore(app);
+}
 
 // ===== 状態 =====
 let currentUser = null;
@@ -993,36 +1000,52 @@ function loadMyList(uid) {
 }
 
 // ===== 共有されているリストを読み込み =====
-async function loadSharedWithMe() {
+// 全ユーザー×共有設定の走査は読み取りコストが大きい（2N回）ため、結果を6時間キャッシュ。
+// 起動時はキャッシュ表示のみ、共有モーダルを開いた時だけ再走査（force=true）。
+const SHARED_CACHE_TTL = 6 * 60 * 60 * 1000;
+function _renderSharedList(shared) {
+  const el = document.getElementById('sharedWithMeList');
+  if (!el) return;
+  if (!shared || shared.length === 0) {
+    el.textContent = 'まだ共有されているリストはありません';
+    return;
+  }
+  el.innerHTML = shared.map(s => `
+    <div class="share-member-item" style="cursor:pointer;" onclick="switchToList('${s.uid}','${escHtml(s.name)}')">
+      <span class="share-member-email">${escHtml(s.name)}</span>
+      <span style="font-size:0.75rem;color:var(--primary);">閲覧する →</span>
+    </div>`).join('');
+}
+async function loadSharedWithMe(force) {
   if (!currentUser) return;
   const el = document.getElementById('sharedWithMeList');
+  const cacheKey = 'al_sharedCache_' + currentUser.uid;
+  // 1) キャッシュがあれば即表示（読み取りゼロ）
+  try {
+    const raw = localStorage.getItem(cacheKey);
+    if (raw) {
+      const c = JSON.parse(raw);
+      _renderSharedList(c.shared);
+      if (!force && (Date.now() - (c.ts || 0)) < SHARED_CACHE_TTL) return; // 新しいキャッシュ → 走査しない
+    }
+  } catch(e) {}
+  // 2) 期限切れ or 強制時のみ全ユーザー走査
   try {
     const usersSnap = await getDocs(collection(db, 'users'));
     const otherUsers = usersSnap.docs.filter(d => d.id !== currentUser.uid);
-
-    // 全ユーザーの共有設定を並列で一括取得
     const results = await Promise.all(
       otherUsers.map(userDoc =>
         getDoc(doc(db, 'users', userDoc.id, 'settings', 'share'))
-          .then(shareDoc => ({ userDoc, shareDoc }))
+          .then(shareDoc => ({ userDoc, shareDoc })).catch(() => null)
       )
     );
-
     const shared = results
-      .filter(({ shareDoc }) => shareDoc.exists() && (shareDoc.data().sharedWith || []).includes(currentUser.email))
+      .filter(r => r && r.shareDoc.exists() && (r.shareDoc.data().sharedWith || []).includes(currentUser.email))
       .map(({ userDoc }) => ({ uid: userDoc.id, name: userDoc.data().displayName || userDoc.data().email }));
-
-    if (shared.length === 0) {
-      el.textContent = 'まだ共有されているリストはありません';
-      return;
-    }
-    el.innerHTML = shared.map(s => `
-      <div class="share-member-item" style="cursor:pointer;" onclick="switchToList('${s.uid}','${escHtml(s.name)}')">
-        <span class="share-member-email">${escHtml(s.name)}</span>
-        <span style="font-size:0.75rem;color:var(--primary);">閲覧する →</span>
-      </div>`).join('');
+    try { localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), shared })); } catch(e) {}
+    _renderSharedList(shared);
   } catch(e) {
-    el.textContent = '読み込みに失敗しました';
+    if (el && !el.innerHTML) el.textContent = '読み込みに失敗しました';
   }
 }
 
@@ -1653,7 +1676,7 @@ window.openShareModal = async () => {
   document.getElementById('shareModal').classList.add('open');
   setTimeout(()=>{ document.getElementById('shareModal').scrollTop=0; },0);
   renderShareMemberList();
-  loadSharedWithMe();
+  loadSharedWithMe(true); // モーダルを開いた時だけ最新を再走査
 };
 window.closeShareModal = () => document.getElementById('shareModal').classList.remove('open');
 

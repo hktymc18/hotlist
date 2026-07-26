@@ -1019,7 +1019,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, doc, getDoc, setDoc, getDocs, collection, serverTimestamp }
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, getDoc, setDoc, getDocs, collection, serverTimestamp }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const firebaseConfig = {
@@ -1033,7 +1033,13 @@ const firebaseConfig = {
 
 const fbApp = initializeApp(firebaseConfig);
 const auth = getAuth(fbApp);
-const firedb = getFirestore(fbApp);
+// オフライン永続キャッシュ：再訪時はローカルから読み、差分だけ課金読み取り
+let firedb;
+try {
+  firedb = initializeFirestore(fbApp, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) });
+} catch (e) {
+  firedb = getFirestore(fbApp);
+}
 
 let currentUser = null;
 let saveTimer = null;
@@ -1313,6 +1319,24 @@ async function renderShareMemberList() {
 async function loadSharedWithMe() {
   if (!currentUser) return;
   const el = document.getElementById('sharedWithMeList');
+  // 全ユーザー走査は読み取りが多いため結果を6時間キャッシュ（期限内はキャッシュ表示のみ）
+  const _ck = 'gs_sharedCache_' + currentUser.uid;
+  try {
+    const raw = localStorage.getItem(_ck);
+    if (raw) {
+      const c = JSON.parse(raw);
+      if (c.shared && c.shared.length) {
+        el.innerHTML = c.shared.map(s =>
+          '<div class="share-member-item" style="cursor:pointer;" onclick="viewSharedGoal(\'' + s.uid + '\',\'' + escShareHtml(s.name) + '\',\'' + s.src + '\')">' +
+          '<span class="share-member-email">' + escShareHtml(s.name) + '</span>' +
+          '<span style="font-size:0.75rem;color:var(--accent);">閲覧する →</span></div>'
+        ).join('');
+      } else if (c.shared) {
+        el.textContent = 'まだ共有されているシートはありません';
+      }
+      if ((Date.now() - (c.ts || 0)) < 6 * 60 * 60 * 1000) return;
+    }
+  } catch(e) {}
   try {
     const shared = [];
     // 新方式: sharedGoalsコレクション
@@ -1345,6 +1369,7 @@ async function loadSharedWithMe() {
         });
       } catch(e) {}
     }
+    try { localStorage.setItem(_ck, JSON.stringify({ ts: Date.now(), shared: shared })); } catch(e) {}
     if (shared.length === 0) {
       el.textContent = 'まだ共有されているシートはありません';
       return;
@@ -1354,7 +1379,7 @@ async function loadSharedWithMe() {
       '<span class="share-member-email">' + escShareHtml(s.name) + '</span>' +
       '<span style="font-size:0.75rem;color:var(--accent);">閲覧する →</span></div>'
     ).join('');
-  } catch(e) { el.textContent = '読み込みに失敗しました'; }
+  } catch(e) { if (!el.innerHTML) el.textContent = '読み込みに失敗しました'; }
 }
 
 window.viewSharedGoal = async (uid, name, src) => {
