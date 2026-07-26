@@ -1317,7 +1317,7 @@ window.renderList = function() {
       <div class="card-header" onclick="toggleCard('${p.id}')">
         <button class="star-btn ${p.favorite?'starred':''}" onclick="event.stopPropagation();toggleFavorite('${p.id}')" title="お気に入り">${p.favorite?'★':'☆'}</button>
         <div class="card-info">
-          <div class="card-name" style="color:${p.gender==='女性'?'#ff6eb4':p.gender==='男性'?'#f0f0f5':'var(--text)'}">${escHtml(p.name)}${p.position?`<span>${positionLabel(p.position)}</span>`:''}</div>
+          <div class="card-name" style="color:${p.gender==='女性'?'#ff6eb4':p.gender==='男性'?'#5b9cf6':'var(--text)'}">${escHtml(p.name)}${p.position?`<span>${positionLabel(p.position)}</span>`:''}</div>
           <div class="card-sub">${[p.age?p.age+'歳':'',p.gender,p.job].filter(Boolean).join(' · ')}</div>
           <div class="card-sub">${p.relation||''}</div>
         </div>
