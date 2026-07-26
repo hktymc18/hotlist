@@ -31,6 +31,31 @@
       --radius: 12px;
       --shadow: 0 2px 20px rgba(0,0,0,0.45);
     }
+    :root.light-mode {
+      --primary: #8a9c00;
+      --primary-dark: #7a8c00;
+      --bg: #f2f2f7;
+      --bg2: #ffffff;
+      --surface: #ffffff;
+      --surface2: #e8e8f0;
+      --border: #c8c8d8;
+      --text: #1a1a2e;
+      --text-muted: #707088;
+      --accent: #8a9c00;
+      --shadow: 0 2px 16px rgba(0,0,0,0.09);
+    }
+    :root.light-mode .logo { text-shadow: 0 0 20px rgba(138,156,0,0.25); }
+    :root.light-mode .logo span { color: #9090aa; }
+    :root.light-mode .status-未着手 { background: rgba(140,140,160,0.12); color: #7070aa; border-color: #c8c8d8; }
+    :root.light-mode .status-つながった { color: #7a8c00; border-color: rgba(138,156,0,0.4); background: rgba(138,156,0,0.1); }
+    :root.light-mode .stat-num { color: #8a9c00; }
+    :root.light-mode .btn-add-header { background: #8a9c00; }
+    :root.light-mode .btn-add-header:hover { background: #7a8c00; }
+    :root.light-mode .btn-outline { color: #8a9c00; border-color: rgba(138,156,0,0.4); background: rgba(138,156,0,0.07); }
+    :root.light-mode .card-highlight1 { border-color: rgba(60,160,255,0.6) !important; }
+    :root.light-mode .card-highlight2 { border-color: rgba(180,150,0,0.7) !important; }
+    :root.light-mode .card-drop-indicator { background: #8a9c00; box-shadow: 0 0 10px rgba(138,156,0,0.6); }
+    :root.light-mode .card-drag-ghost { border-color: #8a9c00 !important; }
     body { font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
     /* ===== ログイン画面 ===== */
@@ -444,6 +469,7 @@
         <span class="app-version" id="appVersion"></span>
       </div>
       <div style="display:flex;gap:8px;align-items:center;">
+        <button class="btn-notice" id="themeToggleBtn" onclick="toggleTheme()" title="ライト/ダークモード切替">🌙</button>
         <button class="btn-notice" onclick="openUpdatesModal()" title="お知らせ">🔔<span class="notice-dot" id="noticeDot"></span></button>
         <button class="btn btn-outline btn-sm" onclick="openShareModal()">共有</button>
         <button class="btn-add-header" onclick="openAddModal()">＋ 追加</button>
@@ -1505,6 +1531,25 @@ const UPDATES = [
 ];
 const APP_VERSION = UPDATES[0].version;
 document.getElementById('appVersion').textContent = APP_VERSION;
+
+function applyTheme(light) {
+  if (light) {
+    document.documentElement.classList.add('light-mode');
+    document.getElementById('themeToggleBtn').textContent = '🌙';
+  } else {
+    document.documentElement.classList.remove('light-mode');
+    document.getElementById('themeToggleBtn').textContent = '☀️';
+  }
+}
+window.toggleTheme = () => {
+  const isLight = document.documentElement.classList.toggle('light-mode');
+  document.getElementById('themeToggleBtn').textContent = isLight ? '🌙' : '☀️';
+  localStorage.setItem('hotlist_theme', isLight ? 'light' : 'dark');
+};
+(function() {
+  const saved = localStorage.getItem('hotlist_theme');
+  applyTheme(saved === 'light');
+})();
 
 function refreshNoticeDot() {
   const seen = localStorage.getItem('hotlist_seen_version');
