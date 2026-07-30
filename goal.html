@@ -1019,7 +1019,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, getDoc, setDoc, getDocs, collection, serverTimestamp }
+import { getFirestore, doc, getDoc, setDoc, getDocs, collection, query, where, serverTimestamp }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const firebaseConfig = {
@@ -1033,16 +1033,11 @@ const firebaseConfig = {
 
 const fbApp = initializeApp(firebaseConfig);
 const auth = getAuth(fbApp);
-// オフライン永続キャッシュ：再訪時はローカルから読み、差分だけ課金読み取り
-let firedb;
-try {
-  firedb = initializeFirestore(fbApp, { localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }) });
-} catch (e) {
-  firedb = getFirestore(fbApp);
-}
+const firedb = getFirestore(fbApp);
 
 let currentUser = null;
 let saveTimer = null;
+let myDisplayName = ''; // 共有一覧にメールではなく名前を出すため保持
 
 // ===== Auth UI =====
 let authMode = 'login';
@@ -1172,6 +1167,7 @@ onAuthStateChanged(auth, async user => {
     }
 
     const name = data.displayName || data.name || user.email;
+    myDisplayName = name;
     document.getElementById('profileScreen').style.display = 'none';
     document.getElementById('userNameDisplay').textContent = name;
     document.getElementById('loginScreen').style.display = 'none';
@@ -1205,11 +1201,13 @@ window.saveProfileGoal = async () => {
       union, area, upRuby, upBd, unionSelectedV2: true,
       registrationComplete: true, updatedAt: serverTimestamp()
     }, { merge: true });
+    myDisplayName = name;
     document.getElementById('profileScreen').style.display = 'none';
     document.getElementById('userNameDisplay').textContent = name;
     document.getElementById('mainApp').style.display = 'block';
     await loadFromFirestore();
     init();
+    syncSharedCopy(); // プロフィール入力後も共有コピーを公開する（未実行だと相手に表示されない）
   } catch(e) {
     err.textContent = '保存に失敗しました: ' + e.message;
   }
@@ -1257,7 +1255,7 @@ window.closeShareModal = () => document.getElementById('shareModal').classList.r
 window.addShareMember = async () => {
   const email = document.getElementById('shareEmailInput').value.trim().toLowerCase();
   if (!email || !email.includes('@')) { window.showToast('正しいメールアドレスを入力してください'); return; }
-  if (email === currentUser.email) { window.showToast('自分自身は追加できません'); return; }
+  if (email === (currentUser.email || '').toLowerCase()) { window.showToast('自分自身は追加できません'); return; }
   try {
     const shareRef = doc(firedb, 'users', currentUser.uid, 'settings', 'share');
     const shareSnap = await getDoc(shareRef);
@@ -1275,10 +1273,12 @@ async function syncSharedCopy() {
   if (!currentUser) return;
   try {
     const shareSnap = await getDoc(doc(firedb, 'users', currentUser.uid, 'settings', 'share'));
-    const members = shareSnap.exists() ? (shareSnap.data().sharedWith || []) : [];
+    // array-contains 検索と一致させるため小文字に正規化（旧データは大文字混在の可能性）
+    const members = (shareSnap.exists() ? (shareSnap.data().sharedWith || []) : [])
+      .map(e => String(e).toLowerCase());
     const goalSnap = await getDoc(doc(firedb, 'users', currentUser.uid, 'appData', 'goalSheet'));
     const goalData = goalSnap.exists() ? (goalSnap.data().data || {}) : {};
-    const name = currentUser.displayName || currentUser.email;
+    const name = myDisplayName || currentUser.displayName || currentUser.email;
     await setDoc(doc(firedb, 'sharedGoals', currentUser.uid), {
       ownerEmail: currentUser.email,
       ownerName: name,
@@ -1304,8 +1304,15 @@ window.removeShareMember = async (email) => {
 async function renderShareMemberList() {
   if (!currentUser) return;
   const el = document.getElementById('shareMemberList');
-  const shareSnap = await getDoc(doc(firedb, 'users', currentUser.uid, 'settings', 'share'));
-  const members = shareSnap.exists() ? (shareSnap.data().sharedWith || []) : [];
+  let members = [];
+  try {
+    const shareSnap = await getDoc(doc(firedb, 'users', currentUser.uid, 'settings', 'share'));
+    members = shareSnap.exists() ? (shareSnap.data().sharedWith || []) : [];
+  } catch(e) {
+    console.warn('共有メンバー一覧の取得に失敗:', e);
+    el.innerHTML = '<div style="font-size:0.82rem;color:var(--danger);margin-top:6px;">共有メンバーの読み込みに失敗しました</div>';
+    return;
+  }
   if (members.length === 0) {
     el.innerHTML = '<div style="font-size:0.82rem;color:var(--text-muted);margin-top:6px;">まだ共有していません</div>';
     return;
@@ -1319,37 +1326,23 @@ async function renderShareMemberList() {
 async function loadSharedWithMe() {
   if (!currentUser) return;
   const el = document.getElementById('sharedWithMeList');
-  // 全ユーザー走査は読み取りが多いため結果を6時間キャッシュ（期限内はキャッシュ表示のみ）
-  const _ck = 'gs_sharedCache_' + currentUser.uid;
-  try {
-    const raw = localStorage.getItem(_ck);
-    if (raw) {
-      const c = JSON.parse(raw);
-      if (c.shared && c.shared.length) {
-        el.innerHTML = c.shared.map(s =>
-          '<div class="share-member-item" style="cursor:pointer;" onclick="viewSharedGoal(\'' + s.uid + '\',\'' + escShareHtml(s.name) + '\',\'' + s.src + '\')">' +
-          '<span class="share-member-email">' + escShareHtml(s.name) + '</span>' +
-          '<span style="font-size:0.75rem;color:var(--accent);">閲覧する →</span></div>'
-        ).join('');
-      } else if (c.shared) {
-        el.textContent = 'まだ共有されているシートはありません';
-      }
-      if ((Date.now() - (c.ts || 0)) < 6 * 60 * 60 * 1000) return;
-    }
-  } catch(e) {}
+  el.textContent = '読み込み中...';
   try {
     const shared = [];
-    // 新方式: sharedGoalsコレクション
+    const myEmail = (currentUser.email || '').toLowerCase();
+    // 新方式: sharedGoals コレクション
+    // ⚠️ 全件取得はセキュリティルールで拒否される。必ず sharedWith で絞り込むこと。
     try {
-      const allShared = await getDocs(collection(firedb, 'sharedGoals'));
+      const q = query(collection(firedb, 'sharedGoals'), where('sharedWith', 'array-contains', myEmail));
+      const allShared = await getDocs(q);
       allShared.forEach(d => {
         const data = d.data();
-        if (d.id !== currentUser.uid && (data.sharedWith || []).includes(currentUser.email)) {
+        if (d.id !== currentUser.uid) {
           shared.push({ uid: d.id, name: data.ownerName || data.ownerEmail || d.id, src: 'new' });
         }
       });
-    } catch(e) {}
-    // 旧方式フォールバック: users/{uid}/settings/share
+    } catch(e) { console.warn('sharedGoals 取得に失敗（旧方式で再取得します）:', e); }
+    // 旧方式フォールバック: users/{uid}/settings/share（共有コピー未公開のオーナーも拾う）
     if (shared.length === 0) {
       try {
         const usersSnap = await getDocs(collection(firedb, 'users'));
@@ -1361,15 +1354,17 @@ async function loadSharedWithMe() {
           )
         );
         results.filter(r => r).forEach(({ userDoc, shareSnap }) => {
-          if (shareSnap.exists() && (shareSnap.data().sharedWith || []).includes(currentUser.email)) {
+          const list = (shareSnap.exists() ? (shareSnap.data().sharedWith || []) : [])
+            .map(e => String(e).toLowerCase());
+          if (list.includes(myEmail)) {
             if (!shared.find(s => s.uid === userDoc.id)) {
-              shared.push({ uid: userDoc.id, name: userDoc.data().displayName || userDoc.data().email || userDoc.id, src: 'old' });
+              const ud = userDoc.data() || {};
+              shared.push({ uid: userDoc.id, name: ud.displayName || ud.name || ud.email || userDoc.id, src: 'old' });
             }
           }
         });
-      } catch(e) {}
+      } catch(e) { console.warn('共有一覧（旧方式）の取得に失敗:', e); }
     }
-    try { localStorage.setItem(_ck, JSON.stringify({ ts: Date.now(), shared: shared })); } catch(e) {}
     if (shared.length === 0) {
       el.textContent = 'まだ共有されているシートはありません';
       return;
@@ -1379,19 +1374,23 @@ async function loadSharedWithMe() {
       '<span class="share-member-email">' + escShareHtml(s.name) + '</span>' +
       '<span style="font-size:0.75rem;color:var(--accent);">閲覧する →</span></div>'
     ).join('');
-  } catch(e) { if (!el.innerHTML) el.textContent = '読み込みに失敗しました'; }
+  } catch(e) { el.textContent = '読み込みに失敗しました'; }
 }
 
 window.viewSharedGoal = async (uid, name, src) => {
   try {
     let goalData = null;
-    if (src === 'new') {
-      const snap = await getDoc(doc(firedb, 'sharedGoals', uid));
-      if (snap.exists()) goalData = snap.data().data || {};
-    }
-    if (!goalData) {
+    // ①オーナーの最新シートを直接読む（共有コピーが古くても最新が見られる）
+    try {
       const snap = await getDoc(doc(firedb, 'users', uid, 'appData', 'goalSheet'));
-      if (snap.exists()) goalData = snap.data().data || {};
+      if (snap.exists()) goalData = snap.data().data || null;
+    } catch(e) { console.warn('最新シートの取得に失敗（共有コピーで再取得します）:', e); }
+    // ②取れなければ共有コピー
+    if (!goalData) {
+      try {
+        const snap = await getDoc(doc(firedb, 'sharedGoals', uid));
+        if (snap.exists()) goalData = snap.data().data || null;
+      } catch(e) { console.warn('共有コピーの取得に失敗:', e); }
     }
     if (goalData) {
       myBackupData = localStorage.getItem('goalSheetData');
