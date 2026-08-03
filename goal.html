@@ -1341,9 +1341,11 @@ async function loadSharedWithMe() {
           shared.push({ uid: d.id, name: data.ownerName || data.ownerEmail || d.id, src: 'new' });
         }
       });
-    } catch(e) { console.warn('sharedGoals 取得に失敗（旧方式で再取得します）:', e); }
-    // 旧方式フォールバック: users/{uid}/settings/share（共有コピー未公開のオーナーも拾う）
-    if (shared.length === 0) {
+    } catch(e) { console.warn('sharedGoals 取得に失敗（共有設定から再取得します）:', e); }
+    // 共有設定 users/{uid}/settings/share も必ず併用してマージする（ATTACK LIST と共通のリスト）。
+    // ⚠️ 以前は「新方式が0件のときだけ」実行していたため、共有コピー未公開のオーナーが
+    //    一覧から丸ごと抜け落ちていた。必ず両方を見てuidで重複排除する。
+    {
       try {
         const usersSnap = await getDocs(collection(firedb, 'users'));
         const others = usersSnap.docs.filter(d => d.id !== currentUser.uid);
@@ -1357,9 +1359,13 @@ async function loadSharedWithMe() {
           const list = (shareSnap.exists() ? (shareSnap.data().sharedWith || []) : [])
             .map(e => String(e).toLowerCase());
           if (list.includes(myEmail)) {
-            if (!shared.find(s => s.uid === userDoc.id)) {
-              const ud = userDoc.data() || {};
-              shared.push({ uid: userDoc.id, name: ud.displayName || ud.name || ud.email || userDoc.id, src: 'old' });
+            const ud = userDoc.data() || {};
+            const realName = ud.displayName || ud.name || ud.email || userDoc.id;
+            const hit = shared.find(s => s.uid === userDoc.id);
+            if (!hit) {
+              shared.push({ uid: userDoc.id, name: realName, src: 'old' });
+            } else if (String(hit.name).includes('@') && !String(realName).includes('@')) {
+              hit.name = realName; // 古い共有コピーはメール表記なので、プロフィールの名前で上書き
             }
           }
         });
