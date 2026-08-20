@@ -739,7 +739,7 @@
     <div style="font-size:0.85rem;color:var(--accent);line-height:1.6;background:var(--surface2);border:1px solid var(--accent);border-radius:10px;padding:10px 12px;">続けるには、お名前・所属ユニオン・活動地域・UPルビー・UPBD の入力が必要です。</div>
     <input id="profName" type="text" placeholder="お名前">
     <select id="profUnion" data-union-select data-ph="所属ユニオンを選択" onchange="onUnionSelect(this,'profUpBd')" style="-webkit-appearance:none;appearance:none;"><option value="">所属ユニオンを選択</option></select>
-    <input id="profArea" type="text" placeholder="活動地域（例：東京・大阪）">
+    <select id="profArea" data-area-select data-ph="活動地域を選択" style="-webkit-appearance:none;appearance:none;"><option value="">活動地域を選択</option></select>
     <input id="profUpRuby" type="text" placeholder="UPルビー">
     <input id="profUpBd" type="text" placeholder="UPBD">
     <button class="btn-auth" onclick="saveProfileGoal()">保存して始める</button>
@@ -1108,16 +1108,44 @@ const UNION_LIST = [
   { name:'REVITALIZE', upbd:'藤原拓晶' }, { name:'INFLUENCE', upbd:'高島健佑' },
   { name:'BASE ANTARES', upbd:'馬越雅哉' }, { name:'BASE REVE', upbd:'浦田美沙子' },
   { name:'LIEN LOAD', upbd:'松田郁愛' }, { name:'DEFI', upbd:'中原賢三' },
-  { name:'GRANDIR', upbd:'嶽本尚希' }, { name:'SFIDA', upbd:'' }
+  { name:'GRANDIR', upbd:'嶽本尚希' }, { name:'SFIDA', upbd:'' },
+  { name:'AMASIA', upbd:'' }, { name:'UPBD', upbd:'渡邉寛' }
 ];
 function unionOptionsHtml(ph) {
   let h = '<option value="">' + (ph || 'ユニオンを選択') + '</option>';
   UNION_LIST.forEach(u => { h += '<option value="' + u.name + '" data-upbd="' + u.upbd + '">' + u.name + '</option>'; });
   return h;
 }
+// 活動地域の選択式（3アプリ共通リスト。MAPのメンバー編集「地域」と同じ）
+const AREA_LIST = ['東京', '大阪', '福岡', '名古屋', '熊本', '大分', '北九州'];
+function areaOptionsHtml(ph) {
+  let h = '<option value="">' + (ph || '活動地域を選択') + '</option>';
+  AREA_LIST.forEach(a => { h += '<option value="' + a + '">' + a + '</option>'; });
+  h += '<option value="__other__">その他（自由入力）</option>';
+  return h;
+}
+function areaSelectSet(id, val) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (el.tagName === 'SELECT' && val && !Array.from(el.options).some(o => o.value === val)) {
+    const op = document.createElement('option'); op.value = op.textContent = val; el.appendChild(op);
+  }
+  el.value = val || '';
+}
 function populateUnionSelects() {
   document.querySelectorAll('select[data-union-select]').forEach(s => {
     if (s.options.length <= 1) s.innerHTML = unionOptionsHtml(s.getAttribute('data-ph'));
+  });
+  document.querySelectorAll('select[data-area-select]').forEach(s => {
+    if (s.options.length <= 1) {
+      s.innerHTML = areaOptionsHtml(s.getAttribute('data-ph'));
+      s.addEventListener('change', () => {
+        if (s.value !== '__other__') return;
+        const v = (prompt('活動地域を入力してください') || '').trim();
+        if (!v) { s.value = ''; return; }
+        areaSelectSet(s.id, v);
+      });
+    }
   });
 }
 // ユニオン選択時：デフォルトで管理者名をUPBD欄へ（あとから編集可）
@@ -1158,7 +1186,7 @@ onAuthStateChanged(auth, async user => {
       populateUnionSelects();
       set('profName', data.displayName || data.name || '');
       // 選択制ユニオン：選び直し済みユーザーのみ現在値を復元。旧ユーザーは未選択にして選び直しを強制。
-      set('profUnion', data.unionSelectedV2 ? data.union : ''); set('profArea', data.area);
+      set('profUnion', data.unionSelectedV2 ? data.union : ''); areaSelectSet('profArea', data.area);
       set('profUpRuby', data.upRuby); set('profUpBd', data.upBd);
       document.getElementById('loginScreen').style.display = 'none';
       document.getElementById('mainApp').style.display = 'none';

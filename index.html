@@ -397,8 +397,8 @@
         style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
       <select id="registerUnion" data-union-select data-ph="所属ユニオンを選択" onchange="onUnionSelect(this,'registerUpBd')"
         style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;-webkit-appearance:none;appearance:none;"><option value="">所属ユニオンを選択</option></select>
-      <input id="registerArea" type="text" placeholder="活動地域（例：東京・大阪）"
-        style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
+      <select id="registerArea" data-area-select data-ph="活動地域を選択"
+        style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;-webkit-appearance:none;appearance:none;"><option value="">活動地域を選択</option></select>
       <input id="registerUpRuby" type="text" placeholder="UPルビー"
         style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
       <input id="registerUpBd" type="text" placeholder="UPBD"
@@ -908,9 +908,36 @@ function unionOptionsHtml(ph) {
   UNION_LIST.forEach(u => { h += '<option value="' + u.name + '" data-upbd="' + u.upbd + '">' + u.name + '</option>'; });
   return h;
 }
+// 活動地域の選択式（3アプリ共通リスト。MAPのメンバー編集「地域」と同じ）
+const AREA_LIST = ['東京', '大阪', '福岡', '名古屋', '熊本', '大分', '北九州'];
+function areaOptionsHtml(ph) {
+  let h = '<option value="">' + (ph || '活動地域を選択') + '</option>';
+  AREA_LIST.forEach(a => { h += '<option value="' + a + '">' + a + '</option>'; });
+  h += '<option value="__other__">その他（自由入力）</option>';
+  return h;
+}
+function areaSelectSet(id, val) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (el.tagName === 'SELECT' && val && !Array.from(el.options).some(o => o.value === val)) {
+    const op = document.createElement('option'); op.value = op.textContent = val; el.appendChild(op);
+  }
+  el.value = val || '';
+}
 function populateUnionSelects() {
   document.querySelectorAll('select[data-union-select]').forEach(s => {
     if (s.options.length <= 1) s.innerHTML = unionOptionsHtml(s.getAttribute('data-ph'));
+  });
+  document.querySelectorAll('select[data-area-select]').forEach(s => {
+    if (s.options.length <= 1) {
+      s.innerHTML = areaOptionsHtml(s.getAttribute('data-ph'));
+      s.addEventListener('change', () => {
+        if (s.value !== '__other__') return;
+        const v = (prompt('活動地域を入力してください') || '').trim();
+        if (!v) { s.value = ''; return; }
+        areaSelectSet(s.id, v);
+      });
+    }
   });
 }
 // ユニオン選択時：デフォルトで管理者名をUPBD欄へ（あとから編集可）
@@ -952,7 +979,7 @@ onAuthStateChanged(auth, async user => {
       set('registerName', savedName);
       // 選択制ユニオン：選び直し済みユーザーのみ現在値を復元。旧ユーザーは未選択にして選び直しを強制。
       set('registerUnion', data.unionSelectedV2 ? data.union : '');
-      set('registerArea', data.area);
+      areaSelectSet('registerArea', data.area); // 選択式（リストに無い既存値は選択肢に追加）
       set('registerUpRuby', data.upRuby);
       set('registerUpBd', data.upBd);
       showScreen('nameScreen');
