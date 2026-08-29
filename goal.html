@@ -928,7 +928,7 @@
       </div>
       <div class="dream-form-group" style="flex:1">
         <label>いつまでに</label>
-        <input type="month" id="dreamFormDeadline">
+        <div id="dreamFormDeadlineWrap" style="display:flex;gap:6px;"></div>
       </div>
     </div>
     <div class="dream-form-actions">
@@ -1925,7 +1925,7 @@ function gwRender() {
       bodyHtml += '<div class="gw-rank-title"><div class="gw-rank-label">目標タイトル</div><div class="gw-rank-name">' + rankTitle + '</div></div>';
       bodyHtml += '<div class="gw-hint" style="margin-bottom:8px;">いつまでに実現したい？</div>';
     }
-    bodyHtml += '<div class="gw-input-wrap"><input class="gw-input" id="gwInput" type="month" value="' + v + '" oninput="gwInputChange(this.value)" style="font-size:1.1rem;text-align:center;"></div>';
+    bodyHtml += '<div class="gw-input-wrap" style="display:flex;gap:8px;justify-content:center;">' + ymSelectHtml('gwDate', v, 'gwDateChange()') + '</div>';
   } else if (q.type === 'multi5') {
     var vals = ans || ['','','','',''];
     bodyHtml += '<div class="gw-multi-inputs">';
@@ -2017,6 +2017,13 @@ function gwLoanChange() {
 }
 
 function gwInputChange(val) {
+  var q = GW_QUESTIONS[gwState.step];
+  gwSaveAnswer(q.id, val);
+  document.getElementById('gwNextBtn').disabled = !gwCanNext(q, val);
+}
+
+function gwDateChange() {
+  var val = readYmSelect('gwDate');
   var q = GW_QUESTIONS[gwState.step];
   gwSaveAnswer(q.id, val);
   document.getElementById('gwNextBtn').disabled = !gwCanNext(q, val);
@@ -2669,7 +2676,9 @@ function renderDreamList() {
     if (item.amount) meta.push('💰 ' + (Math.round(Number(item.amount) * 10) / 10).toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 1}) + '万円');
     if (item.deadline) {
       var parts = item.deadline.split('-');
-      meta.push('📅 ' + parts[0] + '年' + parseInt(parts[1]) + '月');
+      if (parts.length === 2 && parts[0] && !isNaN(parseInt(parts[1]))) {
+        meta.push('📅 ' + parts[0] + '年' + parseInt(parts[1]) + '月');
+      }
     }
     html += '<div class="dream-item' + (item.done ? ' achieved' : '') + '">';
     html += '<div class="dream-item-top">';
@@ -2707,6 +2716,34 @@ function toggleDream(id) {
   renderDreamProgress();
 }
 
+// 年・月プルダウンを生成（type=month非対応ブラウザ対策）
+function ymSelectHtml(prefix, value, onchange) {
+  var curY = new Date().getFullYear();
+  var parts = (value || '').split('-');
+  var selY = parts[0] || '';
+  var selM = parts[1] ? String(parseInt(parts[1])) : '';
+  var st = 'padding:8px 6px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:0.95rem;';
+  var oc = onchange ? ' onchange="' + onchange + '"' : '';
+  var yOpts = '<option value="">年</option>';
+  for (var y = curY; y <= curY + 15; y++) {
+    yOpts += '<option value="' + y + '"' + (String(y) === String(selY) ? ' selected' : '') + '>' + y + '年</option>';
+  }
+  var mOpts = '<option value="">月</option>';
+  for (var m = 1; m <= 12; m++) {
+    mOpts += '<option value="' + m + '"' + (String(m) === selM ? ' selected' : '') + '>' + m + '月</option>';
+  }
+  return '<select id="' + prefix + 'Y"' + oc + ' style="flex:1.3;' + st + '">' + yOpts + '</select>' +
+         '<select id="' + prefix + 'M"' + oc + ' style="flex:1;' + st + '">' + mOpts + '</select>';
+}
+function readYmSelect(prefix) {
+  var yEl = document.getElementById(prefix + 'Y');
+  var mEl = document.getElementById(prefix + 'M');
+  if (!yEl || !mEl) return '';
+  var y = yEl.value, m = mEl.value;
+  if (!y || !m) return '';
+  return y + '-' + (m.length < 2 ? '0' + m : m);
+}
+
 function openDreamModal(editId) {
   document.getElementById('dreamModal').classList.add('open');
   document.getElementById('dreamEditId').value = editId || '';
@@ -2719,7 +2756,7 @@ function openDreamModal(editId) {
       document.getElementById('dreamFormTitle').value = item.title;
       document.getElementById('dreamFormUrl').value = item.url || '';
       document.getElementById('dreamFormAmount').value = item.amount || '';
-      document.getElementById('dreamFormDeadline').value = item.deadline || '';
+      document.getElementById('dreamFormDeadlineWrap').innerHTML = ymSelectHtml('dreamFormDeadline', item.deadline || '', '');
     }
   } else {
     document.getElementById('dreamModalTitle').textContent = '夢を追加';
@@ -2727,7 +2764,7 @@ function openDreamModal(editId) {
     document.getElementById('dreamFormTitle').value = '';
     document.getElementById('dreamFormUrl').value = '';
     document.getElementById('dreamFormAmount').value = '';
-    document.getElementById('dreamFormDeadline').value = '';
+    document.getElementById('dreamFormDeadlineWrap').innerHTML = ymSelectHtml('dreamFormDeadline', '', '');
   }
 }
 
@@ -2757,7 +2794,7 @@ function saveDream() {
     title: title,
     url: document.getElementById('dreamFormUrl').value.trim(),
     amount: document.getElementById('dreamFormAmount').value,
-    deadline: document.getElementById('dreamFormDeadline').value,
+    deadline: readYmSelect('dreamFormDeadline'),
   };
 
   if (editId) {
