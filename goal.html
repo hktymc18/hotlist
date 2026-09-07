@@ -717,7 +717,7 @@
 <!-- ===== ログイン画面 ===== -->
 <div id="loginScreen" style="display:none;">
   <div class="login-title">GOAL SETTING<small>目標設定シート</small></div>
-  <div style="font-size:12px;color:var(--text-muted);margin-top:6px;font-family:'IBM Plex Mono',monospace;">v28</div>
+  <div style="font-size:12px;color:var(--text-muted);margin-top:6px;font-family:'IBM Plex Mono',monospace;">v29</div>
   <div class="login-subtitle">ATTACK LISTと同じアカウントでログイン</div>
   <div class="auth-tabs">
     <button class="auth-tab" id="tabLogin" style="background:var(--accent);color:#000;" onclick="setAuthMode('login')">ログイン</button>
@@ -760,7 +760,7 @@
   <div class="title">GOAL SETTING</div>
   <span id="userNameDisplay" style="display:none;"></span>
   <div style="margin-left:auto;display:flex;align-items:center;gap:6px;">
-    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.55rem;color:var(--text-muted);opacity:0.5;">v28</span>
+    <span style="font-family:'IBM Plex Mono',monospace;font-size:0.55rem;color:var(--text-muted);opacity:0.5;">v29</span>
     <button id="themeToggle" onclick="toggleTheme()" style="background:none;border:1px solid var(--border);color:var(--text-muted);font-size:0.75rem;padding:4px 8px;border-radius:6px;cursor:pointer;">☀️</button>
     <button onclick="openShareModal()" style="background:none;border:1px solid var(--border);color:var(--text-muted);font-size:0.65rem;padding:4px 8px;border-radius:6px;cursor:pointer;">共有</button>
     <button onclick="confirmSignOut()" style="background:none;border:1px solid var(--border);color:var(--text-muted);font-size:0.65rem;padding:4px 8px;border-radius:6px;cursor:pointer;">ログアウト</button>
@@ -830,17 +830,15 @@
     <div class="form-row" style="margin-bottom:16px;">
       <div class="form-group">
         <label>年</label>
-        <select id="simStartYear" onchange="runSimulation()">
-          <option value="2025">2025</option>
-          <option value="2026" selected>2026</option>
-          <option value="2027">2027</option>
-        </select>
+        <!-- 選択肢は setupStartYm() が現在年を基準に生成し、当年を初期選択にする -->
+        <select id="simStartYear" onchange="runSimulation()"></select>
       </div>
       <div class="form-group">
         <label>月</label>
+        <!-- 初期選択は setupStartYm() が当月に設定する -->
         <select id="simStartMonth" onchange="runSimulation()">
           <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option>
-          <option value="4">4月</option><option value="5">5月</option><option value="6" selected>6月</option>
+          <option value="4">4月</option><option value="5">5月</option><option value="6">6月</option>
           <option value="7">7月</option><option value="8">8月</option><option value="9">9月</option>
           <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
         </select>
@@ -1565,6 +1563,26 @@ function applyPreset(n) {
     simConfig.preset = 0;
   }
   runSimulation();
+}
+
+// 開始年月の初期値＝当年・当月。年の選択肢も現在年を基準に生成する（固定リストだと年をまたぐと当年が選べなくなるため）。
+// 一度だけ実行し、以降はユーザーが選び直した値を尊重する（init() は共有シート閲覧時などにも呼ばれるため）。
+function setupStartYm() {
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth() + 1;
+  const ys = document.getElementById('simStartYear');
+  const ms = document.getElementById('simStartMonth');
+  if (ys && !ys.dataset.ymReady) {
+    let h = '';
+    for (let i = y - 1; i <= y + 2; i++) h += '<option value="' + i + '">' + i + '</option>';
+    ys.innerHTML = h;
+    ys.value = String(y);
+    ys.dataset.ymReady = '1';
+  }
+  if (ms && !ms.dataset.ymReady) {
+    ms.value = String(m);
+    ms.dataset.ymReady = '1';
+  }
 }
 
 function runSimulation() {
@@ -2827,6 +2845,7 @@ function updateDreamAddBtn() {
 }
 
 function init() {
+  setupStartYm(); // runSimulation() より前に開始年月の初期値を確定させる
   renderGoalSummary();
   renderDreamList();
   renderDreamProgress();
