@@ -293,6 +293,67 @@
     .memo-editor textarea { flex: 1; min-height: 0; border: none; border-radius: 0; resize: none; padding: 16px; background: var(--surface); }
     .memo-editor textarea:focus { border: none; }
 
+    /* ===== CDATA（カード内の一覧） ===== */
+    .cd-block { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); }
+    .cd-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin-top: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; cursor: pointer; }
+    .cd-item-date { font-weight: 700; font-size: 0.9rem; color: var(--text); white-space: nowrap; }
+    .cd-item-content { flex: 1; min-width: 0; font-size: 0.85rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cd-item-copy { background: transparent; border: 1px solid var(--border); border-radius: 8px; color: var(--text-muted); font-size: 0.75rem; font-family: inherit; padding: 4px 10px; cursor: pointer; flex-shrink: 0; }
+    .cd-block-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    .cd-btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+
+    /* ===== CDATA エディタ（全画面） ===== */
+    .cd-editor { display: none; position: fixed; inset: 0; z-index: 260; background: var(--bg); flex-direction: column; }
+    .cd-editor.open { display: flex; }
+    .cd-head { display: flex; align-items: center; gap: 10px; padding: 10px 14px; padding-top: max(10px, env(safe-area-inset-top)); background: var(--bg2); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .cd-head-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; font-family: inherit; cursor: pointer; padding: 6px 4px; min-width: 56px; text-align: left; }
+    .cd-head-title { flex: 1; min-width: 0; text-align: center; }
+    .cd-head-title div { font-family: 'Bebas Neue', sans-serif; font-size: 1.35rem; letter-spacing: 2px; color: var(--accent); line-height: 1; }
+    .cd-head-title small { display: block; font-size: 0.78rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .cd-state { font-size: 0.72rem; color: var(--text-muted); min-width: 56px; text-align: right; }
+    .cd-progress { display: flex; align-items: center; gap: 10px; padding: 8px 14px; background: var(--bg2); border-bottom: 1px solid var(--border); flex-shrink: 0; font-size: 0.75rem; color: var(--text-muted); }
+    .cd-bar { flex: 1; height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+    .cd-bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width 0.25s; }
+    .cd-body { flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 12px 12px 28px; }
+    .cd-body > * { max-width: 640px; margin-left: auto; margin-right: auto; }
+    .cd-sec { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; }
+    .cd-sec summary { list-style: none; display: flex; align-items: center; gap: 8px; padding: 12px 14px; font-weight: 700; font-size: 0.95rem; color: var(--text); cursor: pointer; }
+    .cd-sec summary::-webkit-details-marker { display: none; }
+    .cd-sec summary::after { content: '▾'; color: var(--text-muted); transition: transform 0.2s; }
+    .cd-sec:not([open]) summary::after { transform: rotate(-90deg); }
+    .cd-sec-count { margin-left: auto; font-size: 0.75rem; font-weight: 500; color: var(--text-muted); }
+    .cd-sec-count.done { color: var(--success); }
+    .cd-sec-body { display: flex; flex-direction: column; gap: 16px; padding: 12px 14px 14px; border-top: 1px solid var(--border); }
+    .cd-label { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); }
+    .cd-src { font-size: 0.65rem; font-weight: 600; padding: 1px 6px; border-radius: 4px; background: rgba(74,158,255,0.15); color: #4a9eff; border: 1px solid rgba(74,158,255,0.3); }
+    .cd-field input, .cd-field textarea { padding: 10px 12px; font-size: 16px; }
+    .cd-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .cd-chips + input { margin-top: 8px; }
+    .cd-chip { padding: 8px 14px; border-radius: 100px; border: 1.5px solid var(--border); background: var(--bg2); color: var(--text-muted); font-size: 0.88rem; font-family: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .cd-chip.on { border-color: var(--accent); color: var(--accent); background: rgba(232,255,71,0.1); font-weight: 700; }
+    .cd-chip.on[data-chip="×"] { border-color: var(--danger); color: var(--danger); background: rgba(255,71,87,0.1); }
+    :root.light-mode .cd-chip.on:not([data-chip="×"]) { background: rgba(138,156,0,0.1); }
+    .cd-inline { display: flex; gap: 8px; }
+    .cd-inline input { flex: 1; min-width: 0; }
+    .cd-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+    .cd-row input { flex: 1; min-width: 0; }
+    .cd-mark { width: 18px; text-align: center; color: var(--text-muted); flex-shrink: 0; }
+    .cd-x { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; padding: 6px; cursor: pointer; flex-shrink: 0; opacity: 0.6; }
+    .cd-add { background: transparent; border: 1px dashed var(--border); border-radius: 8px; color: var(--text-muted); font-size: 0.82rem; font-family: inherit; padding: 7px 12px; cursor: pointer; }
+    .cd-check { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.88rem; color: var(--text); line-height: 1.5; }
+    .cd-check:last-child { border-bottom: none; }
+    .cd-ox { display: flex; gap: 6px; flex-shrink: 0; }
+    .cd-ox .cd-chip { padding: 6px 0; width: 42px; }
+    .cd-tl { border: 1px solid var(--border); border-radius: 10px; padding: 10px; margin-bottom: 8px; background: var(--bg2); }
+    .cd-tl-head { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+    .cd-tl-head input[type="date"] { flex: 1 1 140px; min-width: 0; }
+    .cd-tl-head .cd-tl-kind { flex: 0 0 76px; }
+    .cd-tl-head .cd-tl-who { flex: 1 1 110px; min-width: 0; }
+    .cd-foot { display: flex; align-items: center; gap: 8px; padding: 10px 14px; padding-bottom: max(10px, env(safe-area-inset-bottom)); background: var(--bg2); border-top: 1px solid var(--border); flex-shrink: 0; }
+    .cd-foot .btn-primary { margin-left: auto; }
+    .cd-del { background: transparent; color: var(--danger); border: 1px solid rgba(255,71,87,0.35); }
+    .cd-preview { white-space: pre-wrap; word-break: break-word; font-family: inherit; font-size: 0.9rem; line-height: 1.7; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; -webkit-user-select: text; user-select: text; }
+
     /* ===== バージョン表示＆お知らせ ===== */
     .app-version { font-size: 0.72rem; color: var(--text-muted); border: 1px solid var(--border); border-radius: 6px; padding: 1px 6px; flex-shrink: 0; }
     .btn-notice { position: relative; background: transparent; border: 2px solid var(--border); border-radius: 12px; padding: 6px 10px; font-size: 0.95rem; cursor: pointer; line-height: 1; transition: border-color 0.15s; }
@@ -461,7 +522,7 @@
       </div>
     </div>
     <div id="writerBanner" style="display:none;font-size:0.82rem;color:var(--text-muted);">
-      記入者：<span id="writerName" style="color:var(--primary);font-weight:600;"></span>
+      閲覧中：<span id="writerName" style="color:var(--primary);font-weight:600;"></span>
     </div>
     <div class="header-row">
       <div class="header-left">
@@ -629,7 +690,6 @@
           <label class="memo-label-row">備考<button type="button" class="memo-expand-btn" onclick="openMemoEditor()">⤢ 全画面で書く</button></label>
           <textarea id="f_memo" placeholder="自由記述"></textarea>
         </div>
-        <div class="form-group full"><label>記入者</label><input type="text" id="f_writer" placeholder="例：山田 太郎"></div>
       </div>
       <div class="form-actions">
         <button type="button" class="btn btn-outline" onclick="closeEditModal()">キャンセル</button>
@@ -657,6 +717,23 @@
     <button type="button" class="btn btn-primary btn-sm" onclick="closeMemoEditor()">完了</button>
   </div>
   <textarea id="memoEditorArea" placeholder="自由記述"></textarea>
+</div>
+
+<!-- ===== CDATA エディタ ===== -->
+<div class="cd-editor" id="cdEditor">
+  <div class="cd-head">
+    <button type="button" class="cd-head-btn" onclick="closeCdata()">‹ 戻る</button>
+    <div class="cd-head-title"><div>CDATA</div><small id="cdPersonName"></small></div>
+    <span class="cd-state" id="cdState"></span>
+  </div>
+  <div class="cd-progress" id="cdProgress"><div class="cd-bar"><i id="cdBar"></i></div><span id="cdCount"></span></div>
+  <div class="cd-body" id="cdBody"></div>
+  <div class="cd-foot">
+    <button type="button" class="btn btn-sm cd-del" id="cdDelBtn" onclick="deleteCdata()">削除</button>
+    <button type="button" class="btn btn-outline btn-sm" id="cdPreviewBtn" onclick="toggleCdataPreview()">プレビュー</button>
+    <button type="button" class="btn btn-outline btn-sm" onclick="copyCdata()">📋 コピー</button>
+    <button type="button" class="btn btn-primary btn-sm" onclick="closeCdata()">完了</button>
+  </div>
 </div>
 
 <!-- ===== 共有管理モーダル ===== -->
@@ -717,7 +794,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, confirmPasswordReset, verifyPasswordResetCode, onAuthStateChanged, signOut }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, getDocs, getDoc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, query, where, serverTimestamp }
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, getDocs, getDoc, setDoc, addDoc, updateDoc, deleteDoc, deleteField, onSnapshot, query, where, serverTimestamp }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 // ===== Firebase設定 =====
@@ -751,7 +828,9 @@ let viewingUserId = null; // 他人のリストを閲覧中のUID
 let viewingUserName = '';
 
 const FIELDS = ['name','status','age','gender','insta','relation','job','trust','position','friends','needs',
-                'address','address_city','hometown','hometown_city','living','partner','type','lastcontact','memo','writer'];
+                'address','address_city','hometown','hometown_city','living','partner','type','lastcontact','memo'];
+// 記入者（writer）は入力欄なし：ログイン中のユーザー名を自動記録する
+function writerName() { return currentUser?.displayName || currentUser?.email || ''; }
 let favoriteFilter = false;
 let showNG = false;
 let showWON = false;
@@ -986,7 +1065,7 @@ onAuthStateChanged(auth, async user => {
       showScreen('nameScreen');
     } else {
       // 登録済み → メイン画面へ
-      currentUser = { ...user, displayName: savedName, area: data.area || '' };
+      currentUser = { ...user, displayName: savedName, area: data.area || '', union: data.union || '' };
       enterMainScreen(savedName);
     }
   } else {
@@ -1028,7 +1107,7 @@ window.saveName = async () => {
       registrationComplete: true,
       updatedAt: serverTimestamp()
     }, { merge: true });
-    currentUser = { ...currentUser, displayName: name, area: area };
+    currentUser = { ...currentUser, displayName: name, area: area, union: union };
     enterMainScreen(name);
     showToast('登録完了！ようこそ ' + name + ' さん');
   } catch(e) {
@@ -1355,10 +1434,10 @@ window.renderList = function() {
           <select class="status-badge status-${p.status||'未着手'}" onchange="changeStatus('${p.id}', this.value)" onclick="event.stopPropagation()">
             ${['未着手','連絡中','CT予定','CT済み','つながった','体感済み','BPC済み','ユーザー','NG'].map(s=>`<option value="${s}" ${(p.status||'未着手')===s?'selected':''}>${s}</option>`).join('')}
           </select>
-          <span class="chevron" id="chev-${p.id}">▼</span>
+          <span class="chevron${openCards.has(p.id)?' open':''}" id="chev-${p.id}">▼</span>
         </div>
       </div>
-      <div class="card-detail" id="detail-${p.id}">
+      <div class="card-detail${openCards.has(p.id)?' open':''}" id="detail-${p.id}">
         <div class="detail-grid">
           ${p.friends?detailItem('友だち',escHtml(p.friends)):''}
           ${p.type?detailItem('４つのタイプ',escHtml(p.type)):''}
@@ -1370,8 +1449,8 @@ window.renderList = function() {
           ${p.lastcontact?detailItem('最終連絡',`<span class="lc-badge lc-${lastcontactClass(p.lastcontact)}">${escHtml(p.lastcontact)}</span>`):''}
           ${p.insta?`<div class="detail-item"><div class="detail-label">インスタ</div><div class="detail-value"><a href="${escHtml(p.insta)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;color:#e1306c;font-weight:600;text-decoration:none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="#e1306c"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>Instagram</a></div></div>`:''}
           ${p.memo?`<div class="detail-item full"><div class="detail-label">備考</div><div class="detail-value" style="white-space:pre-wrap;">${escHtml(p.memo)}</div></div>`:''}
-          ${p.writer?detailItem('記入者',`<span style="color:var(--primary);font-weight:600;">${escHtml(p.writer)}</span>`):''}
         </div>
+        ${cdataBlockHtml(p, canEdit)}
         <div class="card-actions">
           <button class="btn btn-outline btn-sm" onclick="copyCardText('${p.id}')">📋 コピー</button>
           ${canEdit?`<button class="btn btn-outline btn-sm" onclick="openEditModal('${p.id}')">編集</button>
@@ -1387,10 +1466,13 @@ function detailItem(label,value) {
   return `<div class="detail-item"><div class="detail-label">${label}</div><div class="detail-value">${value}</div></div>`;
 }
 
+// 展開中のカード（再描画しても開いたままにする）
+const openCards = new Set();
 window.toggleCard = (id) => {
   if (drag.didDrag) { drag.didDrag = false; return; }
-  document.getElementById('detail-'+id).classList.toggle('open');
-  document.getElementById('chev-'+id).classList.toggle('open');
+  const isOpen = document.getElementById('detail-'+id).classList.toggle('open');
+  document.getElementById('chev-'+id).classList.toggle('open', isOpen);
+  isOpen ? openCards.add(id) : openCards.delete(id);
 };
 
 // ===== 長押しドラッグ並び替え =====
@@ -1504,7 +1586,6 @@ window.openAddModal = () => {
   document.getElementById('f_age').value = '24';
   document.getElementById('f_address').value = currentUser?.area || '';
   document.getElementById('f_hometown').value = currentUser?.area || '';
-  document.getElementById('f_writer').value = currentUser?.displayName || currentUser?.email || '';
   document.getElementById('editModal').classList.add('open');
   autoGrowMemo();
   setTimeout(()=>{ document.getElementById('editModal').scrollTop=0; },0);
@@ -1544,9 +1625,531 @@ window.closeMemoEditor = () => {
   autoGrowMemo();
 };
 
+// ===== CDATA =====
+// テンプレート = 項目定義の配列。CDATA保存時にテンプレートごと保存するので、
+// 将来ユニオン別にフォーマットを変えても過去のCDATAは崩れない。
+// type: text / textarea / select / combo(選択肢＋自由入力) / textChoice(テキスト＋選択) /
+//       datetime / bullets(・) / numbered(❶) / checks(○×) / timeline(経緯) / section(見出し)
+// fmt: colon(「日時：」形式) / title(1行目にだけ出す) / 省略時は【】形式
+// src: リストから自動入力する元（CD_SRC のキー）
+const CDATA_TPL_DEFAULT = [
+  { type:'section', label:'個別の情報' },
+  { key:'when',     label:'日時', type:'datetime', fmt:'colon' },
+  { key:'duration', label:'時間', type:'select', options:['30分','45分','60分','90分','120分'], fmt:'title' },
+  { key:'content',  label:'内容', type:'combo', options:['PG','マケ'], fmt:'colon', ph:'研修項目' },
+  { key:'place',    label:'場所', type:'text', fmt:'colon', ph:'個別を行う場所' },
+  { type:'section', label:'基本情報' },
+  { key:'name',       label:'名前', type:'text', src:'name' },
+  { key:'kana',       label:'カナ', type:'text' },
+  { key:'age',        label:'年齢', type:'text', src:'age' },
+  { key:'hometown',   label:'地元', type:'text', src:'hometown' },
+  { key:'address',    label:'現住所', type:'textChoice', options:['実家','一人暮らし','同棲'], src:'address' },
+  { key:'partner',    label:'恋人', type:'select', options:['有','無','既婚'], src:'partner' },
+  { key:'family',     label:'家族構成', type:'text' },
+  { key:'edu',        label:'学歴', type:'text', ph:'◯◯卒' },
+  { key:'job',        label:'職業', type:'text', src:'job' },
+  { key:'employment', label:'雇用形態', type:'combo', options:['正社員','派遣','バイト'] },
+  { key:'workHours',  label:'勤務時間帯', type:'text', ph:'◯時〜◯時' },
+  { key:'holiday',    label:'休日', type:'combo', options:['土日祝','シフト制'], ph:'例：水曜固定' },
+  { key:'relation',   label:'関係', type:'text', src:'relation' },
+  { key:'position',   label:'立場', type:'select', options:['自分の方が上','自分の方が下','同じ'], src:'position' },
+  { key:'trust',      label:'信用度', type:'select', options:['高い','普通','低い'], src:'trust' },
+  { type:'section', label:'人物像' },
+  { key:'seenAs',      label:'相手から自分がどう見られているか', type:'bullets', rows:2 },
+  { key:'personality', label:'性格', type:'bullets', rows:3 },
+  { key:'likes',       label:'好きなもの・趣味', type:'bullets', rows:3 },
+  { key:'needs',       label:'ニーズ（Cさんがしたいこと・解決したいこと）', type:'bullets', rows:3, src:'needs' },
+  { type:'section', label:'経緯・ステータス' },
+  { key:'flow',   label:'今までの流れ・何と言ってつないだか', type:'timeline', options:['CT','PG','マケ'] },
+  { key:'status', label:'ステータス', type:'checks', options:[
+    '会いたいとなっている',
+    '仕事の話を聞きに来るとなっている',
+    'プレゼンがあるということを伝えている',
+    'NUSKINと伝えている',
+    '同じNUSKINでも大小500チームあり、チームによってやり方やプレゼン、集まっている人の層が違うということを伝えている',
+  ]},
+  { key:'told', label:'伝え済みの内容', type:'bullets', rows:3 },
+  { type:'section', label:'お願いすること' },
+  { key:'request', label:'伝えていただきたいこと', type:'numbered', rows:3 },
+  { key:'result',  label:'望まれる結果', type:'bullets', rows:3 },
+  { key:'thanks',  label:'お礼', type:'textarea' },
+];
+// Phase 2 でユニオン別テンプレート（unionTemplates/{union}）をここで解決する
+function getCdataTemplate() { return CDATA_TPL_DEFAULT; }
+
+// リスト → CDATA の変換（リストの選択肢に無い値はそのまま入れて、選択肢として表示する）
+const CD_SRC = {
+  name:     p => p.name || '',
+  age:      p => p.age ? p.age + '歳' : '',
+  hometown: p => [p.hometown, p.hometown_city].filter(Boolean).join(' '),
+  address:  p => ({ text: [p.address, p.address_city].filter(Boolean).join(' '), choice: p.living || '' }),
+  partner:  p => ({ '有り':'有', '無し':'無', '結婚':'既婚' })[p.partner] || p.partner || '',
+  job:      p => p.job || '',
+  relation: p => p.relation || '',
+  position: p => ({ '↑':'自分の方が上', '↓':'自分の方が下', 'ー':'同じ' })[p.position] || '',
+  trust:    p => ({ S:'高い', A:'高い', B:'普通', C:'低い', D:'低い' })[p.trust] || '',
+  needs:    p => p.needs ? [p.needs] : [],
+};
+const CD_NUM = ['❶','❷','❸','❹','❺','❻','❼','❽','❾','❿'];
+const CD_WD  = ['日','月','火','水','木','金','土'];
+const clone = o => JSON.parse(JSON.stringify(o));
+
+function cdEmpty(f) {
+  switch (f.type) {
+    case 'bullets': case 'numbered': return Array(f.rows || 1).fill('');
+    case 'checks':     return (f.options || []).map(() => '');
+    case 'timeline':   return [];
+    case 'datetime':   return { date:'', time:'' };
+    case 'textChoice': return { text:'', choice:'' };
+    default:           return '';
+  }
+}
+function cdFilled(f, v) {
+  switch (f.type) {
+    case 'bullets': case 'numbered': return (v || []).some(s => s && s.trim());
+    case 'checks':     return (v || []).length > 0 && v.every(Boolean);
+    case 'timeline':   return (v || []).some(e => e.date || (e.items || []).some(s => s && s.trim()));
+    case 'datetime':   return !!(v && v.date);
+    case 'textChoice': return !!(v && (v.text || v.choice));
+    default:           return !!(v && String(v).trim());
+  }
+}
+// 一部でも入力があるか（○×は全部埋まっていなくても引き継ぐ）
+function cdHasAny(f, v) { return f.type === 'checks' ? (v || []).some(Boolean) : cdFilled(f, v); }
+function cdPad(arr, n) { const a = [...arr]; while (a.length < n) a.push(''); return a; }
+
+// 日付表示
+function fmtMD(d) { if (!d) return ''; const [, m, dd] = d.split('-'); return `${+m}/${+dd}`; }
+function fmtMDW(d) {
+  if (!d) return '';
+  const [y, m, dd] = d.split('-').map(Number);
+  return `${m}/${dd}(${CD_WD[new Date(y, m - 1, dd).getDay()]})`;
+}
+function fmtHour(t) { if (!t) return ''; const [h, m] = t.split(':').map(Number); return m ? `${h}:${String(m).padStart(2,'0')}` : `${h}時`; }
+
+function cdSessionField(tpl, type) { return tpl.find(f => f.type === type); }
+function cdDateOf(c) { const f = cdSessionField(c.tpl || [], 'datetime'); return f ? (c.v?.[f.key]?.date || '') : ''; }
+function cdContentOf(c) {
+  const f = (c.tpl || []).find(f => f.fmt === 'colon' && f.type !== 'datetime');
+  return f ? (c.v?.[f.key] || '') : '';
+}
+function sortedCdatas(p) {
+  return Object.entries(p.cdata || {})
+    .map(([id, c]) => ({ id, ...c }))
+    .sort((a, b) => (cdDateOf(b) || '').localeCompare(cdDateOf(a) || '') || (b.createdAt || 0) - (a.createdAt || 0));
+}
+
+// ----- CDATA → テキスト（今までのメモ帳フォーマット） -----
+function cdataToText(c) {
+  const tpl = c.tpl || [], v = c.v || {};
+  const L = [];
+  const dtF = cdSessionField(tpl, 'datetime');
+  const when = dtF ? (v[dtF.key] || {}) : {};
+  const durF = tpl.find(f => f.fmt === 'title');
+  const dur = durF ? v[durF.key] : '';
+  L.push(`＜CDATA＞${fmtMD(when.date) || '◯/◯'} ${fmtHour(when.time) || '◯時'}〜 ${dur || '◯◯分'}`);
+  L.push('');
+  let inHeader = true;
+  tpl.forEach(f => {
+    if (f.type === 'section' || f.fmt === 'title') return;
+    const val = v[f.key] ?? cdEmpty(f);
+    if (f.fmt === 'colon') {
+      const s = f.type === 'datetime'
+        ? (val.date ? `${fmtMDW(val.date)} ${fmtHour(val.time) || '◯時'}〜` : '')
+        : (val || '');
+      L.push(`${f.label}：${s}`);
+      return;
+    }
+    if (inHeader) { L.push('', ''); inHeader = false; }
+    const head = `【${f.label}】`;
+    switch (f.type) {
+      case 'bullets': case 'numbered': {
+        const items = val.filter(s => s && s.trim());
+        L.push(head);
+        const rows = items.length ? items : Array(f.rows || 1).fill('');
+        rows.forEach((s, i) => L.push((f.type === 'numbered' ? (CD_NUM[i] || `${i + 1}.`) : '・') + s));
+        L.push('');
+        break;
+      }
+      case 'checks':
+        L.push(head);
+        (f.options || []).forEach((o, i) => L.push(`・${o}：${val[i] || '○・×'}`));
+        L.push('');
+        break;
+      case 'timeline':
+        L.push(head);
+        if (!val.length) L.push('＜◯/◯ CT＞', '・');
+        val.forEach(e => {
+          const who = e.who ? (/さん$/.test(e.who) ? e.who : e.who + 'さん') : '';
+          L.push(`＜${fmtMD(e.date) || '◯/◯'} ${e.kind || ''}＞${who}`);
+          const items = (e.items || []).filter(s => s && s.trim());
+          (items.length ? items : ['']).forEach(s => L.push('・' + s));
+          L.push('');
+        });
+        L.push('');
+        break;
+      case 'textarea':
+        L.push(head, val || '', '');
+        break;
+      case 'textChoice':
+        L.push(head + (val.text || '') + (val.choice ? `(${val.choice})` : ''));
+        break;
+      default:
+        L.push(head + (val || ''));
+    }
+  });
+  L.push('', '', c.union || '', c.writer || '');
+  return L.join('\n').replace(/\n{4,}/g, '\n\n\n');
+}
+
+// ----- カード内のCDATA一覧 -----
+function cdataBlockHtml(p, canEdit) {
+  const list = sortedCdatas(p);
+  const rows = list.map(c => `
+    <div class="cd-item" onclick="openCdata('${p.id}','${c.id}')">
+      <span class="cd-item-date">${escHtml(fmtMDW(cdDateOf(c)) || '日付未設定')}</span>
+      <span class="cd-item-content">${escHtml(cdContentOf(c))}</span>
+      <button class="cd-item-copy" onclick="event.stopPropagation();copyCdata('${p.id}','${c.id}')">コピー</button>
+    </div>`).join('');
+  let btns = '';
+  if (canEdit) {
+    btns = list.length
+      ? `<button class="btn btn-outline btn-sm" onclick="createCdata('${p.id}','prev')">＋ 前回から作成</button>
+         <button class="btn btn-sm cd-btn-ghost" onclick="createCdata('${p.id}','list')">リストから作成</button>`
+      : `<button class="btn btn-outline btn-sm" onclick="createCdata('${p.id}','list')">📋 リストからCDATAを作成</button>`;
+  }
+  if (!rows && !btns) return '';
+  return `<div class="cd-block">
+    <div class="detail-label">CDATA${list.length ? `（${list.length}）` : ''}</div>
+    ${rows}
+    ${btns ? `<div class="cd-block-actions">${btns}</div>` : ''}
+  </div>`;
+}
+
+// ----- エディタ -----
+let cd = null;          // 編集中のCDATA { pid, id, tpl, v, pf, writer, union, createdAt, dirty, readOnly, preview }
+let cdSaveTimer = null;
+const cdNewId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const cdField = k => cd.tpl.find(f => f.key === k);
+
+// mode: 'list' = リストから作成 / 'prev' = 前回のCDATAを引き継いで作成
+window.createCdata = (pid, mode) => {
+  const p = people.find(x => x.id === pid);
+  if (!p || viewingUserId !== currentUser?.uid) return;
+  const tpl = clone(getCdataTemplate());
+  const prev = mode === 'prev' ? sortedCdatas(p)[0] : null;
+  const v = {}, pf = [];
+  tpl.forEach(f => {
+    if (!f.key) return;
+    const isSession = f.fmt === 'colon' || f.fmt === 'title';   // 日時・内容などは毎回入れ直す
+    const pv = prev?.v?.[f.key];
+    const prevF = prev?.tpl?.find(x => x.key === f.key);
+    if (prev && !isSession && prevF?.type === f.type && cdHasAny(f, pv)) {
+      v[f.key] = clone(pv);
+      if ((prev.pf || []).includes(f.key)) pf.push(f.key);
+      return;
+    }
+    if (f.src && CD_SRC[f.src]) {
+      let val = CD_SRC[f.src](p);
+      if (Array.isArray(val)) val = cdPad(val, f.rows || 1);
+      if (cdFilled(f, val)) { v[f.key] = val; pf.push(f.key); return; }
+    }
+    v[f.key] = cdEmpty(f);
+  });
+  cd = { pid, id: cdNewId(), tpl, v, pf, writer: writerName(), union: currentUser.union || '',
+         createdAt: Date.now(), dirty: true, readOnly: false, preview: false };
+  cdOpen(p);
+  cdSave(); // 作った時点で保存（途中でアプリを閉じても消えない）
+};
+
+window.openCdata = (pid, cid) => {
+  const p = people.find(x => x.id === pid);
+  const c = p?.cdata?.[cid];
+  if (!c) return;
+  const readOnly = viewingUserId !== currentUser?.uid;
+  const tpl = clone(c.tpl || getCdataTemplate());
+  const v = clone(c.v || {});
+  tpl.forEach(f => { if (f.key && v[f.key] === undefined) v[f.key] = cdEmpty(f); });
+  cd = { pid, id: cid, tpl, v, pf: [...(c.pf || [])], writer: c.writer || '', union: c.union || '',
+         createdAt: c.createdAt || Date.now(), dirty: false, readOnly, preview: readOnly };
+  cdOpen(p);
+};
+
+function cdOpen(p) {
+  document.getElementById('cdPersonName').textContent = p.name || '';
+  document.getElementById('cdDelBtn').style.display = cd.readOnly ? 'none' : '';
+  document.getElementById('cdPreviewBtn').style.display = cd.readOnly ? 'none' : '';
+  document.getElementById('cdProgress').style.display = cd.readOnly ? 'none' : '';
+  cdSetState(cd.readOnly ? '閲覧のみ' : '');
+  cdRender();
+  document.getElementById('cdEditor').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('cdBody').scrollTop = 0;
+}
+
+window.closeCdata = () => {
+  if (!cd) return;
+  if (cd.dirty) cdSave();
+  cd = null;
+  document.getElementById('cdEditor').classList.remove('open');
+  document.body.style.overflow = '';
+};
+
+window.toggleCdataPreview = () => {
+  if (!cd || cd.readOnly) return;
+  cd.preview = !cd.preview;
+  document.getElementById('cdPreviewBtn').textContent = cd.preview ? '入力に戻る' : 'プレビュー';
+  cdRender();
+  document.getElementById('cdBody').scrollTop = 0;
+};
+
+function cdPayload() {
+  return { tpl: cd.tpl, v: cd.v, pf: cd.pf, writer: cd.writer, union: cd.union,
+           createdAt: cd.createdAt, updatedAt: Date.now() };
+}
+
+window.copyCdata = (pid, cid) => {
+  let c;
+  if (pid) { c = people.find(x => x.id === pid)?.cdata?.[cid]; }
+  else if (cd) { c = cdPayload(); }
+  if (!c) return;
+  navigator.clipboard.writeText(cdataToText(c))
+    .then(() => showToast('CDATAをコピーしました！'))
+    .catch(() => showToast('コピーに失敗しました'));
+};
+
+async function cdSave() {
+  if (!cd || cd.readOnly) return;
+  clearTimeout(cdSaveTimer);
+  const { id, pid } = cd;
+  const payload = cdPayload();
+  cd.dirty = false;
+  cdSetState('保存中…');
+  try {
+    await updateDoc(doc(db, 'users', currentUser.uid, 'people', pid), { ['cdata.' + id]: payload, updatedAt: serverTimestamp() });
+    if (cd && cd.id === id && !cd.dirty) cdSetState('保存済み');
+  } catch (e) {
+    if (cd && cd.id === id) { cd.dirty = true; cdSetState('保存失敗'); }
+    showToast('CDATAの保存に失敗しました');
+  }
+}
+
+window.deleteCdata = async () => {
+  if (!cd || cd.readOnly) return;
+  if (!confirm('このCDATAを削除しますか？この操作は取り消せません。')) return;
+  clearTimeout(cdSaveTimer);
+  const { id, pid } = cd;
+  cd.dirty = false;
+  closeCdata();
+  try {
+    await updateDoc(doc(db, 'users', currentUser.uid, 'people', pid), { ['cdata.' + id]: deleteField() });
+    showToast('CDATAを削除しました');
+  } catch (e) { showToast('削除に失敗しました'); }
+};
+
+function cdSetState(s) { document.getElementById('cdState').textContent = s; }
+
+function cdTouched(k) {
+  const i = cd.pf.indexOf(k);
+  if (i >= 0) { cd.pf.splice(i, 1); document.querySelector(`#cdf-${k} .cd-src`)?.remove(); }
+  cd.dirty = true;
+  cdSetState('未保存');
+  clearTimeout(cdSaveTimer);
+  cdSaveTimer = setTimeout(cdSave, 1200);
+  cdUpdateProgress();
+}
+
+function cdUpdateProgress() {
+  if (!cd || cd.preview) return;
+  let total = 0, done = 0, sec = null;
+  const secs = {};
+  cd.tpl.forEach((f, idx) => {
+    if (f.type === 'section') { sec = idx; secs[idx] = { t: 0, d: 0 }; return; }
+    const ok = cdFilled(f, cd.v[f.key]);
+    total++; if (ok) done++;
+    if (sec != null) { secs[sec].t++; if (ok) secs[sec].d++; }
+  });
+  document.getElementById('cdBar').style.width = (total ? done / total * 100 : 0) + '%';
+  document.getElementById('cdCount').textContent = `入力済み ${done}/${total}`;
+  Object.entries(secs).forEach(([idx, s]) => {
+    const el = document.querySelector(`#cdBody [data-sec="${idx}"]`);
+    if (!el) return;
+    el.textContent = `${s.d}/${s.t}`;
+    el.classList.toggle('done', s.t > 0 && s.d === s.t);
+  });
+}
+
+function cdChips(f, cur, part) {
+  const opts = [...(f.options || [])];
+  if (cur && !opts.includes(cur)) opts.push(cur);
+  return `<div class="cd-chips">${opts.map(o =>
+    `<button type="button" class="cd-chip${o === cur ? ' on' : ''}" data-k="${f.key}"${part ? ` data-p="${part}"` : ''} data-chip="${escHtml(o)}">${escHtml(o)}</button>`
+  ).join('')}</div>`;
+}
+
+function cdRowsHtml(k, arr, markFn, i) {
+  const ei = i != null ? ` data-i="${i}"` : '';
+  return arr.map((s, j) => {
+    const idx = i != null ? `${ei} data-j="${j}"` : ` data-i="${j}"`;
+    return `<div class="cd-row"><span class="cd-mark">${markFn(j)}</span>`
+      + `<input type="text" data-k="${k}"${idx} value="${escHtml(s)}">`
+      + `<button type="button" class="cd-x" data-act="${i != null ? 'delItem' : 'delRow'}" data-k="${k}"${idx} aria-label="削除">✕</button></div>`;
+  }).join('');
+}
+
+function cdFieldHtml(f) {
+  const k = f.key, val = cd.v[k];
+  const badge = cd.pf.includes(k) ? '<span class="cd-src">リストから</span>' : '';
+  const head = `<div class="cd-label">${escHtml(f.label)}${badge}</div>`;
+  const ph = escHtml(f.ph || '');
+  switch (f.type) {
+    case 'text':
+      return head + `<input type="text" data-k="${k}" value="${escHtml(val)}" placeholder="${ph}">`;
+    case 'textarea':
+      return head + `<textarea data-k="${k}" placeholder="${ph}">${escHtml(val)}</textarea>`;
+    case 'select':
+      return head + cdChips(f, val);
+    case 'combo':
+      return head + cdChips(f, val) + `<input type="text" data-k="${k}" value="${escHtml(val)}" placeholder="${ph || 'その他は入力'}">`;
+    case 'textChoice':
+      return head + `<input type="text" data-k="${k}" data-p="text" value="${escHtml(val.text)}" placeholder="例：福岡市">`
+        + `<div style="margin-top:8px;">${cdChips(f, val.choice, 'choice')}</div>`;
+    case 'datetime':
+      return head + `<div class="cd-inline">
+        <input type="date" data-k="${k}" data-p="date" value="${escHtml(val.date)}">
+        <input type="time" data-k="${k}" data-p="time" value="${escHtml(val.time)}" step="300"></div>`;
+    case 'bullets':
+    case 'numbered': {
+      const mark = f.type === 'numbered' ? j => CD_NUM[j] || `${j + 1}.` : () => '・';
+      return head + cdRowsHtml(k, val, mark) + `<button type="button" class="cd-add" data-act="addRow" data-k="${k}">＋ 行を追加</button>`;
+    }
+    case 'checks':
+      return head + (f.options || []).map((o, i) => `
+        <div class="cd-check"><span>${escHtml(o)}</span><div class="cd-ox">
+          ${['○','×'].map(m => `<button type="button" class="cd-chip${val[i] === m ? ' on' : ''}" data-act="ox" data-k="${k}" data-i="${i}" data-chip="${m}">${m}</button>`).join('')}
+        </div></div>`).join('');
+    case 'timeline':
+      return head + val.map((e, i) => `
+        <div class="cd-tl">
+          <div class="cd-tl-head">
+            <input type="date" data-k="${k}" data-i="${i}" data-p="date" value="${escHtml(e.date)}">
+            <input type="text" class="cd-tl-kind" data-k="${k}" data-i="${i}" data-p="kind" value="${escHtml(e.kind)}" placeholder="CT">
+            <input type="text" class="cd-tl-who" data-k="${k}" data-i="${i}" data-p="who" value="${escHtml(e.who)}" placeholder="担当（例：山田）">
+            <button type="button" class="cd-x" data-act="delEntry" data-k="${k}" data-i="${i}" aria-label="削除">✕</button>
+          </div>
+          ${cdRowsHtml(k, e.items, () => '・', i)}
+          <button type="button" class="cd-add" data-act="addItem" data-k="${k}" data-i="${i}">＋ 行を追加</button>
+        </div>`).join('')
+        + `<div class="cd-chips">${(f.options || []).map(o => `<button type="button" class="cd-add" data-act="addEntry" data-k="${k}" data-chip="${escHtml(o)}">＋ ${escHtml(o)}</button>`).join('')}</div>`;
+    default:
+      return '';
+  }
+}
+
+function cdRender() {
+  const body = document.getElementById('cdBody');
+  if (cd.preview) {
+    body.innerHTML = `<pre class="cd-preview">${escHtml(cdataToText(cdPayload()))}</pre>`;
+    return;
+  }
+  let html = '', open = false;
+  cd.tpl.forEach((f, idx) => {
+    if (f.type === 'section') {
+      if (open) html += '</div></details>';
+      html += `<details class="cd-sec" open><summary>${escHtml(f.label)}<span class="cd-sec-count" data-sec="${idx}"></span></summary><div class="cd-sec-body">`;
+      open = true;
+      return;
+    }
+    html += `<div class="cd-field" id="cdf-${f.key}">${cdFieldHtml(f)}</div>`;
+  });
+  if (open) html += '</div></details>';
+  body.innerHTML = html;
+  cdUpdateProgress();
+}
+
+function cdRerenderField(k) {
+  const el = document.getElementById('cdf-' + k);
+  if (el) el.innerHTML = cdFieldHtml(cdField(k));
+}
+
+(() => {
+  const body = document.getElementById('cdBody');
+
+  body.addEventListener('input', e => {
+    const t = e.target, k = t.dataset.k;
+    if (!cd || !k) return;
+    const f = cdField(k), v = cd.v[k];
+    const { i, j, p } = t.dataset;
+    switch (f.type) {
+      case 'bullets': case 'numbered': v[+i] = t.value; break;
+      case 'timeline': if (j != null) v[+i].items[+j] = t.value; else v[+i][p] = t.value; break;
+      case 'datetime': case 'textChoice': v[p] = t.value; break;
+      default: cd.v[k] = t.value;
+    }
+    if (f.type === 'combo') {   // 入力内容に合わせてチップの選択表示を更新
+      t.parentElement.querySelectorAll('.cd-chip').forEach(b => b.classList.toggle('on', b.dataset.chip === t.value));
+    }
+    cdTouched(k);
+  });
+
+  body.addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!cd || !b || !b.dataset.k) return;
+    const k = b.dataset.k, f = cdField(k), v = cd.v[k];
+    const i = +b.dataset.i, j = +b.dataset.j, act = b.dataset.act, chip = b.dataset.chip;
+    let focus = null;
+    if (act === 'addRow')        { v.push(''); focus = `[data-k="${k}"][data-i="${v.length - 1}"]`; }
+    else if (act === 'delRow')   { v.splice(i, 1); if (!v.length) v.push(''); }
+    else if (act === 'ox')       { v[i] = v[i] === chip ? '' : chip; }
+    else if (act === 'addEntry') { v.push({ date: '', kind: chip, who: '', items: [''] }); focus = `[data-k="${k}"][data-i="${v.length - 1}"][data-p="date"]`; }
+    else if (act === 'delEntry') { if (!confirm('この経緯を削除しますか？')) return; v.splice(i, 1); }
+    else if (act === 'addItem')  { v[i].items.push(''); focus = `[data-k="${k}"][data-i="${i}"][data-j="${v[i].items.length - 1}"]`; }
+    else if (act === 'delItem')  { v[i].items.splice(j, 1); if (!v[i].items.length) v[i].items.push(''); }
+    else if (chip != null) {
+      if (f.type === 'textChoice') v.choice = v.choice === chip ? '' : chip;
+      else cd.v[k] = cd.v[k] === chip ? '' : chip;
+    } else return;
+    cdRerenderField(k);
+    cdTouched(k);
+    if (focus) body.querySelector(focus)?.focus();
+  });
+
+  // 箇条書きで Enter → 下に行を追加（日本語変換の確定 Enter は除外）
+  body.addEventListener('keydown', e => {
+    if (e.key !== 'Enter' || e.isComposing || e.keyCode === 229) return;
+    const t = e.target, k = t.dataset.k;
+    if (!cd || !k || t.tagName !== 'INPUT' || t.dataset.i == null) return;
+    const f = cdField(k), i = +t.dataset.i;
+    let focus;
+    if ((f.type === 'bullets' || f.type === 'numbered') && t.dataset.j == null && !t.dataset.p) {
+      cd.v[k].splice(i + 1, 0, '');
+      focus = `[data-k="${k}"][data-i="${i + 1}"]`;
+    } else if (f.type === 'timeline' && t.dataset.j != null) {
+      const j = +t.dataset.j;
+      cd.v[k][i].items.splice(j + 1, 0, '');
+      focus = `[data-k="${k}"][data-i="${i}"][data-j="${j + 1}"]`;
+    } else return;
+    e.preventDefault();
+    cdRerenderField(k);
+    cdTouched(k);
+    body.querySelector(focus)?.focus();
+  });
+})();
+
 // ===== バージョン＆お知らせ =====
 // アップデートしたら先頭に { version, date, items } を追記する（先頭の version が表示バージョンになる）
 const UPDATES = [
+  {
+    version: 'v2',
+    date: '2026/10/3',
+    items: [
+      'CDATA機能を追加：カードを開いて「リストからCDATAを作成」で、リストの内容が入った状態から書き始められます',
+      '2回目以降は「前回から作成」で、前回のCDATAを引き継いで日時・内容だけ書き直せます',
+      'CDATAは「📋 コピー」で今までのメモ帳と同じ形式のテキストになります（LINEにそのまま貼れます）',
+      '記入者の入力欄をなくし、ログインしている人の名前が自動で記録されるようにしました',
+      'ライトモードを追加（ヘッダーの☀️/🌙で切り替え）',
+    ],
+  },
   {
     version: 'v1',
     date: '2026/7/14',
@@ -1622,7 +2225,6 @@ window.copyCardText = (id) => {
   if (p.insta)        lines.push(`Instagram: ${p.insta}`);
   if (p.lastcontact)  lines.push(`最終連絡: ${p.lastcontact}`);
   if (p.memo)         lines.push(`備考: ${p.memo}`);
-  if (p.writer)       lines.push(`記入者: ${p.writer}`);
   navigator.clipboard.writeText(lines.join('\n\n'))
     .then(() => showToast('コピーしました！'))
     .catch(() => showToast('コピーに失敗しました'));
@@ -1711,14 +2313,15 @@ window.savePerson = async (e) => {
 
   try {
     if (editingId) {
+      // 記入者が未記録の古いデータだけ、編集した人を記入者として記録
+      const prev = people.find(x => x.id === editingId);
+      if (!prev?.writer) data.writer = writerName();
       await updateDoc(doc(db,'users',currentUser.uid,'people',editingId), { ...data, updatedAt: serverTimestamp() });
       showToast('更新しました');
     } else {
-      // 新規追加時に記入者を自動セット
-      const writerName = currentUser.displayName || currentUser.email || '';
       // 既存の最小 sortOrder より小さい値を付けてリストの一番上に表示する
       const minOrder = people.reduce((m,p)=> (p.sortOrder!=null && p.sortOrder<m) ? p.sortOrder : m, 0);
-      await addDoc(collection(db,'users',currentUser.uid,'people'), { ...data, writer: data.writer || writerName, sortOrder: minOrder-1, createdAt: serverTimestamp() });
+      await addDoc(collection(db,'users',currentUser.uid,'people'), { ...data, writer: writerName(), sortOrder: minOrder-1, createdAt: serverTimestamp() });
       showToast('追加しました');
     }
     closeEditModal();
@@ -1780,6 +2383,7 @@ window.importData = async (e) => {
       for (const p of imported) {
         const data={};
         FIELDS.forEach(f=>{ data[f]=p[f]||''; });
+        data.writer = p.writer || writerName();
         await addDoc(collection(db,'users',currentUser.uid,'people'),{...data,createdAt:serverTimestamp()});
         count++;
       }
