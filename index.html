@@ -12,7 +12,7 @@
   <link rel="icon" type="image/png" href="icon.png?v=2">
   <link rel="manifest" href="manifest.json?v=2">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap');
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -78,7 +78,7 @@
       --t-purple-bg: rgba(127,119,221,0.24); --t-purple-fg: #CECBF6;
       --t-red-bg: rgba(226,75,74,0.20);      --t-red-fg: #F7C1C1;
     }
-    body { font-family: 'Zen Kaku Gothic New', -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+    body { font-family: 'Inter', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; }
     button, input, select, textarea { font-family: inherit; }
 
     /* ===== ログイン画面 ===== */
@@ -86,7 +86,7 @@
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       min-height: 100vh; padding: 24px; gap: 24px;
     }
-    .login-title { font-family: 'Poppins', sans-serif; font-size: 2rem; font-weight: 600; letter-spacing: 0.5px; color: var(--text); line-height: 1; }
+    .login-title { font-family: 'Inter', sans-serif; font-size: 2rem; font-weight: 600; letter-spacing: 0.5px; color: var(--text); line-height: 1; }
     .login-subtitle { font-size: 0.88rem; color: var(--text-muted); text-align: center; line-height: 1.6; letter-spacing: 1px; }
 
     /* ===== ヘッダー ===== */
@@ -96,8 +96,8 @@
       position: sticky; top: 0; z-index: 100;
     }
     .header-top { display: flex; align-items: center; justify-content: space-between; }
-    .logo { font-family: 'Poppins', sans-serif; font-size: 1.35rem; font-weight: 600; letter-spacing: 0.3px; color: var(--text); line-height: 1.2; }
-    .logo .stat-line { display: block; margin-top: 2px; font-family: 'Zen Kaku Gothic New', sans-serif; font-size: 0.75rem; font-weight: 400; letter-spacing: 0; color: var(--text-muted); }
+    .logo { font-family: 'Inter', sans-serif; font-size: 1.35rem; font-weight: 600; letter-spacing: 0.3px; color: var(--text); line-height: 1.2; }
+    .logo .stat-line { display: block; margin-top: 2px; font-size: 0.75rem; font-weight: 400; letter-spacing: 0; color: var(--text-muted); }
     .header-count { display: none; }
     .header-icons { display: flex; gap: 2px; }
     .icon-btn { position: relative; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: transparent; border: none; border-radius: 50%; color: var(--text-muted); cursor: pointer; -webkit-tap-highlight-color: transparent; }
@@ -257,6 +257,15 @@
     .cd-item-content { flex: 1; min-width: 0; font-size: 0.85rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .cd-item-copy { background: transparent; border: 1px solid var(--border-strong); border-radius: 8px; color: var(--text-muted); font-size: 0.75rem; padding: 4px 10px; cursor: pointer; flex-shrink: 0; }
     .cd-block-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    .cd-kind { flex-shrink: 0; font-size: 0.65rem; font-weight: 600; padding: 2px 8px; border-radius: 999px; }
+    .k-cdata { background: var(--accent-soft); color: var(--accent-ink); }
+    .k-event { background: var(--t-amber-bg); color: var(--t-amber-fg); }
+    .k-outline { background: var(--t-teal-bg); color: var(--t-teal-fg); }
+    .sheet-opt { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+    .sheet-opt:last-child { border-bottom: none; }
+    .sheet-opt-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; font-size: 0.95rem; color: var(--text); }
+    .sheet-opt-text span { font-size: 0.78rem; color: var(--text-muted); }
+    .sheet-opt-btns { display: flex; gap: 6px; flex-shrink: 0; }
 
     /* ===== CDATA エディタ（全画面） ===== */
     .cd-editor { display: none; position: fixed; inset: 0; z-index: 260; background: var(--bg); flex-direction: column; }
@@ -264,7 +273,7 @@
     .cd-head { display: flex; align-items: center; gap: 10px; padding: 10px 14px; padding-top: max(10px, env(safe-area-inset-top)); background: var(--bg); border-bottom: 1px solid var(--border); flex-shrink: 0; }
     .cd-head-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; cursor: pointer; padding: 6px 4px; min-width: 56px; text-align: left; }
     .cd-head-title { flex: 1; min-width: 0; text-align: center; }
-    .cd-head-title div { font-family: 'Poppins', sans-serif; font-size: 1rem; font-weight: 600; letter-spacing: 0.5px; color: var(--text); line-height: 1; }
+    .cd-head-title div { font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 600; letter-spacing: 0.5px; color: var(--text); line-height: 1; }
     .cd-head-title small { display: block; font-size: 0.78rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .cd-state { font-size: 0.72rem; color: var(--text-muted); min-width: 56px; text-align: right; }
     .cd-progress { display: flex; align-items: center; gap: 10px; padding: 8px 14px; background: var(--bg); border-bottom: 1px solid var(--border); flex-shrink: 0; font-size: 0.75rem; color: var(--text-muted); }
@@ -288,7 +297,6 @@
     .cd-chips + input { margin-top: 8px; }
     .cd-chip { padding: 8px 14px; border-radius: 100px; border: 1.5px solid var(--border-strong); background: transparent; color: var(--text-muted); font-size: 0.88rem; cursor: pointer; -webkit-tap-highlight-color: transparent; }
     .cd-chip.on { border-color: var(--accent); color: var(--accent-ink); background: var(--accent-soft); font-weight: 600; }
-    .cd-chip.on[data-chip="×"] { border-color: var(--danger); color: var(--danger); background: var(--danger-soft); }
     .cd-inline { display: flex; gap: 8px; }
     .cd-inline input { flex: 1; min-width: 0; }
     .cd-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
@@ -298,8 +306,19 @@
     .cd-add { background: transparent; border: 1px dashed var(--border-strong); border-radius: 8px; color: var(--text-muted); font-size: 0.82rem; padding: 7px 12px; cursor: pointer; }
     .cd-check { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.88rem; color: var(--text); line-height: 1.5; }
     .cd-check:last-child { border-bottom: none; }
-    .cd-ox { display: flex; gap: 6px; flex-shrink: 0; }
-    .cd-ox .cd-chip { padding: 6px 0; width: 42px; }
+    .cd-switch { position: relative; flex-shrink: 0; width: 48px; height: 28px; border: none; border-radius: 999px; background: var(--border-strong); cursor: pointer; transition: background 0.2s; -webkit-tap-highlight-color: transparent; }
+    .cd-switch i { position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(43,38,38,0.25); transition: transform 0.2s; }
+    .cd-switch.on { background: var(--accent); }
+    .cd-switch.on i { transform: translateX(20px); }
+    .cd-sub { flex-shrink: 0; min-width: 34px; font-size: 0.82rem; font-weight: 600; color: var(--text-muted); }
+    .cd-sublabel { margin: 10px 0 6px; font-size: 0.75rem; color: var(--text-muted); }
+    .cd-chips-sm .cd-chip { padding: 5px 10px; font-size: 0.8rem; }
+    .cd-presets { margin-top: 8px; }
+    .cd-hint { margin-bottom: 6px; font-size: 0.75rem; color: var(--text-muted); }
+    .cd-percent { margin-top: 10px; margin-bottom: 0; }
+    .cd-percent .cd-sublabel { margin: 0; flex-shrink: 0; }
+    .cd-percent input { flex: 0 0 90px; }
+    .cd-field > select { margin-top: 4px; padding: 10px 12px; font-size: 16px; }
     .cd-tl { border-radius: 10px; padding: 10px; margin-bottom: 8px; background: var(--bg); }
     .cd-tl-head { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
     .cd-tl-head input[type="date"] { flex: 1 1 140px; min-width: 0; }
@@ -692,7 +711,7 @@
 <div class="cd-editor" id="cdEditor">
   <div class="cd-head">
     <button type="button" class="cd-head-btn" onclick="closeCdata()">‹ 戻る</button>
-    <div class="cd-head-title"><div>CDATA</div><small id="cdPersonName"></small></div>
+    <div class="cd-head-title"><div id="cdKindTitle">CDATA</div><small id="cdPersonName"></small></div>
     <span class="cd-state" id="cdState"></span>
   </div>
   <div class="cd-progress" id="cdProgress"><div class="cd-bar"><i id="cdBar"></i></div><span id="cdCount"></span></div>
@@ -711,6 +730,10 @@
     <button type="button" class="cd-head-btn" onclick="closeTplEditor()">‹ 戻る</button>
     <div class="cd-head-title"><div>FORMAT</div><small id="teUnionName"></small></div>
     <span class="cd-state" id="teState"></span>
+  </div>
+  <div class="cd-progress" id="teKindBar">
+    <button type="button" class="chip" data-kind="cdata" onclick="switchTplKind('cdata')">CDATA</button>
+    <button type="button" class="chip" data-kind="outline" onclick="switchTplKind('outline')">アウトライン</button>
   </div>
   <div class="cd-progress" id="teOwnerBar" style="display:none;">
     <span style="white-space:nowrap;">編集するユニオン</span>
@@ -768,8 +791,8 @@
 
     <div id="tplAdminSection" style="display:none;">
       <div class="share-section">
-        <div class="share-section-title">CDATAフォーマット（ユニオン管理者）</div>
-        <p class="share-desc">自分のユニオンのメンバーが使うCDATAの項目を編集できます。変更は次に作るCDATAから反映され、作成済みのCDATAは変わりません。</p>
+        <div class="share-section-title">シートのフォーマット（ユニオン管理者）</div>
+        <p class="share-desc">自分のユニオンのメンバーが使うCDATAとアウトラインの項目を編集できます。変更は次に作る分から反映され、作成済みのものは変わりません。</p>
         <div class="share-actions"><button class="btn btn-outline btn-sm" onclick="openTplEditor()">フォーマットを編集</button></div>
       </div>
       <div class="share-divider"></div>
@@ -778,6 +801,17 @@
     <div class="share-section">
       <button class="btn btn-outline btn-sm" onclick="confirmSignOut()">ログアウト</button>
     </div>
+  </div>
+</div>
+
+<!-- ===== 作るシートの種類を選ぶ ===== -->
+<div class="modal-overlay" id="sheetMenu">
+  <div class="modal">
+    <div class="modal-title">
+      <span>シートを作成</span>
+      <button class="modal-close" onclick="closeSheetMenu()">✕</button>
+    </div>
+    <div id="sheetMenuList"></div>
   </div>
 </div>
 
@@ -1096,7 +1130,7 @@ onAuthStateChanged(auth, async user => {
     currentUser = null;
     showScreen('loginScreen');
     if (unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
-    if (unsubTpl) { unsubTpl(); unsubTpl = null; }
+    stopTplWatch();
   }
 });
 
@@ -1652,14 +1686,14 @@ window.closeMemoEditor = () => {
 // テンプレート = 項目定義の配列。CDATA保存時にテンプレートごと保存するので、
 // 将来ユニオン別にフォーマットを変えても過去のCDATAは崩れない。
 // type: text / textarea / select / combo(選択肢＋自由入力) / textChoice(テキスト＋選択) /
-//       datetime / bullets(・) / numbered(❶) / checks(○×) / timeline(経緯) / section(見出し)
-// fmt: colon(「日時：」形式) / title(1行目にだけ出す) / 省略時は【】形式
+//       datetime / bullets(・) / numbered(❶) / checks(オン/オフ。文面では○/×) / timeline(経緯) /
+//       labeled(小見出しつきの入力) / participants(参加者) / section(見出し)
+// fmt: colon(「日時：」形式) / 省略時は【】形式。1行目は「＜CDATA＞日付 時刻〜 内容＋分」
 // src: リストから自動入力する元（CD_SRC のキー）
 const CDATA_TPL_DEFAULT = [
   { type:'section', label:'個別の情報' },
   { key:'when',     label:'日時', type:'datetime', fmt:'colon' },
-  { key:'duration', label:'時間', type:'select', options:['30分','45分','60分','90分','120分'], fmt:'title' },
-  { key:'content',  label:'内容', type:'combo', options:['PG','マケ'], fmt:'colon', ph:'研修項目' },
+  { key:'content',  label:'内容', type:'text', fmt:'colon', ph:'例：PG、マケ' },
   { key:'place',    label:'場所', type:'text', fmt:'colon', ph:'個別を行う場所' },
   { type:'section', label:'基本情報' },
   { key:'name',       label:'名前', type:'text', src:'name' },
@@ -1696,27 +1730,106 @@ const CDATA_TPL_DEFAULT = [
   { key:'request', label:'伝えていただきたいこと', type:'numbered', rows:3 },
   { key:'result',  label:'望まれる結果', type:'bullets', rows:3 },
   { key:'thanks',  label:'お礼', type:'textarea' },
+  { key:'memo',    label:'備考', type:'textarea' },
 ];
+
+// ----- イベント用（全ユニオン共通の固定フォーマット） -----
+// fmt: na(【◯◯NA】) / inline(1行に並べる) / colon(「名前：」) / colonBlock(「ニーズ：」＋改行) /
+//      angle(＜見出し＞) / plain(本文だけ)
+// from: 最新のCDATAの同じ項目から引き継ぐ
+const EVENT_TPL = [
+  { type:'section', label:'見出し' },
+  { key:'na', label:'NA（自分の名字）', type:'text', fmt:'na', src:'mySurname' },
+  { key:'ab', label:'A・B', type:'labeled', options:['A','B'], fmt:'inline' },
+  { type:'section', label:'基本情報' },
+  { key:'name',        label:'名前', type:'text', fmt:'colon', src:'name' },
+  { key:'age',         label:'年齢', type:'text', fmt:'colon', src:'age' },
+  { key:'job',         label:'仕事', type:'text', fmt:'colon', src:'job' },
+  { key:'address',     label:'住所', type:'text', fmt:'colon', src:'addressText' },
+  { key:'relation',    label:'関係', type:'text', fmt:'colon', src:'relation' },
+  { key:'personality', label:'性格', type:'text', fmt:'colon', from:'personality' },
+  { key:'needs',       label:'ニーズ', type:'textarea', fmt:'colonBlock', from:'needs', src:'needs' },
+  { key:'likes',       label:'好きなこと', type:'textarea', fmt:'colonBlock', from:'likes' },
+  { type:'section', label:'お願いすること' },
+  { key:'tell', label:'伝えて欲しいこと', type:'bullets', rows:2, fmt:'angle' },
+  { key:'goal', label:'ゴール', type:'labeled', options:['最高','最低'], fmt:'angle' },
+  { key:'note', label:'最後の一言', type:'textarea', fmt:'plain' },
+];
+
+// ----- アウトライン（ユニオン管理者が編集できる。これは標準） -----
+// fmt: head(1行目と「日時:」) / square(◾️見出し) / angle(＜見出し＞) / 省略時は【】形式
+// participants: B＝記入者、C＝リストの人（タイトル・稼働・稼働率つき）
+// withTarget: 先頭のCのタイトル・稼働を自動で先頭に出す　presets: タップで追加できる定型文
+const OUTLINE_TITLES = ['BD','D','E','R','L','G','BR','Q4','Q3','Q2','LOI',
+                        'B1','B2','B3','B4','B5','B6','B7','B8','B9','B10','B11','BM'];
+const OUTLINE_ACTIVITY = ['S','A','B','C'];
+const OUTLINE_TPL_DEFAULT = [
+  { type:'section', label:'日時・場所' },
+  { key:'when',  label:'日時',   type:'datetime', fmt:'head', reset:true },
+  { key:'theme', label:'テーマ', type:'text', fmt:'square', reset:true },
+  { key:'place', label:'場所',   type:'text', fmt:'square', reset:true },
+  { type:'section', label:'参加者' },
+  { key:'members', label:'参加者', type:'participants', options:OUTLINE_TITLES, fmt:'square', src:'participants' },
+  { key:'current', label:'対象者現状', type:'bullets', rows:1, fmt:'angle', withTarget:true },
+  { type:'section', label:'内容' },
+  { key:'issues',   label:'課題', type:'bullets', rows:2,
+    presets:['改善改良が少ない','オウンシップ','Aへの依存','行動量'] },
+  { key:'messages', label:'伝えていただきたい事', type:'bullets', rows:2,
+    presets:['改善改良のスピードを上げる','自分で考えて動く','STを活用する','次に話せるネタを持つ'] },
+  { key:'goals',    label:'望む結果', type:'bullets', rows:2,
+    presets:['自分で動けるようになる','自分で話せるようになる','次回の動きが変わる','業績につなげる'] },
+  { key:'thanks',   label:'御礼', type:'textarea' },
+];
+
+// シートの種類。保存先は人物ドキュメントの同名フィールド（cdata / event / outline）
+const SHEET_KINDS = {
+  cdata:   { label:'CDATA',        title:'CDATA',        desc:'個別の前に共有するデータ' },
+  event:   { label:'イベント',     title:'イベント用',   desc:'飲み会などイベント前の共有用' },
+  outline: { label:'アウトライン', title:'アウトライン', desc:'アウトライン分の共有用' },
+};
+
 // ----- ユニオン別テンプレート -----
 // unions/{ユニオン名}/cdata/template に { fields:[...] } を保存。
 // 書けるのはオーナー or そのユニオンの管理者（role=='admin'。任命は GROOVE MAP の管理画面）。
 // 未設定・読み込み失敗時は標準テンプレートを使う。
 const OWNER_UID = 'j2DPDAccCygHmR9i5K3bTvHnH0V2';
-let unionTpl = null;
-let unsubTpl = null;
-const tplRef = un => doc(db, 'unions', un, 'cdata', 'template');
-const tplValid = fields => Array.isArray(fields) && fields.some(f => f.type === 'datetime') && fields.some(f => f.key && !f.fmt);
+// 管理者が編集できるのは CDATA と アウトライン（イベント用は固定）
+let unionTpls = { cdata: null, outline: null };
+let unsubTpls = [];
+const TPL_DOC = { cdata: 'template', outline: 'outlineTemplate' };
+const TPL_DEFAULT = { cdata: CDATA_TPL_DEFAULT, outline: OUTLINE_TPL_DEFAULT };
+const tplRef = (un, kind = 'cdata') => doc(db, 'unions', un, 'cdata', TPL_DOC[kind]);
+const tplValid = (fields, kind = 'cdata') => Array.isArray(fields)
+  && fields.some(f => f.key && !f.fmt)
+  && fields.some(f => f.type === (kind === 'outline' ? 'participants' : 'datetime'));
 function canEditUnionTpl() { return !!currentUser && (currentUser.uid === OWNER_UID || currentUser.role === 'admin'); }
+function stopTplWatch() { unsubTpls.forEach(u => u()); unsubTpls = []; unionTpls = { cdata: null, outline: null }; }
 function watchUnionTemplate() {
-  if (unsubTpl) { unsubTpl(); unsubTpl = null; }
-  unionTpl = null;
+  stopTplWatch();
   if (!currentUser?.union) return;
-  unsubTpl = onSnapshot(tplRef(currentUser.union), snap => {
-    const d = snap.exists() ? snap.data() : null;
-    unionTpl = d && tplValid(d.fields) ? d.fields : null;
-  }, () => { unionTpl = null; });
+  Object.keys(TPL_DOC).forEach(kind => {
+    unsubTpls.push(onSnapshot(tplRef(currentUser.union, kind), snap => {
+      const d = snap.exists() ? snap.data() : null;
+      unionTpls[kind] = d && tplValid(d.fields, kind) ? d.fields : null;
+    }, () => { unionTpls[kind] = null; }));
+  });
 }
-function getCdataTemplate() { return unionTpl || CDATA_TPL_DEFAULT; }
+// 以前のCDATAフォーマット（保存済みのユニオン別・作成済みのCDATA）を今の仕様に合わせる:
+// 「時間」欄をなくす／「内容」は自由入力のみ／「備考」欄が無ければ末尾に足す
+function cdNormalizeTpl(fields) {
+  const out = fields.filter(f => f.fmt !== 'title').map(f => {
+    if (f.fmt !== 'colon' || f.type !== 'combo') return f;
+    const { options, ...rest } = f;
+    return { ...rest, type: 'text' };
+  });
+  if (!out.some(f => f.key === 'memo')) out.push({ key: 'memo', label: '備考', type: 'textarea' });
+  return out;
+}
+function getTemplate(kind = 'cdata') {
+  if (kind === 'event') return EVENT_TPL;
+  if (kind === 'outline') return unionTpls.outline || OUTLINE_TPL_DEFAULT;
+  return cdNormalizeTpl(unionTpls.cdata || CDATA_TPL_DEFAULT);
+}
 
 // リスト → CDATA の変換（リストの選択肢に無い値はそのまま入れて、選択肢として表示する）
 const CD_SRC = {
@@ -1734,22 +1847,28 @@ const CD_SRC = {
   ptype:    p => p.type || '',
   needs:    p => p.needs ? [p.needs] : [],
   memo:     p => p.memo || '',
+  // 以下はシート専用（フォーマット編集の選択肢には出さない）
+  addressText:  p => [p.address, p.address_city].filter(Boolean).join(' '),
+  mySurname:    () => writerName().trim().split(/[\s\u3000]+/)[0] || '',
+  participants: p => ({ b: writerName(), c: [{ pid: p.id, name: p.name || '', titles: [], activity: '', percent: '' }] }),
 };
 const CD_SRC_LABEL = {
   name:'名前', age:'年齢', gender:'性別', hometown:'出身地', address:'現住所＋住まい', partner:'パートナー',
   job:'仕事', relation:'関係性', position:'立場', trust:'信用度', friends:'友だち', ptype:'４つのタイプ',
   needs:'ニーズ', memo:'備考',
 };
-// リストの値を、項目のタイプに合う形へ変換
+// リスト（または最新のCDATA）の値を、項目のタイプに合う形へ変換
 function cdCoerce(f, val) {
   const isObj = val && typeof val === 'object' && !Array.isArray(val);
-  const str = Array.isArray(val) ? val.filter(Boolean).join('、')
+  const str = Array.isArray(val) ? val.map(x => (x || '').trim()).filter(Boolean).join(f.type === 'textarea' ? '\n' : '、')
             : isObj ? (val.text || '') + (val.choice ? `(${val.choice})` : '')
             : (val || '');
   switch (f.type) {
     case 'bullets': case 'numbered':
       return cdPad(Array.isArray(val) ? val : (str ? [str] : []), f.rows || 1);
-    case 'textChoice': return isObj ? val : { text: str, choice: '' };
+    case 'textChoice':   return isObj ? val : { text: str, choice: '' };
+    case 'participants': return isObj && Array.isArray(val.c) ? val : cdEmpty(f);
+    case 'labeled': case 'checks': case 'timeline': case 'datetime': return cdEmpty(f);
     default: return str;
   }
 }
@@ -1760,25 +1879,25 @@ const clone = o => JSON.parse(JSON.stringify(o));
 function cdEmpty(f) {
   switch (f.type) {
     case 'bullets': case 'numbered': return Array(f.rows || 1).fill('');
-    case 'checks':     return (f.options || []).map(() => '');
-    case 'timeline':   return [];
-    case 'datetime':   return { date:'', time:'' };
-    case 'textChoice': return { text:'', choice:'' };
-    default:           return '';
+    case 'checks': case 'labeled':   return (f.options || []).map(() => '');
+    case 'timeline':     return [];
+    case 'datetime':     return { date:'', time:'' };
+    case 'textChoice':   return { text:'', choice:'' };
+    case 'participants': return { b:'', c:[] };
+    default:             return '';
   }
 }
 function cdFilled(f, v) {
   switch (f.type) {
-    case 'bullets': case 'numbered': return (v || []).some(s => s && s.trim());
-    case 'checks':     return (v || []).length > 0 && v.every(Boolean);
-    case 'timeline':   return (v || []).some(e => e.date || (e.items || []).some(s => s && s.trim()));
-    case 'datetime':   return !!(v && v.date);
-    case 'textChoice': return !!(v && (v.text || v.choice));
-    default:           return !!(v && String(v).trim());
+    case 'bullets': case 'numbered': case 'labeled': return (v || []).some(s => s && s.trim());
+    case 'checks':       return (v || []).some(x => x === '○');   // スイッチ：1つでもオンなら入力済み
+    case 'timeline':     return (v || []).some(e => e.date || (e.items || []).some(s => s && s.trim()));
+    case 'datetime':     return !!(v && v.date);
+    case 'textChoice':   return !!(v && (v.text || v.choice));
+    case 'participants': return !!(v && (v.c || []).some(c => (c.name || '').trim()));
+    default:             return !!(v && String(v).trim());
   }
 }
-// 一部でも入力があるか（○×は全部埋まっていなくても引き継ぐ）
-function cdHasAny(f, v) { return f.type === 'checks' ? (v || []).some(Boolean) : cdFilled(f, v); }
 function cdPad(arr, n) { const a = [...arr]; while (a.length < n) a.push(''); return a; }
 
 // 日付表示
@@ -1792,14 +1911,96 @@ function fmtHour(t) { if (!t) return ''; const [h, m] = t.split(':').map(Number)
 
 function cdSessionField(tpl, type) { return tpl.find(f => f.type === type); }
 function cdDateOf(c) { const f = cdSessionField(c.tpl || [], 'datetime'); return f ? (c.v?.[f.key]?.date || '') : ''; }
-function cdContentOf(c) {
-  const f = (c.tpl || []).find(f => f.fmt === 'colon' && f.type !== 'datetime');
-  return f ? (c.v?.[f.key] || '') : '';
+const isoDay = ms => { const d = new Date(ms || Date.now()); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+// 一覧に出す日付（日時欄が無い・未入力のシートは作成日）と、ひとことの要約
+const sheetDay = c => cdDateOf(c) || isoDay(c.createdAt);
+function sheetSummary(c) {
+  if (c.kind === 'event') return '';
+  return String(c.v?.[c.kind === 'outline' ? 'theme' : 'content'] || '');
 }
-function sortedCdatas(p) {
-  return Object.entries(p.cdata || {})
-    .map(([id, c]) => ({ id, ...c }))
+function sortedSheets(p, kind) {
+  return Object.entries(p[kind] || {})
+    .map(([id, c]) => ({ ...c, id, kind }))
     .sort((a, b) => (cdDateOf(b) || '').localeCompare(cdDateOf(a) || '') || (b.createdAt || 0) - (a.createdAt || 0));
+}
+const sortedCdatas = p => sortedSheets(p, 'cdata');
+function allSheets(p) {
+  return Object.keys(SHEET_KINDS).flatMap(kind => sortedSheets(p, kind))
+    .sort((a, b) => sheetDay(b).localeCompare(sheetDay(a)) || (b.createdAt || 0) - (a.createdAt || 0));
+}
+
+// ----- シート → テキスト -----
+function sheetToText(c, blank) { return (c.kind && c.kind !== 'cdata') ? compactText(c, blank) : cdataToText(c, blank); }
+
+// イベント用・アウトライン：入力のある項目だけを、空行で区切って出す（blank=true は全項目を出す）
+function compactText(c, blank) {
+  const tpl = c.tpl || [], v = c.v || {};
+  const blocks = [];
+  let run = null;   // 連続する「名前：◯◯」は1つのかたまりにする
+  const push = lines => { blocks.push(lines); run = null; };
+  const mf = tpl.find(f => f.type === 'participants');
+  const target = mf ? (v[mf.key]?.c || [])[0] : null;
+  tpl.forEach(f => {
+    if (f.type === 'section') return;
+    const val = v[f.key] ?? cdEmpty(f);
+    switch (f.type) {
+      case 'datetime': {
+        if (!val.date && !blank) break;
+        const [, m, d] = (val.date || '--').split('-');
+        const md = val.date ? `${+m}月${+d}日` : '◯月◯日';
+        push([`${md} アウトライン分`, `${f.label}:${md}${val.time ? ' ' + val.time : (blank ? ' ◯:◯' : '')}`]);
+        break;
+      }
+      case 'participants': {
+        const lines = [];
+        if ((val.b || '').trim()) lines.push(`B:${val.b.trim()}`);
+        let started = false;
+        (val.c || []).forEach(x => {
+          const name = (x.name || '').trim(), meta = [];
+          if (x.titles?.length) meta.push(`タイトル:${x.titles.join('・')}`);
+          if (x.activity) meta.push(`稼働:${x.activity}`);
+          if (x.percent !== '' && x.percent != null) meta.push(`稼働率:${x.percent}%`);
+          if (!name && !meta.length) return;
+          lines.push(`${started ? '　' : 'C:'}${name}`);
+          started = true;
+          if (meta.length) lines.push(`　${meta.join(' / ')}`);
+        });
+        if (blank && !lines.length) lines.push('B:', 'C:');
+        if (lines.length) push([`◾️${f.label}`, ...lines]);
+        break;
+      }
+      case 'labeled': {
+        const parts = (f.options || []).map((o, i) => (val[i] || '').trim() || blank ? `${o}：${(val[i] || '').trim()}` : null).filter(Boolean);
+        if (!parts.length) break;
+        push(f.fmt === 'inline' ? [parts.join('　')] : [`＜${f.label}＞`, ...parts]);
+        break;
+      }
+      case 'bullets': case 'numbered': {
+        const lines = [];
+        if (f.withTarget && target) {
+          if (target.titles?.length) lines.push(`・タイトル　${target.titles.join('・')}`);
+          if (target.activity) lines.push(`・稼働　${target.activity}`);
+        }
+        val.map(s => (s || '').trim()).filter(Boolean)
+          .forEach((s, i) => lines.push((f.type === 'numbered' ? (CD_NUM[i] || `${i + 1}.`) : '・') + s));
+        if (!lines.length && blank) lines.push('・');
+        if (lines.length) push([f.fmt === 'angle' ? `＜${f.label}＞` : `【${f.label}】`, ...lines]);
+        break;
+      }
+      default: {
+        const s = String(val || '').trim();
+        if (!s && !blank) break;
+        if (f.fmt === 'colon') { if (run) run.push(`${f.label}：${s}`); else { push([`${f.label}：${s}`]); run = blocks[blocks.length - 1]; } }
+        else if (f.fmt === 'na')         push([`【${s}NA】`]);
+        else if (f.fmt === 'colonBlock') push([`${f.label}：`, s]);
+        else if (f.fmt === 'square')     push([`◾️${f.label}`, s]);
+        else if (f.fmt === 'plain')      { if (s) push([s]); }
+        else                             push([`【${f.label}】`, s]);
+      }
+    }
+  });
+  if (c.kind === 'outline' && ((c.writer || '').trim() || blank)) push([`${c.union || ''}   ${c.writer || ''}`.trim()]);
+  return blocks.map(b => b.join('\n')).join('\n\n');
 }
 
 // ----- CDATA → テキスト（今までのメモ帳フォーマット） -----
@@ -1810,9 +2011,10 @@ function cdataToText(c, blank) {
   const L = [];
   const dtF = cdSessionField(tpl, 'datetime');
   const when = dtF ? (v[dtF.key] || {}) : {};
-  const durF = tpl.find(f => f.fmt === 'title');
-  const dur = durF ? v[durF.key] : '';
-  L.push(`＜CDATA＞${fmtMD(when.date) || '◯/◯'} ${fmtHour(when.time) || '◯時'}〜 ${dur || '◯◯分'}`);
+  // 1行目の末尾は「内容」欄の文字＋「分」（例：マケ分）
+  const contF = tpl.find(f => f.key === 'content') || tpl.find(f => f.fmt === 'colon' && f.type !== 'datetime');
+  const cont = contF ? String(v[contF.key] || '').trim() : '';
+  L.push(`＜CDATA＞${fmtMD(when.date) || '◯/◯'} ${fmtHour(when.time) || '◯時'}〜 ${cont || '◯◯'}分`);
   L.push('');
   let inHeader = true;
   tpl.forEach(f => {
@@ -1838,7 +2040,7 @@ function cdataToText(c, blank) {
       }
       case 'checks':
         L.push(head);
-        (f.options || []).forEach((o, i) => L.push(`・${o}：${val[i] || '○・×'}`));
+        (f.options || []).forEach((o, i) => L.push(`・${o}：${val[i] === '○' ? '○' : (blank ? '○・×' : '×')}`));
         L.push('');
         break;
       case 'timeline':
@@ -1867,79 +2069,234 @@ function cdataToText(c, blank) {
   return L.join('\n').replace(/\n{4,}/g, '\n\n\n');
 }
 
-// ----- カード内のCDATA一覧 -----
+// ----- 備考欄 → CDATA の取り込み -----
+// 備考に【項目名】形式で書かれたCDATAを読み取り、項目名の合う欄へ振り分ける。
+// どこにも当てはまらない行は rest（CDATAの「備考」欄へ）。捨てる行はない。
+const MEMO_ALIAS = {
+  '出身':'地元', '出身地':'地元', '住所':'現住所', 'パートナー':'恋人', '彼氏彼女':'恋人', '仕事':'職業',
+  '関係性':'関係', '信頼関係':'信用度', '信頼度':'信用度', 'フリガナ':'カナ', 'ふりがな':'カナ',
+  '趣味':'好きなもの趣味', '好きなもの':'好きなもの趣味', '好きなこと':'好きなもの趣味',
+  '今までの流れ':'今までの流れ何と言ってつないだか', '流れ':'今までの流れ何と言ってつないだか',
+  '伝えてほしいこと':'伝えていただきたいこと', '伝えて欲しいこと':'伝えていただきたいこと', '伝えていただきたい事':'伝えていただきたいこと',
+  '望む結果':'望まれる結果', '御礼':'お礼',
+};
+const memoNorm = s => String(s || '').replace(/[（(].*?[)）]/g, '').replace(/[\s　・･:：]/g, '');
+const memoBlank = s => !s || /[◯〇]/.test(s);            // 「◯◯卒」など、ひな形のままの値は空として扱う
+const memoBullet = s => s.replace(/^[\s　]*[・･\-*●❶❷❸❹❺❻❼❽❾❿]\s*/, '').replace(/^\d+[.)．]\s*/, '').trim();
+// 「10/5」→ 年を補う。pastOnly: 経緯は過去の日付のはずなので、先の日付になったら前年にする
+function memoDate(m, d, pastOnly) {
+  const now = new Date();
+  let y = now.getFullYear();
+  if (pastOnly && new Date(y, m - 1, d) - now > 31 * 864e5) y--;
+  return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+}
+function parseMemoToCdata(text, tpl) {
+  const byLabel = {};
+  tpl.forEach(f => { if (f.key && f.key !== 'memo') byLabel[memoNorm(f.label)] = f; });
+  const lookup = label => { const n = memoNorm(label); return byLabel[n] || byLabel[memoNorm(MEMO_ALIAS[n] || '')] || null; };
+  const values = {}, rest = [];
+  const lines = String(text || '').replace(/\r/g, '').split('\n');
+  // 末尾の署名（ユニオン名＋名前）は取り込まない
+  while (lines.length && !lines[lines.length - 1].trim()) lines.pop();
+  const isUnion = s => UNION_LIST.some(u => u.name === (s || '').trim());
+  if (lines.length >= 2 && isUnion(lines[lines.length - 2])) lines.splice(-2);
+  else if (lines.length && isUnion(lines[lines.length - 1])) lines.pop();
+
+  const convert = (f, body) => {
+    const flat = body.map(s => s.trim()).filter(Boolean);
+    const first = flat[0] || '';
+    const overflow = n => { if (flat.length > n) rest.push(`【${f.label}】`, ...flat.slice(n)); };
+    switch (f.type) {
+      case 'bullets': case 'numbered': {
+        const items = flat.map(memoBullet).filter(Boolean);
+        if (items.length) values[f.key] = cdPad(items, f.rows || 1);
+        break;
+      }
+      case 'checks': {
+        const arr = cdEmpty(f);
+        let hit = false;
+        flat.forEach(line => {
+          const m = memoBullet(line).match(/^(.*)[:：]\s*(.*)$/);
+          const i = m ? (f.options || []).findIndex(o => memoNorm(o) === memoNorm(m[1])) : -1;
+          if (i < 0) { rest.push(line); return; }
+          hit = true;
+          if (/^[○◯〇]/.test(m[2]) && !/[×✕xX]/.test(m[2])) arr[i] = '○';
+        });
+        if (hit) values[f.key] = arr;
+        break;
+      }
+      case 'timeline': {
+        const entries = [];
+        flat.forEach(line => {
+          const m = line.match(/^[＜<]\s*(?:(\d{1,2})\s*[\/／]\s*(\d{1,2}))?[^＞>]*?([^\s　＞>\/／◯〇]*)\s*[＞>](.*)$/);
+          if (m) entries.push({ date: m[1] ? memoDate(+m[1], +m[2], true) : '', kind: m[3] || '', who: /[◯〇]/.test(m[4]) ? '' : m[4].trim().replace(/さん$/, ''), items: [] });
+          else if (entries.length) { const b = memoBullet(line); if (b) entries[entries.length - 1].items.push(b); }
+          else rest.push(line);
+        });
+        const kept = entries.filter(e => e.date || e.items.length);
+        kept.forEach(e => { if (!e.items.length) e.items.push(''); });
+        if (kept.length) values[f.key] = kept;
+        break;
+      }
+      case 'datetime': {
+        const d = first.match(/(\d{1,2})\s*[\/／月]\s*(\d{1,2})/);
+        if (!d) break;
+        const t = first.replace(d[0], '').match(/(\d{1,2})\s*(?:[:：]\s*(\d{2})|時)/);
+        values[f.key] = { date: memoDate(+d[1], +d[2], false), time: t ? `${String(t[1]).padStart(2, '0')}:${t[2] || '00'}` : '' };
+        break;
+      }
+      case 'textChoice': {
+        const m = first.match(/^(.*?)[（(]([^（()）]*)[)）]\s*$/);
+        const textPart = (m ? m[1] : first).trim();
+        const choice = m && !m[2].includes('・') ? m[2].trim() : '';
+        if (!memoBlank(textPart) || choice) values[f.key] = { text: memoBlank(textPart) ? '' : textPart, choice };
+        overflow(1);
+        break;
+      }
+      case 'select': case 'combo': {
+        const opts = f.options || [];
+        const isHint = first.includes('・') && opts.filter(o => first.includes(o)).length >= 2;   // 「有・無・既婚」のまま
+        if (!isHint && !memoBlank(first)) values[f.key] = opts.find(o => o === first) || opts.find(o => first.includes(o) || o.includes(first)) || first;
+        overflow(1);
+        break;
+      }
+      case 'textarea':
+        if (flat.length) values[f.key] = body.join('\n').trim();
+        break;
+      default:
+        if (!memoBlank(first)) values[f.key] = first;
+        overflow(1);
+    }
+  };
+
+  let cur = null;   // 読み取り中の【項目】
+  const flush = () => { if (cur) { cur.f ? convert(cur.f, cur.body) : rest.push(...cur.body); cur = null; } };
+  lines.forEach(line => {
+    const t = line.trim();
+    if (/^[＜<]CDATA[＞>]/.test(t)) return;
+    const m = t.match(/^【(.+?)】(.*)$/);
+    if (m) {
+      flush();
+      const f = lookup(m[1]);
+      cur = f ? { f, body: [m[2]] } : { f: null, body: [line] };
+      return;
+    }
+    const h = t.match(/^([^:：【＜<・]{1,6})[:：](.*)$/);     // 「日時：」「内容：」「場所：」
+    const hf = h && tpl.find(f => f.fmt === 'colon' && memoNorm(f.label) === memoNorm(h[1]));
+    if (hf && !(cur && cur.f)) { flush(); convert(hf, [h[2]]); return; }
+    if (cur) cur.body.push(line); else rest.push(line);
+  });
+  flush();
+  const restText = rest.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+  return { values, count: Object.keys(values).length, rest: restText };
+}
+
+// ----- カード内のシート一覧（CDATA／イベント用／アウトライン） -----
 function cdataBlockHtml(p, canEdit) {
-  const list = sortedCdatas(p);
+  const list = allSheets(p);
   const rows = list.map(c => `
-    <div class="cd-item" onclick="openCdata('${p.id}','${c.id}')">
-      <span class="cd-item-date">${escHtml(fmtMDW(cdDateOf(c)) || '日付未設定')}</span>
-      <span class="cd-item-content">${escHtml(cdContentOf(c))}</span>
-      <button class="cd-item-copy" onclick="event.stopPropagation();copyCdata('${p.id}','${c.id}')">コピー</button>
+    <div class="cd-item" onclick="openCdata('${p.id}','${c.id}','${c.kind}')">
+      <span class="cd-kind k-${c.kind}">${SHEET_KINDS[c.kind].label}</span>
+      <span class="cd-item-date">${escHtml(fmtMDW(sheetDay(c)))}</span>
+      <span class="cd-item-content">${escHtml(sheetSummary(c))}</span>
+      <button class="cd-item-copy" onclick="event.stopPropagation();copyCdata('${p.id}','${c.id}','${c.kind}')">コピー</button>
     </div>`).join('');
-  let btns = '';
-  if (canEdit) {
-    btns = list.length
-      ? `<button class="btn btn-outline btn-sm" onclick="createCdata('${p.id}','prev')">＋ 前回から作成</button>
-         <button class="btn btn-sm btn-ghost" onclick="createCdata('${p.id}','list')">リストから作成</button>`
-      : `<button class="btn btn-outline btn-sm" onclick="createCdata('${p.id}','list')">📋 リストからCDATAを作成</button>`;
-  }
-  if (!rows && !btns) return '';
+  const btn = canEdit ? `<div class="cd-block-actions"><button class="btn btn-outline btn-sm" onclick="openSheetMenu('${p.id}')">＋ シートを作成</button></div>` : '';
+  if (!rows && !btn) return '';
   return `<div class="cd-block">
-    <div class="detail-label">CDATA${list.length ? `（${list.length}）` : ''}</div>
+    <div class="detail-label">シート${list.length ? `（${list.length}）` : ''}</div>
     ${rows}
-    ${btns ? `<div class="cd-block-actions">${btns}</div>` : ''}
+    ${btn}
   </div>`;
 }
 
+// 作るシートの種類を選ぶ
+window.openSheetMenu = (pid) => {
+  const p = people.find(x => x.id === pid);
+  if (!p) return;
+  document.getElementById('sheetMenuList').innerHTML = Object.entries(SHEET_KINDS).map(([kind, m]) => {
+    const btns = sortedSheets(p, kind).length
+      ? `<button class="btn btn-outline btn-sm" onclick="pickSheet('${pid}','prev','${kind}')">前回から</button>
+         <button class="btn btn-ghost btn-sm" onclick="pickSheet('${pid}','list','${kind}')">新しく</button>`
+      : `<button class="btn btn-outline btn-sm" onclick="pickSheet('${pid}','list','${kind}')">作成</button>`;
+    return `<div class="sheet-opt"><div class="sheet-opt-text"><strong>${m.title}</strong><span>${m.desc}</span></div><div class="sheet-opt-btns">${btns}</div></div>`;
+  }).join('');
+  document.getElementById('sheetMenu').classList.add('open');
+};
+window.closeSheetMenu = () => document.getElementById('sheetMenu').classList.remove('open');
+window.pickSheet = (pid, mode, kind) => { closeSheetMenu(); createCdata(pid, mode, kind); };
+
 // ----- エディタ -----
-let cd = null;          // 編集中のCDATA { pid, id, tpl, v, pf, writer, union, createdAt, dirty, readOnly, preview }
+// 編集中のシート { kind, pid, id, tpl, v, pf, po, writer, union, createdAt, dirty, readOnly, preview, touched }
+// pf = リストから入れた項目、po = それ以外の出どころ（{項目: 'memo' | 'cdata'}）
+let cd = null;
 let cdSaveTimer = null;
 const cdNewId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 const cdField = k => cd.tpl.find(f => f.key === k);
 
-// mode: 'list' = リストから作成 / 'prev' = 前回のCDATAを引き継いで作成
-window.createCdata = (pid, mode) => {
+// mode: 'list' = リストから作成 / 'prev' = 前回のシートを引き継いで作成
+window.createCdata = (pid, mode, kind = 'cdata') => {
   const p = people.find(x => x.id === pid);
   if (!p || viewingUserId !== currentUser?.uid) return;
-  const tpl = clone(getCdataTemplate());
-  const prev = mode === 'prev' ? sortedCdatas(p)[0] : null;
-  const v = {}, pf = [];
+  const tpl = clone(getTemplate(kind));
+  const prev = mode === 'prev' ? sortedSheets(p, kind)[0] : null;
+  const latestCdata = kind !== 'cdata' ? sortedCdatas(p)[0] : null;
+  const v = {}, po = {};
+  let pf = [];
   tpl.forEach(f => {
     if (!f.key) return;
-    const isSession = f.fmt === 'colon' || f.fmt === 'title';   // 日時・内容などは毎回入れ直す
+    const isSession = f.reset || (kind === 'cdata' && f.fmt === 'colon');   // 日時・内容などは毎回入れ直す
     const pv = prev?.v?.[f.key];
     const prevF = prev?.tpl?.find(x => x.key === f.key);
-    if (prev && !isSession && prevF?.type === f.type && cdHasAny(f, pv)) {
+    if (prev && !isSession && prevF?.type === f.type && cdFilled(f, pv)) {
       v[f.key] = clone(pv);
       if ((prev.pf || []).includes(f.key)) pf.push(f.key);
       return;
     }
+    if (f.from && latestCdata?.v?.[f.from] != null) {
+      const val = cdCoerce(f, latestCdata.v[f.from]);
+      if (cdFilled(f, val)) { v[f.key] = val; po[f.key] = 'cdata'; return; }
+    }
     if (f.src && CD_SRC[f.src]) {
       const val = cdCoerce(f, CD_SRC[f.src](p));
-      if (cdFilled(f, val)) { v[f.key] = val; pf.push(f.key); return; }
+      // 記入者自身の情報（名字・参加者）は「リストから」の印を付けない
+      if (cdFilled(f, val)) { v[f.key] = val; if (!['mySurname', 'participants'].includes(f.src)) pf.push(f.key); return; }
     }
     v[f.key] = cdEmpty(f);
   });
-  cd = { pid, id: cdNewId(), tpl, v, pf, writer: writerName(), union: currentUser.union || '',
+  // 備考欄にCDATAを書いている人は、その内容を各項目へ振り分ける（備考の内容を優先）
+  let notice = '';
+  if (kind === 'cdata' && !prev && (p.memo || '').trim()) {
+    const r = parseMemoToCdata(p.memo, tpl);
+    Object.entries(r.values).forEach(([k, val]) => { v[k] = val; po[k] = 'memo'; });
+    pf = pf.filter(k => !(k in r.values));
+    if (r.rest && tpl.some(f => f.key === 'memo')) { v.memo = r.rest; po.memo = 'memo'; }
+    notice = r.count ? `備考から${r.count}項目を取り込みました` : (r.rest ? '備考の内容を「備考」欄に入れました' : '');
+  }
+  cd = { kind, pid, id: cdNewId(), tpl, v, pf, po, writer: writerName(), union: currentUser.union || '',
          createdAt: Date.now(), dirty: true, readOnly: false, preview: false, touched: new Set() };
   cdOpen(p);
   cdSave(); // 作った時点で保存（途中でアプリを閉じても消えない）
+  if (notice) showToast(notice);
 };
 
-window.openCdata = (pid, cid) => {
+window.openCdata = (pid, cid, kind = 'cdata') => {
   const p = people.find(x => x.id === pid);
-  const c = p?.cdata?.[cid];
+  const c = p?.[kind]?.[cid];
   if (!c) return;
   const readOnly = viewingUserId !== currentUser?.uid;
-  const tpl = clone(c.tpl || getCdataTemplate());
+  let tpl = clone(c.tpl || getTemplate(kind));
+  if (kind === 'cdata') tpl = cdNormalizeTpl(tpl);
   const v = clone(c.v || {});
   tpl.forEach(f => { if (f.key && v[f.key] === undefined) v[f.key] = cdEmpty(f); });
-  cd = { pid, id: cid, tpl, v, pf: [...(c.pf || [])], writer: c.writer || '', union: c.union || '',
+  cd = { kind, pid, id: cid, tpl, v, pf: [...(c.pf || [])], po: { ...(c.po || {}) }, writer: c.writer || '', union: c.union || '',
          createdAt: c.createdAt || Date.now(), dirty: false, readOnly, preview: readOnly, touched: new Set() };
   cdOpen(p);
 };
 
 function cdOpen(p) {
+  document.getElementById('cdKindTitle').textContent = SHEET_KINDS[cd.kind].title;
+  document.getElementById('cdPreviewBtn').textContent = cd.preview ? '入力に戻る' : 'プレビュー';
   document.getElementById('cdPersonName').textContent = p.name || '';
   document.getElementById('cdDelBtn').style.display = cd.readOnly ? 'none' : '';
   document.getElementById('cdPreviewBtn').style.display = cd.readOnly ? 'none' : '';
@@ -2101,47 +2458,47 @@ window.toggleCdataPreview = () => {
 };
 
 function cdPayload() {
-  return { tpl: cd.tpl, v: cd.v, pf: cd.pf, writer: cd.writer, union: cd.union,
+  return { kind: cd.kind, tpl: cd.tpl, v: cd.v, pf: cd.pf, po: cd.po, writer: cd.writer, union: cd.union,
            createdAt: cd.createdAt, updatedAt: Date.now() };
 }
 
-window.copyCdata = (pid, cid) => {
+window.copyCdata = (pid, cid, kind = 'cdata') => {
   let c;
-  if (pid) { c = people.find(x => x.id === pid)?.cdata?.[cid]; }
+  if (pid) { const saved = people.find(x => x.id === pid)?.[kind]?.[cid]; c = saved && { ...saved, kind }; }
   else if (cd) { c = cdPayload(); }
   if (!c) return;
-  navigator.clipboard.writeText(cdataToText(c))
-    .then(() => showToast('CDATAをコピーしました！'))
+  navigator.clipboard.writeText(sheetToText(c))
+    .then(() => showToast(`${SHEET_KINDS[c.kind || 'cdata'].title}をコピーしました！`))
     .catch(() => showToast('コピーに失敗しました'));
 };
 
 async function cdSave() {
   if (!cd || cd.readOnly) return;
   clearTimeout(cdSaveTimer);
-  const { id, pid } = cd;
+  const { id, pid, kind } = cd;
   const payload = cdPayload();
   cd.dirty = false;
   cdSetState('保存中…');
   try {
-    await updateDoc(doc(db, 'users', currentUser.uid, 'people', pid), { ['cdata.' + id]: payload, updatedAt: serverTimestamp() });
+    await updateDoc(doc(db, 'users', currentUser.uid, 'people', pid), { [kind + '.' + id]: payload, updatedAt: serverTimestamp() });
     if (cd && cd.id === id && !cd.dirty) cdSetState('保存済み');
   } catch (e) {
     if (cd && cd.id === id) { cd.dirty = true; cdSetState('保存失敗'); }
-    showToast('CDATAの保存に失敗しました');
+    showToast('保存に失敗しました');
   }
 }
 
 window.deleteCdata = async () => {
   if (!cd || cd.readOnly) return;
-  if (!confirm('このCDATAを削除しますか？この操作は取り消せません。')) return;
+  if (!confirm(`この${SHEET_KINDS[cd.kind].title}を削除しますか？この操作は取り消せません。`)) return;
   clearTimeout(cdSaveTimer);
-  const { id, pid } = cd;
+  const { id, pid, kind } = cd;
   cd.dirty = false;
   cd.touched.clear();
   closeCdata();
   try {
-    await updateDoc(doc(db, 'users', currentUser.uid, 'people', pid), { ['cdata.' + id]: deleteField() });
-    showToast('CDATAを削除しました');
+    await updateDoc(doc(db, 'users', currentUser.uid, 'people', pid), { [kind + '.' + id]: deleteField() });
+    showToast('削除しました');
   } catch (e) { showToast('削除に失敗しました'); }
 };
 
@@ -2149,7 +2506,11 @@ function cdSetState(s) { document.getElementById('cdState').textContent = s; }
 
 function cdTouched(k) {
   const i = cd.pf.indexOf(k);
-  if (i >= 0) { cd.pf.splice(i, 1); document.querySelector(`#cdf-${k} .cd-src`)?.remove(); }
+  if (i >= 0 || cd.po[k]) {   // 手で直したら「◯◯から」の印を外す
+    if (i >= 0) cd.pf.splice(i, 1);
+    delete cd.po[k];
+    document.querySelector(`#cdf-${k} .cd-src`)?.remove();
+  }
   cd.dirty = true;
   cd.touched.add(k);
   cdSetState('未保存');
@@ -2198,7 +2559,8 @@ function cdRowsHtml(k, arr, markFn, i) {
 
 function cdFieldHtml(f) {
   const k = f.key, val = cd.v[k];
-  const badge = cd.pf.includes(k) ? '<span class="cd-src">リストから</span>' : '';
+  const origin = cd.pf.includes(k) ? 'リストから' : ({ memo: '備考から', cdata: 'CDATAから' })[cd.po[k]] || '';
+  const badge = origin ? `<span class="cd-src">${origin}</span>` : '';
   const head = `<div class="cd-label">${escHtml(f.label)}${badge}</div>`;
   const ph = escHtml(f.ph || '');
   switch (f.type) {
@@ -2220,13 +2582,38 @@ function cdFieldHtml(f) {
     case 'bullets':
     case 'numbered': {
       const mark = f.type === 'numbered' ? j => CD_NUM[j] || `${j + 1}.` : () => '・';
-      return head + cdRowsHtml(k, val, mark) + `<button type="button" class="cd-add" data-act="addRow" data-k="${k}">＋ 行を追加</button>`;
+      return head
+        + (f.withTarget ? '<div class="cd-hint">タイトルと稼働は、上のCに入れた内容が自動で入ります</div>' : '')
+        + cdRowsHtml(k, val, mark) + `<button type="button" class="cd-add" data-act="addRow" data-k="${k}">＋ 行を追加</button>`
+        + ((f.presets || []).length ? `<div class="cd-chips cd-presets">${f.presets.map(x =>
+            `<button type="button" class="cd-add" data-act="preset" data-k="${k}" data-chip="${escHtml(x)}">＋ ${escHtml(x)}</button>`).join('')}</div>` : '');
     }
-    case 'checks':
+    case 'checks':   // オン＝○、オフ＝×
       return head + (f.options || []).map((o, i) => `
-        <div class="cd-check"><span>${escHtml(o)}</span><div class="cd-ox">
-          ${['○','×'].map(m => `<button type="button" class="cd-chip${val[i] === m ? ' on' : ''}" data-act="ox" data-k="${k}" data-i="${i}" data-chip="${m}">${m}</button>`).join('')}
-        </div></div>`).join('');
+        <div class="cd-check"><span>${escHtml(o)}</span>
+          <button type="button" class="cd-switch${val[i] === '○' ? ' on' : ''}" role="switch" aria-checked="${val[i] === '○'}" aria-label="${escHtml(o)}" data-act="sw" data-k="${k}" data-i="${i}"><i></i></button>
+        </div>`).join('');
+    case 'labeled':
+      return head + (f.options || []).map((o, i) => `
+        <div class="cd-row"><span class="cd-sub">${escHtml(o)}</span><input type="text" data-k="${k}" data-i="${i}" value="${escHtml(val[i] || '')}"></div>`).join('');
+    case 'participants': {
+      const chips = (opts, act, i, isOn) => `<div class="cd-chips cd-chips-sm">${opts.map(o =>
+        `<button type="button" class="cd-chip${isOn(o) ? ' on' : ''}" data-act="${act}" data-k="${k}" data-i="${i}" data-chip="${escHtml(o)}">${escHtml(o)}</button>`).join('')}</div>`;
+      const used = new Set(val.c.map(x => x.pid).filter(Boolean));
+      const others = people.filter(x => !used.has(x.id));
+      return head
+        + `<div class="cd-row"><span class="cd-sub">B</span><input type="text" data-k="${k}" data-p="b" value="${escHtml(val.b)}"></div>`
+        + val.c.map((x, i) => `
+        <div class="cd-tl">
+          <div class="cd-row"><span class="cd-sub">C</span><input type="text" data-k="${k}" data-i="${i}" data-p="name" value="${escHtml(x.name)}">
+            <button type="button" class="cd-x" data-act="delC" data-k="${k}" data-i="${i}" aria-label="削除">✕</button></div>
+          <div class="cd-sublabel">タイトル</div>${chips(f.options || [], 'cTitle', i, o => (x.titles || []).includes(o))}
+          <div class="cd-sublabel">稼働</div>${chips(OUTLINE_ACTIVITY, 'cAct', i, o => x.activity === o)}
+          <div class="cd-row cd-percent"><span class="cd-sublabel">稼働率</span><input type="number" inputmode="numeric" min="0" max="100" data-k="${k}" data-i="${i}" data-p="percent" value="${escHtml(String(x.percent ?? ''))}"><span class="cd-mark">%</span></div>
+        </div>`).join('')
+        + (others.length ? `<select data-k="${k}" data-sel="addC"><option value="">＋ リストからCを追加</option>${others.map(x =>
+            `<option value="${x.id}">${escHtml(x.name || '')}</option>`).join('')}</select>` : '');
+    }
     case 'timeline':
       return head + val.map((e, i) => `
         <div class="cd-tl">
@@ -2248,7 +2635,7 @@ function cdFieldHtml(f) {
 function cdRender() {
   const body = document.getElementById('cdBody');
   if (cd.preview) {
-    body.innerHTML = `<pre class="cd-preview">${escHtml(cdataToText(cdPayload()))}</pre>`;
+    body.innerHTML = `<pre class="cd-preview">${escHtml(sheetToText(cdPayload()))}</pre>`;
     return;
   }
   let html = '', open = false;
@@ -2276,11 +2663,12 @@ function cdRerenderField(k) {
 
   body.addEventListener('input', e => {
     const t = e.target, k = t.dataset.k;
-    if (!cd || !k) return;
+    if (!cd || !k || t.tagName === 'SELECT') return;
     const f = cdField(k), v = cd.v[k];
     const { i, j, p } = t.dataset;
     switch (f.type) {
-      case 'bullets': case 'numbered': v[+i] = t.value; break;
+      case 'bullets': case 'numbered': case 'labeled': v[+i] = t.value; break;
+      case 'participants': if (i != null) v.c[+i][p] = t.value; else v[p] = t.value; break;
       case 'timeline': if (j != null) v[+i].items[+j] = t.value; else v[+i][p] = t.value; break;
       case 'datetime': case 'textChoice': v[p] = t.value; break;
       default: cd.v[k] = t.value;
@@ -2299,7 +2687,15 @@ function cdRerenderField(k) {
     let focus = null;
     if (act === 'addRow')        { v.push(''); focus = `[data-k="${k}"][data-i="${v.length - 1}"]`; }
     else if (act === 'delRow')   { v.splice(i, 1); if (!v.length) v.push(''); }
-    else if (act === 'ox')       { v[i] = v[i] === chip ? '' : chip; }
+    else if (act === 'sw')       { v[i] = v[i] === '○' ? '' : '○'; }
+    else if (act === 'preset')   {
+      if (v.includes(chip)) return;
+      const empty = v.findIndex(x => !(x || '').trim());
+      if (empty >= 0) v[empty] = chip; else v.push(chip);
+    }
+    else if (act === 'delC')     { v.c.splice(i, 1); }
+    else if (act === 'cTitle')   { const t = v.c[i].titles || (v.c[i].titles = []); const at = t.indexOf(chip); at >= 0 ? t.splice(at, 1) : t.push(chip); }
+    else if (act === 'cAct')     { v.c[i].activity = v.c[i].activity === chip ? '' : chip; }
     else if (act === 'addEntry') { v.push({ date: '', kind: chip, who: '', items: [''] }); focus = `[data-k="${k}"][data-i="${v.length - 1}"][data-p="date"]`; }
     else if (act === 'delEntry') { if (!confirm('この経緯を削除しますか？')) return; v.splice(i, 1); }
     else if (act === 'addItem')  { v[i].items.push(''); focus = `[data-k="${k}"][data-i="${i}"][data-j="${v[i].items.length - 1}"]`; }
@@ -2311,6 +2707,17 @@ function cdRerenderField(k) {
     cdRerenderField(k);
     cdTouched(k);
     if (focus) body.querySelector(focus)?.focus();
+  });
+
+  // 参加者：リストからCを追加
+  body.addEventListener('change', e => {
+    const t = e.target;
+    if (!cd || t.dataset.sel !== 'addC' || !t.value) return;
+    const k = t.dataset.k, x = people.find(q => q.id === t.value);
+    if (!x) return;
+    cd.v[k].c.push({ pid: x.id, name: x.name || '', titles: [], activity: '', percent: '' });
+    cdRerenderField(k);
+    cdTouched(k);
   });
 
   // 箇条書きで Enter → 下に行を追加（日本語変換の確定 Enter は除外）
@@ -2335,20 +2742,20 @@ function cdRerenderField(k) {
   });
 })();
 
-// ===== CDATAフォーマット編集（ユニオン管理者） =====
+// ===== フォーマット編集（ユニオン管理者）：CDATA と アウトライン =====
 const TE_TYPES = {
   text:'1行テキスト', textarea:'長文', select:'選択（1つ選ぶ）', combo:'選択＋自由入力', textChoice:'テキスト＋選択',
-  bullets:'箇条書き（・）', numbered:'番号付き（❶❷❸）', checks:'○×チェック', timeline:'経緯（日付つき）',
+  bullets:'箇条書き（・）', numbered:'番号付き（❶❷❸）', checks:'オン／オフ（文面では○×）', timeline:'経緯（日付つき）',
 };
-const TE_HAS_OPTIONS = ['select','combo','textChoice','checks','timeline'];
+const TE_HAS_OPTIONS = ['select','combo','textChoice','checks','timeline','labeled','participants'];
 const TE_HAS_ROWS    = ['bullets','numbered'];
 const TE_HAS_PH      = ['text','textarea','combo'];
 const TE_HAS_SRC     = ['text','textarea','select','combo','textChoice','bullets','numbered'];
-let te = null; // { union, fields, open:Set, dirty, preview, loading }
+let te = null; // { kind, union, fields, open:Set, dirty, preview, loading }
 
 const teSetState = s => { document.getElementById('teState').textContent = s; };
 const teDirty = () => { te.dirty = true; teSetState('未保存'); };
-// 先頭の「個別の情報」ブロック（日時・時間・内容・場所）は1行目の見出しに使うので、並べ替え・削除不可
+// 出力の形が決まっている項目（fmt つき：日時・内容・場所・参加者など）は、並べ替え・削除不可
 function teLockedEnd() { let n = -1; te.fields.forEach((f, i) => { if (f.fmt) n = i; }); return n; }
 
 // 保存用に整える（空の選択肢を除く・不要なプロパティを落とす）
@@ -2360,18 +2767,24 @@ function teClean(fields) {
     if (TE_HAS_OPTIONS.includes(f.type)) o.options = (f.options || []).map(s => s.trim()).filter(Boolean);
     if (TE_HAS_ROWS.includes(f.type)) o.rows = Math.min(10, Math.max(1, +f.rows || 1));
     if (TE_HAS_PH.includes(f.type) && (f.ph || '').trim()) o.ph = f.ph.trim();
-    if (!f.fmt && f.src && CD_SRC[f.src] && TE_HAS_SRC.includes(f.type)) o.src = f.src;
+    if (TE_HAS_ROWS.includes(f.type)) {
+      const presets = (f.presets || []).map(s => s.trim()).filter(Boolean);
+      if (presets.length) o.presets = presets;
+    }
+    if (f.src && CD_SRC[f.src]) o.src = f.src;
+    ['reset', 'withTarget', 'from'].forEach(k => { if (f[k]) o[k] = f[k]; });
     return o;
   });
 }
 
-window.openTplEditor = async (un) => {
+window.openTplEditor = async (un, kind = 'cdata') => {
   if (!canEditUnionTpl()) return;
   const isOwner = currentUser.uid === OWNER_UID;
   const union = (isOwner && un) || currentUser.union;
   if (!union) { showToast('所属ユニオンが未設定です'); return; }
   closeShareModal();
-  te = { union, fields: [], open: new Set(), dirty: false, preview: false, loading: true };
+  te = { kind, union, fields: [], open: new Set(), dirty: false, preview: false, loading: true };
+  document.querySelectorAll('#teKindBar .chip').forEach(b => b.classList.toggle('active', b.dataset.kind === kind));
   document.getElementById('teOwnerBar').style.display = isOwner ? '' : 'none';
   if (isOwner) {
     const names = UNION_LIST.map(u => u.name);
@@ -2387,11 +2800,12 @@ window.openTplEditor = async (un) => {
   document.body.style.overflow = 'hidden';
   let saved = null;
   try {
-    const snap = await getDoc(tplRef(union));
-    if (snap.exists() && tplValid(snap.data().fields)) saved = snap.data();
+    const snap = await getDoc(tplRef(union, kind));
+    if (snap.exists() && tplValid(snap.data().fields, kind)) saved = snap.data();
   } catch (e) {}
-  if (!te || te.union !== union) return;
-  te.fields = clone(saved ? saved.fields : CDATA_TPL_DEFAULT);
+  if (!te || te.union !== union || te.kind !== kind) return;
+  te.fields = clone(saved ? saved.fields : TPL_DEFAULT[kind]);
+  if (kind === 'cdata') te.fields = cdNormalizeTpl(te.fields);
   te.savedBy = saved?.updatedByName || '';
   te.loading = false;
   teSetState(saved ? '' : '標準のまま');
@@ -2413,7 +2827,13 @@ window.onTplUnionChange = (un) => {
     document.getElementById('teUnionSel').value = te.union;
     return;
   }
-  openTplEditor(un);
+  openTplEditor(un, te.kind);
+};
+
+window.switchTplKind = (kind) => {
+  if (!te || te.kind === kind) return;
+  if (te.dirty && !confirm('保存していない変更があります。破棄して切り替えますか？')) return;
+  openTplEditor(te.union, kind);
 };
 
 window.toggleTplPreview = () => {
@@ -2426,7 +2846,7 @@ window.toggleTplPreview = () => {
 window.resetTplToDefault = () => {
   if (!te || te.loading) return;
   if (!confirm('標準のフォーマットに戻しますか？（「保存」を押すまで反映されません）')) return;
-  te.fields = clone(CDATA_TPL_DEFAULT);
+  te.fields = clone(TPL_DEFAULT[te.kind]);
   te.open.clear();
   te.preview = false;
   teDirty();
@@ -2438,13 +2858,13 @@ window.saveTpl = async () => {
   const fields = teClean(te.fields);
   const bad = fields.find(f => TE_HAS_OPTIONS.includes(f.type) && !f.options.length);
   if (bad) { showToast(`「${bad.label}」の選択肢を入力してください`); return; }
-  if (!tplValid(fields)) { showToast('入力項目を1つ以上残してください'); return; }
-  const union = te.union;
+  if (!tplValid(fields, te.kind)) { showToast('入力項目を1つ以上残してください'); return; }
+  const { union, kind } = te;
   teSetState('保存中…');
   try {
-    await setDoc(tplRef(union), { fields, updatedAt: serverTimestamp(), updatedBy: currentUser.uid, updatedByName: writerName() });
-    if (te && te.union === union) { te.dirty = false; teSetState('保存済み'); }
-    showToast(`${union} のフォーマットを保存しました`);
+    await setDoc(tplRef(union, kind), { fields, updatedAt: serverTimestamp(), updatedBy: currentUser.uid, updatedByName: writerName() });
+    if (te && te.union === union && te.kind === kind) { te.dirty = false; teSetState('保存済み'); }
+    showToast(`${union} の${SHEET_KINDS[kind].title}フォーマットを保存しました`);
   } catch (e) {
     if (te && te.union === union) teSetState('保存失敗');
     showToast(e?.code === 'permission-denied' ? '保存する権限がありません' : '保存に失敗しました');
@@ -2453,7 +2873,7 @@ window.saveTpl = async () => {
 
 function teItemHtml(f, i, lockedEnd, last) {
   const locked = i <= lockedEnd, isSec = f.type === 'section', open = te.open.has(f);
-  const typeLabel = isSec ? '見出し' : f.type === 'datetime' ? '日時' : (TE_TYPES[f.type] || f.type);
+  const typeLabel = isSec ? '見出し' : ({ datetime: '日時', participants: '参加者', labeled: '小見出しつき' })[f.type] || TE_TYPES[f.type] || f.type;
   const move = locked
     ? '<span class="te-type">固定</span>'
     : `<button type="button" class="te-btn" data-act="up" ${i - 1 <= lockedEnd ? 'disabled' : ''} aria-label="上へ">▲</button>
@@ -2464,9 +2884,11 @@ function teItemHtml(f, i, lockedEnd, last) {
     detail = `<div class="te-detail">
       <label>${isSec ? '見出し' : '項目名'}<input type="text" data-f="label" value="${escHtml(f.label)}"></label>
       ${!isSec && !locked ? `<label>入力のしかた<select data-f="type">${Object.entries(TE_TYPES).map(([v, l]) => opt(v, l, f.type)).join('')}</select></label>` : ''}
-      ${TE_HAS_OPTIONS.includes(f.type) ? `<label>${f.type === 'checks' ? 'チェック項目' : f.type === 'timeline' ? '追加ボタン（種類）' : '選択肢'}
+      ${TE_HAS_OPTIONS.includes(f.type) ? `<label>${({ checks: 'チェック項目', timeline: '追加ボタン（種類）', participants: 'タイトルの選択肢', labeled: '小見出し' })[f.type] || '選択肢'}
         <span class="te-hint">1行に1つ</span><textarea data-f="options">${escHtml((f.options || []).join('\n'))}</textarea></label>` : ''}
       ${TE_HAS_ROWS.includes(f.type) ? `<label>最初に用意する行数<select data-f="rows">${[1,2,3,4,5,6].map(n => opt(String(n), n + '行', String(f.rows || 1))).join('')}</select></label>` : ''}
+      ${TE_HAS_ROWS.includes(f.type) ? `<label>定型文（タップで追加できるボタン）
+        <span class="te-hint">1行に1つ。不要なら空のまま</span><textarea data-f="presets">${escHtml((f.presets || []).join('\n'))}</textarea></label>` : ''}
       ${TE_HAS_PH.includes(f.type) ? `<label>入力例（うすく表示される文字）<input type="text" data-f="ph" value="${escHtml(f.ph || '')}"></label>` : ''}
       ${!f.fmt && TE_HAS_SRC.includes(f.type) ? `<label>リストから自動入力<select data-f="src">${opt('', 'しない', f.src || '')}${Object.entries(CD_SRC_LABEL).map(([v, l]) => opt(v, 'リストの「' + l + '」', f.src || '')).join('')}</select></label>` : ''}
       ${!locked ? `<div><button type="button" class="btn btn-sm btn-text-danger" data-act="del">この${isSec ? '見出し' : '項目'}を削除</button></div>` : ''}
@@ -2486,13 +2908,13 @@ function teRender() {
   const body = document.getElementById('teBody');
   document.getElementById('tePreviewBtn').textContent = te.preview ? '編集に戻る' : 'プレビュー';
   if (te.preview) {
-    const text = cdataToText({ tpl: teClean(te.fields), v: {}, union: te.union, writer: '（記入者の名前）' }, true);
+    const text = sheetToText({ kind: te.kind, tpl: teClean(te.fields), v: {}, union: te.union, writer: '（記入者の名前）' }, true);
     body.innerHTML = `<p class="te-note">何も入力していない状態で「コピー」したときの見た目です。</p><pre class="cd-preview">${escHtml(text)}</pre>`;
     return;
   }
   const lockedEnd = teLockedEnd(), last = te.fields.length - 1;
-  body.innerHTML = `<p class="te-note">${escHtml(te.union)} のメンバーが使うCDATAの項目です。✎ で内容を編集、▲▼ で並べ替えできます。<br>
-    保存すると、次に作るCDATAから反映されます（作成済みのCDATAは変わりません）。${te.savedBy ? `<br>最終更新：${escHtml(te.savedBy)}` : ''}</p>`
+  body.innerHTML = `<p class="te-note">${escHtml(te.union)} のメンバーが使う${SHEET_KINDS[te.kind].title}の項目です。✎ で内容を編集、▲▼ で並べ替えできます。<br>
+    保存すると、次に作る分から反映されます（作成済みのものは変わりません）。${te.savedBy ? `<br>最終更新：${escHtml(te.savedBy)}` : ''}</p>`
     + te.fields.map((f, i) => teItemHtml(f, i, lockedEnd, last)).join('')
     + `<div class="te-adds">
         <button type="button" class="cd-add" data-act="addField">＋ 項目を追加</button>
@@ -2510,6 +2932,7 @@ function teRender() {
     const f = fieldOf(t);
     if (key === 'label') { f.label = t.value; t.closest('.te-item').querySelector('.te-name').textContent = t.value; }
     else if (key === 'options') f.options = t.value.split('\n');
+    else if (key === 'presets') f.presets = t.value.split('\n');
     else if (key === 'ph') f.ph = t.value;
     teDirty();
   });
@@ -2555,6 +2978,18 @@ function teRender() {
 // ===== バージョン＆お知らせ =====
 // アップデートしたら先頭に { version, date, items } を追記する（先頭の version が表示バージョンになる）
 const UPDATES = [
+  {
+    version: 'v6',
+    date: '2026/10/3',
+    items: [
+      'カードの「シート」から、CDATAに加えて「イベント用」と「アウトライン」を作れるようになりました',
+      'イベント用は、リストと最新のCDATAの内容が入った状態から書けます。見出しの名字も自動で入ります',
+      'アウトラインは、C（カードの人）とB（自分）が自動で入ります。タイトルと稼働は選ぶだけです',
+      '備考欄にCDATAを書いている人は、「リストから作成」で各項目に自動で振り分けます。当てはまらない内容はCDATAの「備考」欄に入ります',
+      'CDATAの変更：「時間」欄をなくし、1行目は「内容」に入れた文字＋分（例：マケ分）に。「内容」は自由入力に。ステータスはオン／オフのスイッチに（文面ではオンが○、オフが×）',
+      '文字のフォントを変更しました',
+    ],
+  },
   {
     version: 'v5',
     date: '2026/10/3',
@@ -2837,13 +3272,14 @@ window.showToast = (msg) => {
 };
 
 // ===== モーダル外クリックで閉じる =====
-['editModal','shareModal','deleteModal','syncModal'].forEach(id=>{
+['editModal','shareModal','deleteModal','syncModal','sheetMenu'].forEach(id=>{
   document.getElementById(id).addEventListener('click',function(e){
     if(e.target===this){
       if(id==='editModal') closeEditModal();
       else if(id==='shareModal') closeShareModal();
       else if(id==='deleteModal') closeDeleteModal();
       else if(id==='syncModal') closeSyncModal();
+      else if(id==='sheetMenu') closeSheetMenu();
     }
   });
 });
