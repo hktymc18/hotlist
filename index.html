@@ -354,6 +354,15 @@
     .cd-del { background: transparent; color: var(--danger); border: 1px solid rgba(255,71,87,0.35); }
     .cd-preview { white-space: pre-wrap; word-break: break-word; font-family: inherit; font-size: 0.9rem; line-height: 1.7; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; -webkit-user-select: text; user-select: text; }
 
+    /* ===== リスト反映の確認／提案バー ===== */
+    .sync-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .sync-row input { width: 20px; height: 20px; padding: 0; margin-top: 2px; flex-shrink: 0; accent-color: var(--primary); }
+    .sync-val { font-size: 0.92rem; color: var(--text); word-break: break-all; }
+    .sync-from { color: var(--text-muted); }
+    .snack { position: fixed; left: 12px; right: 12px; bottom: 20px; margin: 0 auto; max-width: 480px; z-index: 240; display: flex; align-items: center; gap: 10px; padding: 12px 12px 12px 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 8px 30px rgba(0,0,0,0.35); font-size: 0.88rem; color: var(--text); opacity: 0; transform: translateY(20px); pointer-events: none; transition: opacity 0.25s, transform 0.25s; }
+    .snack.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .snack span { flex: 1; min-width: 0; line-height: 1.5; }
+
     /* ===== CDATAフォーマット編集 ===== */
     .te-note { font-size: 0.8rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 12px; }
     .te-item { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; }
@@ -821,6 +830,26 @@
       <button class="btn btn-outline btn-sm" onclick="confirmSignOut()">ログアウト</button>
     </div>
   </div>
+</div>
+
+<!-- ===== CDATA → リスト反映の確認 ===== -->
+<div class="modal-overlay" id="syncModal">
+  <div class="modal">
+    <div class="modal-title"><span>リストにも反映しますか？</span></div>
+    <p class="share-desc">CDATAで書き換えた内容が、リストと違っています。チェックした項目をリストにも反映します。</p>
+    <div id="syncList"></div>
+    <div class="form-actions">
+      <button class="btn btn-outline" onclick="closeSyncModal()">反映しない</button>
+      <button class="btn btn-primary" onclick="applySync()">反映する</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 提案バー（ステータス変更時など） ===== -->
+<div class="snack" id="snack">
+  <span id="snackText"></span>
+  <button type="button" class="btn btn-primary btn-sm" id="snackBtn"></button>
+  <button type="button" class="cd-x" onclick="hideSnack()" aria-label="閉じる">✕</button>
 </div>
 
 <!-- ===== 削除確認モーダル ===== -->
@@ -1947,7 +1976,7 @@ window.createCdata = (pid, mode) => {
     v[f.key] = cdEmpty(f);
   });
   cd = { pid, id: cdNewId(), tpl, v, pf, writer: writerName(), union: currentUser.union || '',
-         createdAt: Date.now(), dirty: true, readOnly: false, preview: false };
+         createdAt: Date.now(), dirty: true, readOnly: false, preview: false, touched: new Set() };
   cdOpen(p);
   cdSave(); // 作った時点で保存（途中でアプリを閉じても消えない）
 };
@@ -1961,7 +1990,7 @@ window.openCdata = (pid, cid) => {
   const v = clone(c.v || {});
   tpl.forEach(f => { if (f.key && v[f.key] === undefined) v[f.key] = cdEmpty(f); });
   cd = { pid, id: cid, tpl, v, pf: [...(c.pf || [])], writer: c.writer || '', union: c.union || '',
-         createdAt: c.createdAt || Date.now(), dirty: false, readOnly, preview: readOnly };
+         createdAt: c.createdAt || Date.now(), dirty: false, readOnly, preview: readOnly, touched: new Set() };
   cdOpen(p);
 };
 
@@ -1980,10 +2009,143 @@ function cdOpen(p) {
 window.closeCdata = () => {
   if (!cd) return;
   if (cd.dirty) cdSave();
+  const pid = cd.pid, diffs = cd.readOnly ? [] : cdListDiffs();
   cd = null;
   document.getElementById('cdEditor').classList.remove('open');
   document.body.style.overflow = '';
+  if (diffs.length) openSyncModal(pid, diffs);
 };
+
+// ----- CDATA → リストへの反映 -----
+// このCDATAで今回書き換えた「リスト連携」項目のうち、リストと食い違うものを探す
+const LIST_LABEL = {
+  name:'名前', age:'年齢', gender:'性別', hometown:'出身地（都道府県）', hometown_city:'出身地（市）',
+  address:'現住所（都道府県）', address_city:'現住所（市）', living:'住まい', partner:'パートナー', job:'仕事',
+  relation:'関係性', position:'立場', trust:'信用度', friends:'友だち', type:'４つのタイプ', needs:'ニーズ', memo:'備考',
+};
+const LIST_OPTS = {
+  gender:  ['男性','女性','その他'],
+  living:  ['一人暮らし','実家','同棲','半同棲','シェアハウス'],
+  partner: ['有り','無し','結婚','子供あり'],
+  friends: ['多そう','普通','少なそう'],
+  type:    ['プロモーター','コントローラー','アナライザー','サポーター'],
+};
+// 「福岡 福岡市」→ ['福岡','福岡市']
+const cdSplit = s => { const t = (s || '').trim(), i = t.search(/[\s\u3000]/); return i < 0 ? [t, ''] : [t.slice(0, i), t.slice(i + 1).trim()]; };
+const cdStr = v => Array.isArray(v) ? v.map(x => (x || '').trim()).filter(Boolean).join('、')
+                 : v && typeof v === 'object' ? (v.text || '').trim() + (v.choice ? `(${v.choice})` : '')
+                 : String(v || '').trim();
+const cdPick = (key, v) => LIST_OPTS[key].includes(v) ? { [key]: v } : null;
+// s = 文字列にした値、v = 元の値。リストに書ける形にできないときは null
+const CD_BACK = {
+  name:     s => ({ name: s }),
+  age:      s => { const n = parseInt(s, 10); return n >= 18 && n <= 80 ? { age: String(n) } : null; },
+  gender:   s => cdPick('gender', s),
+  hometown: s => { const [a, b] = cdSplit(s); return { hometown: a, hometown_city: b }; },
+  address:  (s, v) => {
+    const isObj = v && typeof v === 'object' && !Array.isArray(v);
+    const o = {};
+    const text = isObj ? v.text : s;
+    if ((text || '').trim()) { const [a, b] = cdSplit(text); o.address = a; o.address_city = b; }
+    if (isObj && LIST_OPTS.living.includes(v.choice)) o.living = v.choice;
+    return Object.keys(o).length ? o : null;
+  },
+  partner:  s => cdPick('partner', ({ '有':'有り', '無':'無し', '既婚':'結婚' })[s] || s),
+  job:      s => ({ job: s }),
+  relation: s => ({ relation: s }),
+  position: s => { const m = ({ '自分の方が上':'↑', '自分の方が下':'↓', '同じ':'ー' })[s]; return m ? { position: m } : null; },
+  trust:    s => { const m = ({ '高い':'A', '普通':'B', '低い':'C' })[s]; return m ? { trust: m } : null; },
+  friends:  s => cdPick('friends', s),
+  ptype:    s => cdPick('type', s),
+  needs:    s => ({ needs: s }),
+  memo:     s => ({ memo: s }),
+};
+function cdListDiffs() {
+  const p = people.find(x => x.id === cd.pid);
+  if (!p) return [];
+  const upd = {};
+  cd.tpl.forEach(f => {
+    if (!f.src || !CD_BACK[f.src] || !CD_SRC[f.src] || !cd.touched.has(f.key)) return;
+    const val = cd.v[f.key];
+    if (!cdFilled(f, val)) return;
+    const s = cdStr(val);
+    if (s === cdStr(cdCoerce(f, CD_SRC[f.src](p)))) return;   // リストと同じ内容
+    Object.assign(upd, CD_BACK[f.src](s, val) || {});
+  });
+  return Object.entries(upd)
+    .filter(([k, v]) => (p[k] || '') !== v)
+    .map(([k, v]) => ({ k, from: p[k] || '', to: v }));
+}
+
+let syncTarget = null;
+function openSyncModal(pid, diffs) {
+  syncTarget = { pid, diffs };
+  document.getElementById('syncList').innerHTML = diffs.map((d, i) => `
+    <label class="sync-row">
+      <input type="checkbox" data-i="${i}" checked>
+      <div>
+        <div class="detail-label">${escHtml(LIST_LABEL[d.k] || d.k)}</div>
+        <div class="sync-val"><span class="sync-from">${escHtml(d.from) || '（未入力）'}</span> → <strong>${escHtml(d.to) || '（空欄）'}</strong></div>
+      </div>
+    </label>`).join('');
+  document.getElementById('syncModal').classList.add('open');
+}
+window.closeSyncModal = () => { document.getElementById('syncModal').classList.remove('open'); syncTarget = null; };
+window.applySync = async () => {
+  if (!syncTarget || !currentUser) return;
+  const { pid, diffs } = syncTarget;
+  const data = {};
+  document.querySelectorAll('#syncList input:checked').forEach(el => { const d = diffs[+el.dataset.i]; data[d.k] = d.to; });
+  closeSyncModal();
+  if (!Object.keys(data).length) return;
+  try {
+    await updateDoc(doc(db, 'users', currentUser.uid, 'people', pid), { ...data, updatedAt: serverTimestamp() });
+    showToast('リストに反映しました');
+  } catch (e) { showToast('リストへの反映に失敗しました'); }
+};
+
+// ----- ステータスが進んだら、経緯の追加（またはCDATAの作成）を提案 -----
+const STATUS_FLOW_KIND = { 'CT済み':'CT', 'つながった':'つながった', '体感済み':'体感', 'BPC済み':'BPC' };
+let snackTimer = null;
+function showSnack(text, btnLabel, onAction) {
+  const el = document.getElementById('snack');
+  document.getElementById('snackText').textContent = text;
+  const btn = document.getElementById('snackBtn');
+  btn.textContent = btnLabel;
+  btn.onclick = () => { hideSnack(); onAction(); };
+  el.classList.add('show');
+  clearTimeout(snackTimer);
+  snackTimer = setTimeout(hideSnack, 8000);
+}
+window.hideSnack = () => { clearTimeout(snackTimer); document.getElementById('snack').classList.remove('show'); };
+function suggestFlowEntry(pid, status) {
+  const kind = STATUS_FLOW_KIND[status];
+  const p = people.find(x => x.id === pid);
+  if (!kind || !p) return;
+  const has = Object.keys(p.cdata || {}).length > 0;
+  showSnack(has ? `CDATAの経緯に今日の「${kind}」を追加しますか？` : `${p.name} さんのCDATAを作成しますか？`,
+            has ? '追加する' : '作成する', () => addFlowToday(pid, kind));
+}
+function addFlowToday(pid, kind) {
+  const p = people.find(x => x.id === pid);
+  if (!p || viewingUserId !== currentUser?.uid) return;
+  const latest = sortedCdatas(p)[0];
+  if (latest) openCdata(pid, latest.id); else createCdata(pid, 'list');
+  if (!cd || cd.readOnly) return;
+  const f = cd.tpl.find(x => x.type === 'timeline');
+  if (!f) return;
+  const d = new Date();
+  const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  cd.v[f.key].push({ date: today, kind, who: '', items: [''] });
+  cdRerenderField(f.key);
+  cdTouched(f.key);
+  const el = document.getElementById('cdf-' + f.key);
+  const sec = el.closest('details'); if (sec) sec.open = true;
+  const last = cd.v[f.key].length - 1;
+  const input = el.querySelector(`[data-i="${last}"][data-j="0"]`);
+  (input || el).scrollIntoView({ block: 'center' });
+  if (input) input.focus();
+}
 
 window.toggleCdataPreview = () => {
   if (!cd || cd.readOnly) return;
@@ -2030,6 +2192,7 @@ window.deleteCdata = async () => {
   clearTimeout(cdSaveTimer);
   const { id, pid } = cd;
   cd.dirty = false;
+  cd.touched.clear();
   closeCdata();
   try {
     await updateDoc(doc(db, 'users', currentUser.uid, 'people', pid), { ['cdata.' + id]: deleteField() });
@@ -2043,6 +2206,7 @@ function cdTouched(k) {
   const i = cd.pf.indexOf(k);
   if (i >= 0) { cd.pf.splice(i, 1); document.querySelector(`#cdf-${k} .cd-src`)?.remove(); }
   cd.dirty = true;
+  cd.touched.add(k);
   cdSetState('未保存');
   clearTimeout(cdSaveTimer);
   cdSaveTimer = setTimeout(cdSave, 1200);
@@ -2447,6 +2611,14 @@ function teRender() {
 // アップデートしたら先頭に { version, date, items } を追記する（先頭の version が表示バージョンになる）
 const UPDATES = [
   {
+    version: 'v4',
+    date: '2026/10/3',
+    items: [
+      'CDATAで名前・住所・職業などを書き換えて閉じると、「リストにも反映しますか？」と確認が出るようになりました',
+      'ステータスを「CT済み」などに進めると、CDATAの経緯への追加（まだ無ければCDATAの作成）を提案します',
+    ],
+  },
+  {
     version: 'v3',
     date: '2026/10/3',
     items: [
@@ -2605,8 +2777,10 @@ window.resetSearch = () => {
 
 window.changeStatus = async (id, newStatus) => {
   if (!currentUser || !viewingUserId) return;
+  const prev = people.find(x => x.id === id)?.status || '未着手';
   try {
     await updateDoc(doc(db,'users',viewingUserId,'people',id), { status: newStatus, updatedAt: serverTimestamp() });
+    if (viewingUserId === currentUser.uid && newStatus !== prev) suggestFlowEntry(id, newStatus);
   } catch(e) { showToast('更新に失敗しました'); }
 };
 
@@ -2740,12 +2914,13 @@ window.showToast = (msg) => {
 };
 
 // ===== モーダル外クリックで閉じる =====
-['editModal','shareModal','deleteModal'].forEach(id=>{
+['editModal','shareModal','deleteModal','syncModal'].forEach(id=>{
   document.getElementById(id).addEventListener('click',function(e){
     if(e.target===this){
       if(id==='editModal') closeEditModal();
       else if(id==='shareModal') closeShareModal();
       else if(id==='deleteModal') closeDeleteModal();
+      else if(id==='syncModal') closeSyncModal();
     }
   });
 });
