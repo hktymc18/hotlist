@@ -223,6 +223,7 @@
     /* ===== モーダル ===== */
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(43,38,38,0.42); z-index: 200; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 12px 12px 60px; }
     .modal-overlay.open { display: block; }
+    .modal-overlay.over-editor { z-index: 270; }   /* シートの編集画面より手前に出す */
     .modal { background: var(--surface); border-radius: 22px; width: 100%; max-width: 520px; padding: 20px; box-shadow: 0 12px 40px rgba(43,38,38,0.18); margin: 0 auto; }
     .modal-title { font-size: 1.08rem; font-weight: 700; color: var(--text); margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--surface); z-index: 1; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
     .modal-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--text-muted); padding: 4px 8px; line-height: 1; border-radius: 6px; }
@@ -317,6 +318,10 @@
     .cd-grid2 label { display: flex; flex-direction: column; gap: 4px; font-size: 0.75rem; }
     .cd-grid2 select { padding: 10px 12px; font-size: 16px; }
     .cd-tl + .cd-add { margin-top: 2px; }
+    .cd-pick-btn { display: block; width: 100%; margin-bottom: 8px; padding: 10px; border: none; border-radius: 12px; background: var(--accent-soft); color: var(--accent-ink); font-size: 0.88rem; font-weight: 600; cursor: pointer; }
+    .cd-need { margin-bottom: 8px; padding: 10px; border-radius: 12px; background: var(--bg); }
+    .cd-need-head { display: flex; align-items: center; justify-content: space-between; font-size: 0.92rem; font-weight: 600; color: var(--text); }
+    .cd-need input { margin-top: 6px; }
     .cd-eg { margin: -2px 0 8px 24px; font-size: 0.72rem; color: var(--text-muted); line-height: 1.5; }
     .cd-tl { border-radius: 10px; padding: 10px; margin-bottom: 8px; background: var(--bg); }
     .cd-tl-head { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
@@ -812,6 +817,21 @@
       <button class="modal-close" onclick="closeSheetMenu()">✕</button>
     </div>
     <div id="sheetMenuList"></div>
+  </div>
+</div>
+
+<!-- ===== 一覧から選ぶ（よくあるニーズ） ===== -->
+<div class="modal-overlay over-editor" id="pickModal">
+  <div class="modal">
+    <div class="modal-title">
+      <span>よくあるニーズ</span>
+      <button class="modal-close" onclick="closePickModal()">✕</button>
+    </div>
+    <div id="pickList"></div>
+    <div class="form-actions">
+      <button class="btn btn-outline" onclick="closePickModal()">キャンセル</button>
+      <button class="btn btn-primary" onclick="applyPicks()">反映する</button>
+    </div>
   </div>
 </div>
 
@@ -1690,6 +1710,14 @@ window.closeMemoEditor = () => {
 //       labeled(小見出しつきの入力) / participants(参加者) / section(見出し)
 // fmt: colon(「日時：」形式) / 省略時は【】形式。1行目は「＜CDATA＞日付 時刻〜 内容＋分」
 // src: リストから自動入力する元（CD_SRC のキー）
+// picks: 箇条書きの「一覧から選ぶ」選択肢。選んだ行は「項目：理由」の文字列で保存する
+// よくあるニーズ（一覧から選ぶ）。「項目→問いかけ」と書くと、選んだときに理由欄が出る
+const NEED_PICKS = [
+  'とにかく稼ぎたい→なんで稼ぎたいか', '独立したい→なんで独立したいか', '自由になりたい→なぜ自由になりたいか',
+  '副収入が欲しい→なんで欲しいか', '現状不満→何が不満か', '将来が不安→何が不安なのか',
+  '自己成長したい→なんで自己成長したいか', 'モテたい', '美容→特に何を改善したいか', '健康→特に何を改善したいか',
+  'コミュニティが欲しい→なんで欲しいか', '人脈を増やしたい→なんで人脈増やしたいか',
+];
 const CDATA_TPL_DEFAULT = [
   { type:'section', label:'個別の情報' },
   { key:'when',     label:'日時', type:'datetime', fmt:'colon' },
@@ -1715,7 +1743,7 @@ const CDATA_TPL_DEFAULT = [
   { key:'seenAs',      label:'相手から自分がどう見られているか', type:'bullets', rows:2 },
   { key:'personality', label:'性格', type:'bullets', rows:3 },
   { key:'likes',       label:'好きなもの・趣味', type:'bullets', rows:3 },
-  { key:'needs',       label:'ニーズ（Cさんがしたいこと・解決したいこと）', type:'bullets', rows:3, src:'needs' },
+  { key:'needs',       label:'ニーズ（Cさんがしたいこと・解決したいこと）', type:'bullets', rows:1, src:'needs', picks:NEED_PICKS },
   { type:'section', label:'経緯・ステータス' },
   { key:'flow',   label:'今までの流れ・何と言ってつないだか', type:'timeline', options:['CT','PG','マケ'] },
   { key:'status', label:'ステータス', type:'checks', options:[
@@ -1824,9 +1852,10 @@ function watchUnionTemplate() {
   });
 }
 // 以前のCDATAフォーマット（保存済みのユニオン別・作成済みのCDATA）を今の仕様に合わせる:
-// 「時間」欄をなくす／「内容」は自由入力のみ／「備考」欄が無ければ末尾に足す
+// 「時間」欄をなくす／「内容」は自由入力のみ／ニーズに「よくあるニーズ」を付ける／「備考」欄が無ければ末尾に足す
 function cdNormalizeTpl(fields) {
   const out = fields.filter(f => f.fmt !== 'title').map(f => {
+    if (f.key === 'needs' && f.type === 'bullets' && f.picks === undefined) return { ...f, picks: NEED_PICKS };
     if (f.fmt !== 'colon' || f.type !== 'combo') return f;
     const { options, ...rest } = f;
     return { ...rest, type: 'text' };
@@ -2562,6 +2591,22 @@ function cdChips(f, cur, part) {
   ).join('')}</div>`;
 }
 
+// 一覧から選ぶ選択肢「項目→問いかけ」→ { label, ask }
+function cdChoice(str) {
+  const [label, ...rest] = String(str).split(/→|->/);
+  return { label: label.trim(), ask: rest.join('→').trim() };
+}
+// 行の文字列が、どの選択肢を選んだものか（「項目」または「項目：理由」）
+function cdChoiceOf(f, s) {
+  const str = String(s || '');
+  for (const raw of f.picks || []) {
+    const x = cdChoice(raw);
+    if (!x.label) continue;
+    if (str === x.label) return { ...x, reason: '' };
+    if (str.startsWith(x.label + '：') || str.startsWith(x.label + ':')) return { ...x, reason: str.slice(x.label.length + 1) };
+  }
+  return null;
+}
 // 定型文「見出し　例：例文」→ { label, eg }
 function cdPreset(str) {
   const m = String(str).match(/^(.*?)[\s\u3000]*例[:：]\s*(.*)$/);
@@ -2604,6 +2649,19 @@ function cdFieldHtml(f) {
     case 'bullets':
     case 'numbered': {
       const mark = f.type === 'numbered' ? j => CD_NUM[j] || `${j + 1}.` : () => '・';
+      if ((f.picks || []).length) {
+        // 一覧から選んだものは「項目＋理由欄」の枠、それ以外は自由記述の行
+        const rows = val.map((s, j) => {
+          const hit = cdChoiceOf(f, s);
+          const del = `<button type="button" class="cd-x" data-act="delRow" data-k="${k}" data-i="${j}" aria-label="削除">✕</button>`;
+          if (!hit) return `<div class="cd-row"><span class="cd-mark">・</span><input type="text" data-k="${k}" data-i="${j}" value="${escHtml(s)}">${del}</div>`;
+          return `<div class="cd-need"><div class="cd-need-head"><span>${escHtml(hit.label)}</span>${del}</div>${hit.ask
+            ? `<input type="text" data-k="${k}" data-i="${j}" data-pick="${escHtml(hit.label)}" value="${escHtml(hit.reason)}" placeholder="${escHtml(hit.ask)}（任意）">` : ''}</div>`;
+        }).join('');
+        return head
+          + `<button type="button" class="cd-pick-btn" data-act="openPicks" data-k="${k}">よくあるニーズから選ぶ</button>`
+          + rows + `<button type="button" class="cd-add" data-act="addRow" data-k="${k}">＋ 自由に書く</button>`;
+      }
       const presets = (f.presets || []).map(cdPreset);
       // 行が「見出し：」で始まっていたら、その定型文の例文を行の下に出す
       const rows = cdRowsHtml(k, val, mark, null, s => {
@@ -2681,6 +2739,36 @@ function cdRender() {
   cdUpdateProgress();
 }
 
+// 「よくあるニーズから選ぶ」：チェックした項目を行に反映する
+let pickKey = null;
+function openPickModal(k) {
+  const f = cdField(k);
+  pickKey = k;
+  const chosen = new Set(cd.v[k].map(s => cdChoiceOf(f, s)?.label).filter(Boolean));
+  document.getElementById('pickList').innerHTML = f.picks.map(raw => {
+    const x = cdChoice(raw);
+    return `<label class="sync-row"><input type="checkbox" value="${escHtml(x.label)}"${chosen.has(x.label) ? ' checked' : ''}><div class="sync-val">${escHtml(x.label)}</div></label>`;
+  }).join('');
+  document.getElementById('pickModal').classList.add('open');
+  document.getElementById('pickModal').scrollTop = 0;
+}
+window.closePickModal = () => { document.getElementById('pickModal').classList.remove('open'); pickKey = null; };
+window.applyPicks = () => {
+  if (!cd || !pickKey) return;
+  const k = pickKey, f = cdField(k);
+  const checked = new Set([...document.querySelectorAll('#pickList input:checked')].map(el => el.value));
+  const cur = cd.v[k];
+  // 選んだ項目（一覧の順。書いてある理由は残す）→ 自由記述の行、の順に並べ直す
+  const picked = f.picks.map(raw => cdChoice(raw).label).filter(l => checked.has(l))
+    .map(l => cur.find(s => cdChoiceOf(f, s)?.label === l) || l);
+  const free = cur.filter(s => (s || '').trim() && !cdChoiceOf(f, s));
+  cd.v[k] = [...picked, ...free];
+  if (!cd.v[k].length) cd.v[k].push('');
+  closePickModal();
+  cdRerenderField(k);
+  cdTouched(k);
+};
+
 function cdRerenderField(k) {
   const el = document.getElementById('cdf-' + k);
   if (el) el.innerHTML = cdFieldHtml(cdField(k));
@@ -2695,7 +2783,10 @@ function cdRerenderField(k) {
     const f = cdField(k), v = cd.v[k];
     const { i, j, p } = t.dataset;
     switch (f.type) {
-      case 'bullets': case 'numbered': case 'labeled': v[+i] = t.value; break;
+      case 'bullets': case 'numbered': case 'labeled':
+        // 一覧から選んだ行は「項目：理由」の形で持つ
+        v[+i] = t.dataset.pick ? t.dataset.pick + (t.value ? '：' + t.value : '') : t.value;
+        break;
       case 'participants': if (i != null) v.c[+i][p] = t.value; else v[p] = t.value; break;
       case 'timeline': if (j != null) v[+i].items[+j] = t.value; else v[+i][p] = t.value; break;
       case 'datetime': case 'textChoice': v[p] = t.value; break;
@@ -2713,6 +2804,7 @@ function cdRerenderField(k) {
     const k = b.dataset.k, f = cdField(k), v = cd.v[k];
     const i = +b.dataset.i, j = +b.dataset.j, act = b.dataset.act, chip = b.dataset.chip;
     let focus = null;
+    if (act === 'openPicks')     { openPickModal(k); return; }
     if (act === 'addRow')        { v.push(''); focus = `[data-k="${k}"][data-i="${v.length - 1}"]`; }
     else if (act === 'delRow')   { v.splice(i, 1); if (!v.length) v.push(''); }
     else if (act === 'sw')       { v[i] = v[i] === '○' ? '' : '○'; }
@@ -2801,6 +2893,8 @@ function teClean(fields) {
     if (TE_HAS_ROWS.includes(f.type)) {
       const presets = (f.presets || []).map(s => s.trim()).filter(Boolean);
       if (presets.length) o.presets = presets;
+      // picks は空でも残す（空＝「一覧から選ぶ」を使わない、という設定）
+      if (f.picks !== undefined) o.picks = f.picks.map(s => s.trim()).filter(Boolean);
     }
     if (f.src && CD_SRC[f.src]) o.src = f.src;
     ['reset', 'withTarget', 'from'].forEach(k => { if (f[k]) o[k] = f[k]; });
@@ -2920,6 +3014,8 @@ function teItemHtml(f, i, lockedEnd, last) {
       ${TE_HAS_ROWS.includes(f.type) ? `<label>最初に用意する行数<select data-f="rows">${[1,2,3,4,5,6].map(n => opt(String(n), n + '行', String(f.rows || 1))).join('')}</select></label>` : ''}
       ${TE_HAS_ROWS.includes(f.type) ? `<label>定型文（タップで追加できるボタン）
         <span class="te-hint">1行に1つ。「見出し　例：例文」と書くと例文も出せます</span><textarea data-f="presets">${escHtml((f.presets || []).join('\n'))}</textarea></label>` : ''}
+      ${TE_HAS_ROWS.includes(f.type) ? `<label>一覧から選ぶ選択肢（よくあるニーズなど）
+        <span class="te-hint">1行に1つ。「項目→問いかけ」と書くと理由欄が出ます。不要なら空のまま</span><textarea data-f="picks">${escHtml((f.picks || []).join('\n'))}</textarea></label>` : ''}
       ${TE_HAS_PH.includes(f.type) ? `<label>入力例（うすく表示される文字）<input type="text" data-f="ph" value="${escHtml(f.ph || '')}"></label>` : ''}
       ${!locked && !f.from && TE_HAS_SRC.includes(f.type) ? `<label>リストから自動入力<select data-f="src">${opt('', 'しない', f.src || '')}${Object.entries(CD_SRC_LABEL).map(([v, l]) => opt(v, 'リストの「' + l + '」', f.src || '')).join('')}</select></label>` : ''}
       ${!locked ? `<div><button type="button" class="btn btn-sm btn-text-danger" data-act="del">この${isSec ? '見出し' : '項目'}を削除</button></div>` : ''}
@@ -2964,6 +3060,7 @@ function teRender() {
     if (key === 'label') { f.label = t.value; t.closest('.te-item').querySelector('.te-name').textContent = t.value; }
     else if (key === 'options') f.options = t.value.split('\n');
     else if (key === 'presets') f.presets = t.value.split('\n');
+    else if (key === 'picks') f.picks = t.value.split('\n');
     else if (key === 'ph') f.ph = t.value;
     teDirty();
   });
@@ -3010,6 +3107,14 @@ function teRender() {
 // ===== バージョン＆お知らせ =====
 // アップデートしたら先頭に { version, date, items } を追記する（先頭の version が表示バージョンになる）
 const UPDATES = [
+  {
+    version: 'v8',
+    date: '2026/10/3',
+    items: [
+      'CDATAのニーズ欄に「よくあるニーズから選ぶ」を追加。一覧から当てはまるものにチェックすると、理由を書く欄つきで入ります（理由は任意）',
+      '一覧に無いニーズは、今までどおり「＋ 自由に書く」で書けます',
+    ],
+  },
   {
     version: 'v7',
     date: '2026/10/3',
@@ -3313,7 +3418,7 @@ window.showToast = (msg) => {
 };
 
 // ===== モーダル外クリックで閉じる =====
-['editModal','shareModal','deleteModal','syncModal','sheetMenu'].forEach(id=>{
+['editModal','shareModal','deleteModal','syncModal','sheetMenu','pickModal'].forEach(id=>{
   document.getElementById(id).addEventListener('click',function(e){
     if(e.target===this){
       if(id==='editModal') closeEditModal();
@@ -3321,6 +3426,7 @@ window.showToast = (msg) => {
       else if(id==='deleteModal') closeDeleteModal();
       else if(id==='syncModal') closeSyncModal();
       else if(id==='sheetMenu') closeSheetMenu();
+      else if(id==='pickModal') closePickModal();
     }
   });
 });
