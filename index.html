@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>ATTACK LIST</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -91,7 +91,7 @@
 
     /* ===== ヘッダー ===== */
     header {
-      background: var(--bg); color: var(--text); padding: 14px 16px 6px;
+      background: var(--bg); color: var(--text); padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 6px;
       display: flex; flex-direction: column; gap: 6px;
       position: sticky; top: 0; z-index: 100;
     }
@@ -140,6 +140,7 @@
     .btn-danger { background: var(--danger-soft); color: var(--danger); }
     .btn-outline { background: var(--accent-soft); color: var(--accent-ink); }
     .btn-sm { padding: 6px 12px; font-size: 0.82rem; }
+    .copied { background: var(--t-green-bg) !important; color: var(--t-green-fg) !important; border-color: transparent !important; }
     .btn-ghost { background: transparent; color: var(--text-muted); border: 1.5px solid var(--border-strong); }
     .btn-text-danger { background: transparent; color: var(--danger); }
     .fab { display: flex; align-items: center; justify-content: center; position: fixed; right: 18px; bottom: calc(22px + env(safe-area-inset-bottom)); width: 56px; height: 56px; border: none; border-radius: 50%; background: var(--accent); color: var(--on-accent); box-shadow: 0 6px 18px rgba(240,80,110,0.35); cursor: pointer; z-index: 90; -webkit-tap-highlight-color: transparent; }
@@ -267,7 +268,7 @@
     /* ===== CDATA エディタ（全画面） ===== */
     .cd-editor { display: none; position: fixed; inset: 0; z-index: 260; background: var(--bg); flex-direction: column; }
     .cd-editor.open { display: flex; }
-    .cd-head { display: flex; align-items: center; gap: 10px; padding: 10px 14px; padding-top: max(10px, env(safe-area-inset-top)); background: var(--bg); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .cd-head { display: flex; align-items: center; gap: 10px; padding: 10px 14px; padding-top: calc(10px + env(safe-area-inset-top, 0px)); background: var(--bg); border-bottom: 1px solid var(--border); flex-shrink: 0; }
     .cd-head-btn { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; cursor: pointer; padding: 6px 4px; min-width: 56px; text-align: left; }
     .cd-head-title { flex: 1; min-width: 0; text-align: center; }
     .cd-head-title div { font-family: 'Inter', sans-serif; font-size: 1rem; font-weight: 600; letter-spacing: 0.5px; color: var(--text); line-height: 1; }
@@ -319,7 +320,8 @@
     .cd-tl-head input[type="date"] { flex: 1 1 140px; min-width: 0; }
     .cd-tl-head .cd-tl-kind { flex: 0 0 76px; }
     .cd-tl-head .cd-tl-who { flex: 1 1 110px; min-width: 0; }
-    .cd-foot { display: flex; align-items: center; gap: 8px; padding: 10px 14px; padding-bottom: max(10px, env(safe-area-inset-bottom)); background: var(--bg); border-top: 1px solid var(--border); flex-shrink: 0; }
+    /* iPhone のホームバー（画面下端のスワイプ領域）にボタンが重ならないよう、下に余白を取る */
+    .cd-foot { display: flex; align-items: center; gap: 8px; padding: 10px 14px; padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px)); background: var(--bg); border-top: 1px solid var(--border); flex-shrink: 0; }
     .cd-foot .btn-primary { margin-left: auto; }
     .cd-preview { white-space: pre-wrap; word-break: break-word; font-family: inherit; font-size: 0.9rem; line-height: 1.7; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; -webkit-user-select: text; user-select: text; }
 
@@ -701,7 +703,7 @@
   <div class="cd-foot">
     <button type="button" class="btn btn-sm btn-text-danger" id="cdDelBtn" onclick="deleteCdata()">削除</button>
     <button type="button" class="btn btn-outline btn-sm" id="cdPreviewBtn" onclick="toggleCdataPreview()">プレビュー</button>
-    <button type="button" class="btn btn-outline btn-sm" onclick="copyCdata()">📋 コピー</button>
+    <button type="button" class="btn btn-outline btn-sm" onclick="copyCdata('','','',this)">📋 コピー</button>
     <button type="button" class="btn btn-primary btn-sm" onclick="closeCdata()">完了</button>
   </div>
 </div>
@@ -1557,7 +1559,7 @@ window.renderList = function() {
         </div>
         ${cdataBlockHtml(p, canEdit)}
         <div class="card-actions">
-          <button class="btn btn-outline btn-sm" onclick="copyCardText('${p.id}')">📋 コピー</button>
+          <button class="btn btn-outline btn-sm" onclick="copyCardText('${p.id}',this)">📋 コピー</button>
           ${canEdit?`<button class="btn btn-outline btn-sm" onclick="openEditModal('${p.id}')">編集</button>
           <button class="btn btn-danger btn-sm" onclick="askDelete('${p.id}')">削除</button>`:''}
         </div>
@@ -1998,6 +2000,72 @@ function compactText(c, blank) {
   return blocks.map(b => b.join('\n')).join('\n\n');
 }
 
+// ----- CDATA → テキスト（今までのメモ帳フォーマット） -----
+// blank=true: 未入力の選択項目に選択肢を並べて表示（フォーマット確認用）
+function cdataToText(c, blank) {
+  const tpl = c.tpl || [], v = c.v || {};
+  const hint = f => blank ? (f.options || []).join('・') : '';
+  const L = [];
+  const dtF = cdSessionField(tpl, 'datetime');
+  const when = dtF ? (v[dtF.key] || {}) : {};
+  // 1行目の末尾は「内容」欄の文字＋「分」（例：マケ分）
+  const contF = tpl.find(f => f.key === 'content') || tpl.find(f => f.fmt === 'colon' && f.type !== 'datetime');
+  const cont = contF ? String(v[contF.key] || '').trim() : '';
+  L.push(`＜CDATA＞${fmtMD(when.date) || '◯/◯'} ${fmtHour(when.time) || '◯時'}〜 ${cont || '◯◯'}分`);
+  L.push('');
+  let inHeader = true;
+  tpl.forEach(f => {
+    if (f.type === 'section' || f.fmt === 'title') return;
+    const val = v[f.key] ?? cdEmpty(f);
+    if (f.fmt === 'colon') {
+      const s = f.type === 'datetime'
+        ? (val.date ? `${fmtMDW(val.date)} ${fmtHour(val.time) || '◯時'}〜` : (blank ? '◯/◯() ◯時〜' : ''))
+        : (val || hint(f));
+      L.push(`${f.label}：${s}`);
+      return;
+    }
+    if (inHeader) { L.push('', ''); inHeader = false; }
+    const head = `【${f.label}】`;
+    switch (f.type) {
+      case 'bullets': case 'numbered': {
+        const items = val.filter(s => s && s.trim());
+        L.push(head);
+        const rows = items.length ? items : Array(f.rows || 1).fill('');
+        rows.forEach((s, i) => L.push((f.type === 'numbered' ? (CD_NUM[i] || `${i + 1}.`) : '・') + s));
+        L.push('');
+        break;
+      }
+      case 'checks':
+        L.push(head);
+        (f.options || []).forEach((o, i) => L.push(`・${o}：${val[i] === '○' ? '○' : (blank ? '○・×' : '×')}`));
+        L.push('');
+        break;
+      case 'timeline':
+        L.push(head);
+        if (!val.length) L.push('＜◯/◯ CT＞', '・');
+        val.forEach(e => {
+          const who = e.who ? (/さん$/.test(e.who) ? e.who : e.who + 'さん') : '';
+          L.push(`＜${fmtMD(e.date) || '◯/◯'} ${e.kind || ''}＞${who}`);
+          const items = (e.items || []).filter(s => s && s.trim());
+          (items.length ? items : ['']).forEach(s => L.push('・' + s));
+          L.push('');
+        });
+        L.push('');
+        break;
+      case 'textarea':
+        L.push(head, val || '', '');
+        break;
+      case 'textChoice':
+        L.push(head + (val.text || '') + (val.choice ? `(${val.choice})` : (hint(f) ? `(${hint(f)})` : '')));
+        break;
+      default:
+        L.push(head + (val || hint(f)));
+    }
+  });
+  L.push('', '', c.union || '', c.writer || '');
+  return L.join('\n').replace(/\n{4,}/g, '\n\n\n');
+}
+
 // ----- 備考欄 → CDATA の取り込み -----
 // 備考に【項目名】形式で書かれたCDATAを読み取り、項目名の合う欄へ振り分ける。
 // どこにも当てはまらない行は rest（CDATAの「備考」欄へ）。捨てる行はない。
@@ -2130,7 +2198,7 @@ function cdataBlockHtml(p, canEdit) {
       ${tag}
       <span class="cd-item-date">${escHtml(fmtMDW(sheetDay(c)))}</span>
       <span class="cd-item-content">${escHtml(sheetSummary(c))}</span>
-      <button class="cd-item-copy" onclick="event.stopPropagation();copyCdata('${p.id}','${c.id}','${kind}')">コピー</button>
+      <button class="cd-item-copy" onclick="event.stopPropagation();copyCdata('${p.id}','${c.id}','${kind}',this)">コピー</button>
     </div>`;
     return canEdit ? `
     <div class="cd-item cd-item-new" onclick="createCdata('${p.id}','${kind}')">
@@ -2370,13 +2438,23 @@ function cdPayload() {
            createdAt: cd.createdAt, updatedAt: Date.now() };
 }
 
-window.copyCdata = (pid, cid, kind = 'cdata') => {
+// 押したボタンの表示を一時的に「✓ コピーしました」に変える（トーストだけだと気づきにくいため）
+function flashCopied(btn) {
+  if (!btn || btn.dataset.label != null) return;
+  btn.dataset.label = btn.innerHTML;
+  btn.textContent = '✓ コピーしました';
+  btn.classList.add('copied');
+  setTimeout(() => { btn.innerHTML = btn.dataset.label; delete btn.dataset.label; btn.classList.remove('copied'); }, 1600);
+}
+// btn: 押したボタン。pid を省くと編集中のシートをコピーする
+window.copyCdata = (pid, cid, kind, btn) => {
+  kind = kind || 'cdata';
   let c;
   if (pid) { const saved = people.find(x => x.id === pid)?.[kind]?.[cid]; c = saved && { ...saved, kind }; }
   else if (cd) { c = cdPayload(); }
   if (!c) return;
   navigator.clipboard.writeText(sheetToText(c))
-    .then(() => showToast(`${SHEET_KINDS[c.kind || 'cdata'].title}をコピーしました！`))
+    .then(() => { flashCopied(btn); showToast(`${SHEET_KINDS[c.kind || 'cdata'].title}をコピーしました`); })
     .catch(() => showToast('コピーに失敗しました'));
 };
 
@@ -2939,6 +3017,15 @@ function teRender() {
 // アップデートしたら先頭に { version, date, items } を追記する（先頭の version が表示バージョンになる）
 const UPDATES = [
   {
+    version: 'v11',
+    date: '2026/10/7',
+    items: [
+      'シートの「プレビュー」と「コピー」が動かなくなっていた不具合を修正しました。共有されたリストのシートも開いて読めます',
+      'コピーすると、押したボタンが「✓ コピーしました」に変わるようにしました',
+      'シートの下のボタン（削除・プレビュー・コピー・完了）が画面の下端に寄りすぎていたので、少し上に上げました',
+    ],
+  },
+  {
     version: 'v10',
     date: '2026/10/7',
     items: [
@@ -3068,7 +3155,7 @@ window.openUpdatesModal = () => {
 };
 window.closeUpdatesModal = () => document.getElementById('updatesModal').classList.remove('open');
 
-window.copyCardText = (id) => {
+window.copyCardText = (id, btn) => {
   const p = people.find(x => x.id === id);
   if (!p) return;
   const lines = [];
@@ -3092,7 +3179,7 @@ window.copyCardText = (id) => {
   if (p.lastcontact)  lines.push(`最終連絡: ${p.lastcontact}`);
   if (p.memo)         lines.push(`備考: ${p.memo}`);
   navigator.clipboard.writeText(lines.join('\n\n'))
-    .then(() => showToast('コピーしました！'))
+    .then(() => { flashCopied(btn); showToast('コピーしました'); })
     .catch(() => showToast('コピーに失敗しました'));
 };
 
