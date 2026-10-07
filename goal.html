@@ -1013,6 +1013,7 @@
   </div>
 </div>
 
+<script src="consent.js"></script>
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut }
@@ -1195,12 +1196,15 @@ onAuthStateChanged(auth, async user => {
     const name = data.displayName || data.name || user.email;
     myDisplayName = name;
     document.getElementById('profileScreen').style.display = 'none';
-    document.getElementById('userNameDisplay').textContent = name;
     document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('mainApp').style.display = 'block';
-    await loadFromFirestore();
-    init();
-    syncSharedCopy();
+    // 個人情報保護方針・利用規約に同意していなければ、同意画面を挟んでからシートへ
+    withConsent(user.uid, data, async () => {
+      document.getElementById('userNameDisplay').textContent = name;
+      document.getElementById('mainApp').style.display = 'block';
+      await loadFromFirestore();
+      init();
+      syncSharedCopy();
+    });
   } else {
     currentUser = null;
     document.getElementById('mainApp').style.display = 'none';
@@ -1208,6 +1212,20 @@ onAuthStateChanged(auth, async user => {
     document.getElementById('loginScreen').style.display = 'flex';
   }
 });
+
+// ===== 個人情報保護方針・利用規約の同意（consent.js・3アプリ共通の users/{uid}.privacy） =====
+function withConsent(uid, data, next) {
+  if (!window.NavConsent || !NavConsent.need(data)) { next(); return; }
+  NavConsent.show({
+    app: 'GOAL SETTING', data,
+    save: async rec => {
+      await setDoc(doc(firedb, 'users', uid), { privacy: rec }, { merge: true });
+      setDoc(doc(firedb, 'users', uid, 'consents', rec.ver), { ver: rec.ver, at: rec.at, ua: String(navigator.userAgent || '').slice(0, 200), app: 'goal' }).catch(() => {});
+    },
+    onOk: next,
+    onLogout: () => signOut(auth)
+  });
+}
 
 // プロフィール保存（role/status は送らない＝既存管理者を降格しない）
 window.saveProfileGoal = async () => {
@@ -1229,11 +1247,14 @@ window.saveProfileGoal = async () => {
     }, { merge: true });
     myDisplayName = name;
     document.getElementById('profileScreen').style.display = 'none';
-    document.getElementById('userNameDisplay').textContent = name;
-    document.getElementById('mainApp').style.display = 'block';
-    await loadFromFirestore();
-    init();
-    syncSharedCopy(); // プロフィール入力後も共有コピーを公開する（未実行だと相手に表示されない）
+    const snap2 = await getDoc(doc(firedb, 'users', currentUser.uid));
+    withConsent(currentUser.uid, snap2.exists() ? snap2.data() : {}, async () => {
+      document.getElementById('userNameDisplay').textContent = name;
+      document.getElementById('mainApp').style.display = 'block';
+      await loadFromFirestore();
+      init();
+      syncSharedCopy(); // プロフィール入力後も共有コピーを公開する（未実行だと相手に表示されない）
+    });
   } catch(e) {
     err.textContent = '保存に失敗しました: ' + e.message;
   }
