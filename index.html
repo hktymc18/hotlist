@@ -444,27 +444,33 @@
 <div id="nameScreen" style="display:none;">
   <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;gap:20px;">
     <div class="login-title">ATTACK LIST</div>
-    <p class="login-subtitle">あなたの名前を登録してください</p>
+    <p class="login-subtitle" id="nameSub">あなたの名前を登録してください</p>
     <div style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px;">
+      <label class="pe-lbl" for="registerName" style="display:none;font-size:0.78rem;font-weight:700;color:var(--text-muted);margin:4px 2px -6px;">名前（本名・フルネーム）</label>
       <input id="registerName" type="text" placeholder="例：山田 太郎" autocomplete="name"
         style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
+      <label class="pe-lbl" for="registerUnion" style="display:none;font-size:0.78rem;font-weight:700;color:var(--text-muted);margin:4px 2px -6px;">所属ユニオン</label>
       <select id="registerUnion" data-union-select data-ph="所属ユニオンを選択" onchange="onUnionSelect(this,'registerUpBd')"
         style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;-webkit-appearance:none;appearance:none;"><option value="">所属ユニオンを選択</option></select>
+      <label class="pe-lbl" for="registerArea" style="display:none;font-size:0.78rem;font-weight:700;color:var(--text-muted);margin:4px 2px -6px;">活動地域</label>
       <select id="registerArea" data-area-select data-ph="活動地域を選択"
         style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;-webkit-appearance:none;appearance:none;"><option value="">活動地域を選択</option></select>
+      <label class="pe-lbl" for="registerUpRuby" style="display:none;font-size:0.78rem;font-weight:700;color:var(--text-muted);margin:4px 2px -6px;">UPルビー</label>
       <input id="registerUpRuby" type="text" placeholder="UPルビー"
         style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
+      <label class="pe-lbl" for="registerUpBd" style="display:none;font-size:0.78rem;font-weight:700;color:var(--text-muted);margin:4px 2px -6px;">UPBD</label>
       <input id="registerUpBd" type="text" placeholder="UPBD"
         style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
 
       <!-- 個人情報保護方針・利用規約（NAVIGATORと共通。同意は次の画面で行う） -->
-      <p style="font-size:0.8rem;color:var(--text-muted);line-height:1.7;margin:0;">
+      <p id="nameConsentNote" style="font-size:0.8rem;color:var(--text-muted);line-height:1.7;margin:0;">
         登録のあと、<span style="color:var(--primary);text-decoration:underline;cursor:pointer;" onclick="NavConsent.openDoc('privacy')">個人情報保護方針</span>と<span style="color:var(--primary);text-decoration:underline;cursor:pointer;" onclick="NavConsent.openDoc('terms')">利用規約</span>への同意をお願いします。
       </p>
 
       <button id="startBtn" onclick="saveName()"
         style="padding:14px;border-radius:12px;border:none;background:var(--primary);color:var(--on-accent);font-size:1rem;font-weight:700;cursor:pointer;transition:opacity 0.2s;"
         onmouseenter="" onfocus="">登録して始める</button>
+      <button id="nameCancelBtn" onclick="cancelProfileEdit()" style="display:none;padding:12px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:0.95rem;cursor:pointer;">キャンセル</button>
       <p id="nameError" style="color:var(--danger);font-size:0.85rem;text-align:center;min-height:20px;"></p>
     </div>
   </div>
@@ -736,6 +742,14 @@
       <span class="app-version" id="appVersion"></span>
       <button class="btn btn-sm btn-ghost" id="themeToggleBtn" onclick="toggleTheme()" style="margin-left:auto;">ダークモードにする</button>
     </div>
+    <div class="share-divider"></div>
+
+    <div class="share-section">
+      <div class="share-section-title">プロフィール</div>
+      <p class="share-desc">名前・所属ユニオン・活動地域・UPルビー・UPBDを変更できます。変更は NAVIGATOR・GOAL SETTING にも反映されます。</p>
+      <div class="share-actions"><button class="btn btn-outline btn-sm" onclick="openProfileEdit()">プロフィールを変更</button></div>
+    </div>
+
     <div class="share-divider"></div>
 
     <div class="share-section">
@@ -1140,6 +1154,36 @@ function enterMainScreen(displayName) {
   document.getElementById('tplAdminSection').style.display = canEditUnionTpl() ? '' : 'none';
 }
 
+// ===== プロフィールの変更（設定から。登録画面を「変更」モードで使う） =====
+let profileEditMode = false;
+function setProfileEditMode(on) {
+  profileEditMode = on;
+  document.getElementById('nameSub').textContent = on ? 'プロフィールを変更します' : 'あなたの名前を登録してください';
+  document.getElementById('startBtn').textContent = on ? '保存する' : '登録して始める';
+  document.getElementById('nameCancelBtn').style.display = on ? '' : 'none';
+  document.getElementById('nameConsentNote').style.display = on ? 'none' : '';
+  document.getElementById('nameError').textContent = '';
+  document.querySelectorAll('#nameScreen .pe-lbl').forEach(el => { el.style.display = on ? 'block' : 'none'; });
+}
+window.openProfileEdit = async () => {
+  closeShareModal();
+  const snap = await getDoc(doc(db, 'users', currentUser.uid));
+  const data = snap.exists() ? snap.data() : {};
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+  populateUnionSelects();
+  set('registerName', data.displayName || data.name || '');
+  set('registerUnion', data.union);
+  areaSelectSet('registerArea', data.area);
+  set('registerUpRuby', data.upRuby);
+  set('registerUpBd', data.upBd);
+  setProfileEditMode(true);
+  showScreen('nameScreen');
+};
+window.cancelProfileEdit = () => {
+  setProfileEditMode(false);
+  enterMainScreen(currentUser.displayName || '');
+};
+
 // ===== 名前を保存 =====
 window.saveName = async () => {
   const val = id => (document.getElementById(id)?.value || '').trim();
@@ -1164,6 +1208,12 @@ window.saveName = async () => {
       updatedAt: serverTimestamp()
     }, { merge: true });
     currentUser = { ...currentUser, displayName: name, area: area, union: union };
+    if (profileEditMode) { // 設定からのプロフィール変更
+      setProfileEditMode(false);
+      enterMainScreen(name);
+      showToast('プロフィールを変更しました');
+      return;
+    }
     const snap2 = await getDoc(doc(db, 'users', currentUser.uid));
     withConsent(currentUser.uid, snap2.exists() ? snap2.data() : {}, () => {
       enterMainScreen(name);
@@ -2888,6 +2938,14 @@ function teRender() {
 // ===== バージョン＆お知らせ =====
 // アップデートしたら先頭に { version, date, items } を追記する（先頭の version が表示バージョンになる）
 const UPDATES = [
+  {
+    version: 'v10',
+    date: '2026/10/7',
+    items: [
+      '個人情報保護方針・利用規約（2026年10月1日施行・NAVIGATOR／GOAL SETTINGと共通）を定めました。はじめて開いた時に同意の画面が出ます（どれか1つのアプリで同意すれば、ほかのアプリでは出ません）',
+      '「設定・共有」に「プロフィールを変更」を追加しました。名前・所属ユニオン・活動地域・UPルビー・UPBDを後から変えられます（NAVIGATOR・GOAL SETTINGにも反映）',
+    ],
+  },
   {
     version: 'v9',
     date: '2026/10/4',
