@@ -1016,7 +1016,7 @@
 <script src="consent.js"></script>
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut }
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence, browserSessionPersistence }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import { getFirestore, doc, getDoc, setDoc, getDocs, collection, query, where, serverTimestamp }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
@@ -1032,6 +1032,10 @@ const firebaseConfig = {
 
 const fbApp = initializeApp(firebaseConfig);
 const auth = getAuth(fbApp);
+// ログイン状態の保持：PCはタブ／ブラウザを閉じたらログアウト、スマホ・タブレットは今までどおり保持（ATTACK LIST と同じ）
+const IS_MOBILE = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+  || (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent));
+setPersistence(auth, IS_MOBILE ? browserLocalPersistence : browserSessionPersistence).catch(() => {});
 const firedb = getFirestore(fbApp);
 
 let currentUser = null;

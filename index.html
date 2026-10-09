@@ -372,6 +372,7 @@
     .share-desc { font-size: 0.8rem; color: var(--text-muted); line-height: 1.55; margin-bottom: 4px; }
     .share-divider { height: 1px; background: var(--border); margin: 14px 0; }
     .share-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    .share-code { font-family: 'Inter', monospace; font-size: 1.6rem; font-weight: 700; letter-spacing: 3px; color: var(--text); padding: 12px; text-align: center; background: var(--bg); border-radius: 12px; -webkit-user-select: all; user-select: all; }
     .share-member-list { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
     .share-member-item { display: flex; align-items: center; justify-content: space-between; background: var(--bg); border-radius: 12px; padding: 8px 12px; font-size: 0.85rem; }
     .share-member-email { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -755,11 +756,19 @@
     <div class="share-divider"></div>
 
     <div class="share-section">
-      <div class="share-section-title">メンバーを追加する</div>
-      <p class="share-desc">共有したい相手のメールアドレスを入力してください。そのメンバーだけが自分のリストを閲覧できます。</p>
+      <div class="share-section-title">リストを共有する</div>
+      <p class="share-desc">共有コードを発行して、見せたい相手に送ってください。相手がコードを入力すると、その人だけが自分のリストを閲覧できます。</p>
+      <div id="shareCodeBox" style="margin-top:8px;"></div>
+    </div>
+
+    <div class="share-divider"></div>
+
+    <div class="share-section">
+      <div class="share-section-title">共有コードを受け取った</div>
+      <p class="share-desc">相手から届いたコードを入力すると、その人のリストを閲覧できるようになります。</p>
       <div style="display:flex;gap:8px;margin-top:8px;">
-        <input type="email" id="shareEmailInput" placeholder="例：friend@gmail.com" style="flex:1;font-size:0.92rem;padding:10px 12px;">
-        <button class="btn btn-primary btn-sm" onclick="addShareMember()">追加</button>
+        <input type="text" id="shareCodeInput" placeholder="例：ABCD-2345" autocapitalize="characters" autocomplete="off" style="flex:1;font-size:16px;padding:10px 12px;letter-spacing:1px;">
+        <button class="btn btn-primary btn-sm" onclick="submitShareCode()">受け取る</button>
       </div>
     </div>
 
@@ -847,7 +856,7 @@
 <script src="consent.js"></script>
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, confirmPasswordReset, verifyPasswordResetCode, onAuthStateChanged, signOut }
+import { getAuth, setPersistence, browserLocalPersistence, browserSessionPersistence, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, confirmPasswordReset, verifyPasswordResetCode, onAuthStateChanged, signOut }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, getDocs, getDoc, setDoc, addDoc, updateDoc, deleteDoc, deleteField, onSnapshot, query, where, serverTimestamp }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
@@ -864,6 +873,11 @@ const firebaseConfig = {
 
 const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+// ログイン状態の保持：PCはタブ／ブラウザを閉じたらログアウト（PCを人に貸す場面での覗き見を防ぐ）。
+// スマホ・タブレットは今までどおり保持する（人に貸さない前提。毎回のログインは不便なため）。
+const IS_MOBILE = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+  || (navigator.maxTouchPoints > 1 && /Macintosh/.test(navigator.userAgent));   // iPad は Mac を名乗る
+setPersistence(auth, IS_MOBILE ? browserLocalPersistence : browserSessionPersistence).catch(() => {});
 // オフライン永続キャッシュ：2回目以降の起動はローカルから読み、差分だけサーバー読み取り
 // （Firestoreの読み取り課金を大幅削減。非対応ブラウザは従来どおり）
 let db;
@@ -1151,7 +1165,8 @@ function enterMainScreen(displayName) {
   document.getElementById('userNameDisplay').textContent = displayName;
   document.getElementById('writerBanner').style.display = 'none';
   loadMyList();
-  loadSharedWithMe();
+  migrateLegacyShares().then(loadSharedWithMe);
+  handleShareLink();
   watchUnionTemplate();
   document.getElementById('tplAdminSection').style.display = canEditUnionTpl() ? '' : 'none';
 }
@@ -1227,7 +1242,8 @@ window.saveName = async () => {
 };
 
 // ===== 自分のリスト購読 =====
-function loadMyList(uid) {
+// onDenied: 読めなかったとき（共有を解除された等）に呼ぶ
+function loadMyList(uid, onDenied) {
   if (unsubscribeSnapshot) { unsubscribeSnapshot(); }
   const targetUid = uid || currentUser.uid;
   viewingUserId = targetUid;
@@ -1241,13 +1257,26 @@ function loadMyList(uid) {
       return (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0);
     });
     renderList();
-  });
+  }, () => { if (onDenied) onDenied(); });
 }
 
-// ===== 共有されているリストを読み込み =====
-// 全ユーザー×共有設定の走査は読み取りコストが大きい（2N回）ため、結果を6時間キャッシュ。
-// 起動時はキャッシュ表示のみ、共有モーダルを開いた時だけ再走査（force=true）。
-const SHARED_CACHE_TTL = 6 * 60 * 60 * 1000;
+// ===== 共有（共有コード方式） =====
+// 共有の記録は「共有した本人」と「共有された相手」の2人だけが読める場所に持つ（メールアドレスは使わない）:
+//   users/{本人}/alShares/{相手uid}      … 誰に共有しているか（人物リストの閲覧権限はこれで判定）
+//   alSharedWith/{相手uid}/from/{本人uid} … 相手側の受信箱（自分宛ての共有を探しに行かなくてよい）
+//   alShareCodes/{コード}                … 共有コード（24時間有効。コードを知っている人だけが受け取れる）
+// 以前の方式（users/{uid}/settings/share にメールアドレスの一覧）は、起動時に新方式へ移す。
+const SHARE_CODE_HOURS = 24;
+const SHARE_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';   // 0/O・1/I など紛らわしい文字を除く
+const shareCodeNorm = s => String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+const shareCodeShow = c => c.slice(0, 4) + '-' + c.slice(4);
+function newShareCode() {
+  const a = new Uint32Array(8);
+  crypto.getRandomValues(a);
+  return [...a].map(n => SHARE_CODE_CHARS[n % SHARE_CODE_CHARS.length]).join('');
+}
+const myShareCodes = () => getDocs(query(collection(db, 'alShareCodes'), where('owner', '==', currentUser.uid)));
+
 function _renderSharedList(shared) {
   const el = document.getElementById('sharedWithMeList');
   if (!el) return;
@@ -1258,47 +1287,70 @@ function _renderSharedList(shared) {
   el.innerHTML = shared.map(s => `
     <div class="share-member-item" style="cursor:pointer;" onclick="switchToList('${s.uid}','${escHtml(s.name)}')">
       <span class="share-member-email">${escHtml(s.name)}</span>
-      <span style="font-size:0.75rem;color:var(--primary);">閲覧する →</span>
+      <span style="font-size:0.75rem;color:var(--accent-ink);">閲覧する →</span>
     </div>`).join('');
 }
-async function loadSharedWithMe(force) {
+// 自分宛ての共有（受信箱を読むだけ。他人の設定は見に行かない）
+async function loadSharedWithMe() {
   if (!currentUser) return;
-  const el = document.getElementById('sharedWithMeList');
-  const cacheKey = 'al_sharedCache_' + currentUser.uid;
-  // 1) キャッシュがあれば即表示（読み取りゼロ）
   try {
-    const raw = localStorage.getItem(cacheKey);
-    if (raw) {
-      const c = JSON.parse(raw);
-      _renderSharedList(c.shared);
-      if (!force && (Date.now() - (c.ts || 0)) < SHARED_CACHE_TTL) return; // 新しいキャッシュ → 走査しない
-    }
-  } catch(e) {}
-  // 2) 期限切れ or 強制時のみ全ユーザー走査
-  try {
-    const usersSnap = await getDocs(collection(db, 'users'));
-    const otherUsers = usersSnap.docs.filter(d => d.id !== currentUser.uid);
-    const results = await Promise.all(
-      otherUsers.map(userDoc =>
-        getDoc(doc(db, 'users', userDoc.id, 'settings', 'share'))
-          .then(shareDoc => ({ userDoc, shareDoc })).catch(() => null)
-      )
-    );
-    const shared = results
-      .filter(r => r && r.shareDoc.exists() && (r.shareDoc.data().sharedWith || []).includes(currentUser.email))
-      .map(({ userDoc }) => ({ uid: userDoc.id, name: userDoc.data().displayName || userDoc.data().email }));
-    try { localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), shared })); } catch(e) {}
-    _renderSharedList(shared);
-  } catch(e) {
-    if (el && !el.innerHTML) el.textContent = '読み込みに失敗しました';
+    const snap = await getDocs(collection(db, 'alSharedWith', currentUser.uid, 'from'));
+    _renderSharedList(snap.docs.map(d => ({ uid: d.id, name: d.data().name || '（名前なし）' })));
+  } catch (e) {
+    // 新しいルールがまだ反映されていない間だけ、以前の方式で探す
+    loadSharedLegacy().then(_renderSharedList).catch(() => {
+      const el = document.getElementById('sharedWithMeList');
+      if (el) el.textContent = '読み込みに失敗しました';
+    });
   }
+}
+// 以前の方式：全ユーザーの共有設定を見て、自分のメールアドレスが入っているものを探す。
+// ルール変更後は読めなくなる（＝この関数は使われなくなる）ので、移行が済んだら削除してよい。
+async function loadSharedLegacy() {
+  const usersSnap = await getDocs(collection(db, 'users'));
+  const results = await Promise.all(usersSnap.docs.filter(d => d.id !== currentUser.uid).map(userDoc =>
+    getDoc(doc(db, 'users', userDoc.id, 'settings', 'share')).then(shareDoc => ({ userDoc, shareDoc }))));
+  return results
+    .filter(r => r.shareDoc.exists() && (r.shareDoc.data().sharedWith || []).includes(currentUser.email))
+    .map(({ userDoc }) => ({ uid: userDoc.id, name: userDoc.data().displayName || userDoc.data().email }));
+}
+
+// 以前の方式（メールアドレス指定）の共有を新方式へ移す。
+// settings/share の sharedWith は GOAL SETTING の共有と共通の一覧なので消さず、
+// 移し終えたアドレスを alMigrated に控える（相手が未登録などで移せなかった分は、次回の起動でまた試す）。
+async function migrateLegacyShares() {
+  try {
+    const shareRef = doc(db, 'users', currentUser.uid, 'settings', 'share');
+    const snap = await getDoc(shareRef);
+    const d = snap.exists() ? snap.data() : {};
+    const done = d.alMigrated || [];
+    const todo = (d.sharedWith || []).filter(e => !done.includes(e));
+    if (!todo.length) return;
+    const moved = [];
+    for (const email of todo) {
+      try {
+        const us = await getDocs(query(collection(db, 'users'), where('email', '==', email)));
+        const u = us.docs.find(x => x.id !== currentUser.uid);
+        if (!u) continue;
+        await setDoc(doc(db, 'users', currentUser.uid, 'alShares', u.id), { name: u.data().displayName || u.data().name || '', at: serverTimestamp(), legacyEmail: email });
+        await setDoc(doc(db, 'alSharedWith', u.id, 'from', currentUser.uid), { name: writerName(), at: serverTimestamp() });
+        moved.push(email);
+      } catch (e) {}
+    }
+    if (moved.length) await setDoc(shareRef, { alMigrated: [...done, ...moved] }, { merge: true });
+  } catch (e) {}
 }
 
 // ===== 他のユーザーのリストに切り替え =====
 window.switchToList = (uid, name) => {
   viewingUserName = name;
   closeShareModal();
-  loadMyList(uid);
+  loadMyList(uid, () => {
+    // 共有を解除されたなど、読めなくなっていた場合
+    showToast(`${name} のリストは閲覧できなくなっています`);
+    deleteDoc(doc(db, 'alSharedWith', currentUser.uid, 'from', uid)).catch(() => {});
+    backToMyList();
+  });
   showToast(`${name} のリストを表示中`);
   // ヘッダー表示を更新
   document.getElementById('userNameDisplay').textContent = '';
@@ -1321,52 +1373,141 @@ function backToMyList() {
 }
 window.backToMyList = backToMyList;
 
-// ===== 共有メンバー管理 =====
-window.addShareMember = async () => {
-  const email = document.getElementById('shareEmailInput').value.trim().toLowerCase();
-  if (!email || !email.includes('@')) { showToast('正しいメールアドレスを入力してください'); return; }
-  if (email === currentUser.email) { showToast('自分自身は追加できません'); return; }
+// ===== 共有する側：コードの発行・共有中の相手 =====
+async function renderShareCode() {
+  const box = document.getElementById('shareCodeBox');
   try {
-    const shareRef = doc(db, 'users', currentUser.uid, 'settings', 'share');
-    const shareDoc = await getDoc(shareRef);
-    const current = shareDoc.exists() ? (shareDoc.data().sharedWith || []) : [];
-    if (current.includes(email)) { showToast('すでに追加済みです'); return; }
-    await setDoc(shareRef, { sharedWith: [...current, email] }, { merge: true });
-    document.getElementById('shareEmailInput').value = '';
-    showToast('追加しました');
-  } catch(e) {
-    showToast('追加に失敗しました');
+    const snap = await myShareCodes();
+    const live = snap.docs.map(d => ({ code: d.id, ...d.data() })).filter(c => c.exp > Date.now()).sort((a, b) => b.exp - a.exp)[0];
+    if (!live) {
+      box.innerHTML = '<button class="btn btn-primary btn-sm" onclick="issueShareCode()">共有コードを発行</button>';
+      return;
+    }
+    const until = new Date(live.exp);
+    box.innerHTML = `
+      <div class="share-code">${shareCodeShow(live.code)}</div>
+      <p class="share-desc">${until.getMonth() + 1}/${until.getDate()} ${until.getHours()}:${String(until.getMinutes()).padStart(2, '0')} まで有効。このコードを知っている人だけが受け取れます。</p>
+      <div class="share-actions">
+        <button class="btn btn-outline btn-sm" onclick="copyShareLink('${live.code}',this)">送る文面をコピー</button>
+        <button class="btn btn-ghost btn-sm" onclick="revokeShareCode()">コードを無効にする</button>
+      </div>`;
+  } catch (e) {
+    box.innerHTML = '<button class="btn btn-primary btn-sm" onclick="issueShareCode()">共有コードを発行</button>';
   }
+}
+async function deleteMyShareCodes() {
+  const snap = await myShareCodes();
+  await Promise.all(snap.docs.map(d => deleteDoc(d.ref)));
+}
+window.issueShareCode = async () => {
+  try {
+    await deleteMyShareCodes();   // 有効なコードは常に1つだけ
+    const code = newShareCode();
+    await setDoc(doc(db, 'alShareCodes', code), {
+      owner: currentUser.uid, ownerName: writerName(),
+      exp: Date.now() + SHARE_CODE_HOURS * 3600 * 1000, createdAt: serverTimestamp(),
+    });
+    renderShareCode();
+  } catch (e) { showToast('コードの発行に失敗しました'); }
+};
+window.revokeShareCode = async () => {
+  try { await deleteMyShareCodes(); showToast('コードを無効にしました'); renderShareCode(); }
+  catch (e) { showToast('無効にできませんでした'); }
+};
+window.copyShareLink = (code, btn) => {
+  const url = `${location.origin}${location.pathname}?share=${code}`;
+  const text = `ATTACK LIST の共有コード：${shareCodeShow(code)}\n下のリンクを開くか、アプリの「設定・共有」でコードを入力してください。\n${url}`;
+  navigator.clipboard.writeText(text)
+    .then(() => { flashCopied(btn); showToast('コピーしました'); })
+    .catch(() => showToast('コピーに失敗しました'));
 };
 
 async function renderShareMemberList() {
   if (!currentUser) return;
   const el = document.getElementById('shareMemberList');
-  const shareDoc = await getDoc(doc(db, 'users', currentUser.uid, 'settings', 'share'));
-  const members = shareDoc.exists() ? (shareDoc.data().sharedWith || []) : [];
-  if (members.length === 0) {
-    el.innerHTML = '<div style="font-size:0.82rem;color:var(--text-muted);margin-top:6px;">まだ共有していません</div>';
-    return;
-  }
-  el.innerHTML = members.map(email => `
+  let rows = '';
+  try {
+    const snap = await getDocs(collection(db, 'users', currentUser.uid, 'alShares'));
+    rows += snap.docs.map(d => `
+    <div class="share-member-item">
+      <span class="share-member-email">${escHtml(d.data().name || '（名前なし）')}</span>
+      <button class="btn btn-danger btn-sm" onclick="removeShareMember('${d.id}')">解除</button>
+    </div>`).join('');
+  } catch (e) {}
+  try {   // 以前の方式で、まだ移せていない相手（相手が未登録など）
+    const old = await getDoc(doc(db, 'users', currentUser.uid, 'settings', 'share'));
+    const od = old.exists() ? old.data() : {};
+    rows += (od.sharedWith || []).filter(e => !(od.alMigrated || []).includes(e)).map(email => `
     <div class="share-member-item">
       <span class="share-member-email">${escHtml(email)}</span>
-      <button class="btn btn-danger btn-sm" onclick="removeShareMember('${escHtml(email)}')">解除</button>
+      <button class="btn btn-danger btn-sm" onclick="removeLegacyShare('${escHtml(email)}')">解除</button>
     </div>`).join('');
+  } catch (e) {}
+  el.innerHTML = rows || '<div style="font-size:0.82rem;color:var(--text-muted);margin-top:6px;">まだ共有していません</div>';
 }
 
-window.removeShareMember = async (email) => {
+// 以前の方式の一覧（メールアドレス）から外す。ここに残っている間は旧方式の判定で読めてしまうため
+async function dropLegacyEmail(email) {
+  const shareRef = doc(db, 'users', currentUser.uid, 'settings', 'share');
+  const snap = await getDoc(shareRef);
+  if (!snap.exists()) return;
+  const d = snap.data();
+  await setDoc(shareRef, { sharedWith: (d.sharedWith || []).filter(e => e !== email), alMigrated: (d.alMigrated || []).filter(e => e !== email) }, { merge: true });
+}
+window.removeShareMember = async (uid) => {
   try {
-    const shareRef = doc(db, 'users', currentUser.uid, 'settings', 'share');
-    const shareDoc = await getDoc(shareRef);
-    const current = shareDoc.exists() ? (shareDoc.data().sharedWith || []) : [];
-    await setDoc(shareRef, { sharedWith: current.filter(e => e !== email) }, { merge: true });
-    showToast(`${email} の共有を解除しました`);
+    const ref = doc(db, 'users', currentUser.uid, 'alShares', uid);
+    const legacyEmail = (await getDoc(ref)).data()?.legacyEmail;
+    if (legacyEmail) await dropLegacyEmail(legacyEmail);
+    await deleteDoc(ref);
+    deleteDoc(doc(db, 'alSharedWith', uid, 'from', currentUser.uid)).catch(() => {});
+    showToast('共有を解除しました');
     renderShareMemberList();
-  } catch(e) {
-    showToast('削除に失敗しました');
-  }
+  } catch (e) { showToast('解除に失敗しました'); }
 };
+window.removeLegacyShare = async (email) => {
+  try {
+    await dropLegacyEmail(email);
+    showToast('共有を解除しました');
+    renderShareMemberList();
+  } catch (e) { showToast('解除に失敗しました'); }
+};
+
+// ===== 受け取る側：コードを入力して共有を受け取る =====
+// ask=true のときは、相手の名前を見せて確認してから受け取る（リンクを開いたとき）
+async function acceptShareCode(raw, ask) {
+  const code = shareCodeNorm(raw);
+  if (code.length !== 8) { showToast('コードは8文字です'); return false; }
+  try {
+    const snap = await getDoc(doc(db, 'alShareCodes', code));
+    const c = snap.exists() ? snap.data() : null;
+    if (!c || !(c.exp > Date.now())) { showToast('コードが違うか、期限が切れています'); return false; }
+    if (c.owner === currentUser.uid) { showToast('これは自分の共有コードです'); return false; }
+    const ownerName = c.ownerName || '（名前なし）';
+    if (ask && !confirm(`${ownerName} さんのリストの共有を受け取りますか？`)) return false;
+    await setDoc(doc(db, 'users', c.owner, 'alShares', currentUser.uid), { name: writerName(), at: serverTimestamp(), code });
+    await setDoc(doc(db, 'alSharedWith', currentUser.uid, 'from', c.owner), { name: ownerName, at: serverTimestamp() });
+    showToast(`${ownerName} さんのリストを受け取りました`);
+    loadSharedWithMe();
+    return true;
+  } catch (e) {
+    showToast('受け取りに失敗しました');
+    return false;
+  }
+}
+window.submitShareCode = async () => {
+  const input = document.getElementById('shareCodeInput');
+  if (await acceptShareCode(input.value)) input.value = '';
+};
+// 共有リンク（?share=コード）から開いたとき
+function handleShareLink() {
+  const params = new URLSearchParams(location.search);
+  const code = params.get('share');
+  if (!code) return;
+  params.delete('share');
+  history.replaceState({}, '', location.pathname + (params.toString() ? '?' + params : ''));
+  acceptShareCode(code, true);
+}
 
 function positionLabel(p) {
   if (p==='↑') return '<span class="pos-badge pos-up">↑</span>';
@@ -3017,6 +3158,15 @@ function teRender() {
 // アップデートしたら先頭に { version, date, items } を追記する（先頭の version が表示バージョンになる）
 const UPDATES = [
   {
+    version: 'v12',
+    date: '2026/10/9',
+    items: [
+      'リストの共有を「共有コード」方式に変更しました。設定・共有でコードを発行して相手に送り、相手がコードを入力すると共有されます（メールアドレスの入力は不要になりました）',
+      '今まで共有していた相手は、そのまま引き継がれます',
+      'パソコンでは、タブやブラウザを閉じるとログアウトするようになりました（スマホは今までどおりログインしたままです）',
+    ],
+  },
+  {
     version: 'v11',
     date: '2026/10/7',
     items: [
@@ -3280,8 +3430,9 @@ window.confirmDelete = async () => {
 window.openShareModal = async () => {
   document.getElementById('shareModal').classList.add('open');
   setTimeout(()=>{ document.getElementById('shareModal').scrollTop=0; },0);
+  renderShareCode();
   renderShareMemberList();
-  loadSharedWithMe(true); // モーダルを開いた時だけ最新を再走査
+  loadSharedWithMe();
 };
 window.closeShareModal = () => document.getElementById('shareModal').classList.remove('open');
 
