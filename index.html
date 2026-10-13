@@ -252,8 +252,9 @@
     #f_memo { overflow-y: hidden; }
     .memo-editor { display: none; position: fixed; inset: 0; z-index: 300; background: var(--surface); flex-direction: column; }
     .memo-editor.open { display: flex; }
-    .memo-editor-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--border); font-weight: 700; flex-shrink: 0; }
-    .memo-editor textarea { flex: 1; min-height: 0; border: none; border-radius: 0; resize: none; padding: 16px; background: var(--surface); }
+    /* iPhone のステータスバー（時計・電池）の下に「完了」が入り込まないよう、上にセーフエリア分の余白を取る */
+    .memo-editor-head { display: flex; align-items: center; justify-content: space-between; padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 12px; border-bottom: 1px solid var(--border); font-weight: 700; flex-shrink: 0; }
+    .memo-editor textarea { flex: 1; min-height: 0; border: none; border-radius: 0; resize: none; padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px)); background: var(--surface); }
     .memo-editor textarea:focus { border: none; }
 
     /* ===== CDATA（カード内の一覧） ===== */
@@ -3161,6 +3162,13 @@ function teRender() {
 // ===== バージョン＆お知らせ =====
 // アップデートしたら先頭に { version, date, items } を追記する（先頭の version が表示バージョンになる）
 const UPDATES = [
+  {
+    version: 'v14',
+    date: '2026/10/13',
+    items: [
+      '備考の「全画面で書く」で、右上の「完了」が押せないことがあった不具合を修正しました（iPhoneで時計や電池の表示と重なっていました）',
+    ],
+  },
   {
     version: 'v13',
     date: '2026/10/10',
