@@ -330,6 +330,17 @@
     .cd-foot .btn-primary { margin-left: auto; }
     .cd-preview { white-space: pre-wrap; word-break: break-word; font-family: inherit; font-size: 0.9rem; line-height: 1.7; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; -webkit-user-select: text; user-select: text; }
 
+    /* ===== メンバーのリスト／リーダーの指定 ===== */
+    .mb-tools { display: flex; flex-direction: column; gap: 10px; padding: 10px 14px; background: var(--bg); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .mb-tools .search-pill input { border: none; background: transparent; padding: 11px 0; border-radius: 0; font-size: 16px; }
+    .mb-row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin-bottom: 8px; background: var(--surface); border: 1px solid transparent; border-radius: 16px; box-shadow: var(--shadow); cursor: pointer; }
+    :root.dark-mode .mb-row { border-color: var(--border); }
+    .mb-info { flex: 1; min-width: 0; }
+    .mb-name { font-size: 0.98rem; font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mb-sub { font-size: 0.78rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mb-empty { padding: 48px 16px; text-align: center; font-size: 0.9rem; color: var(--text-muted); line-height: 1.7; }
+    .out-tag { font-size: 0.65rem; font-weight: 700; padding: 1px 7px; border-radius: 999px; background: var(--t-gray-bg); color: var(--t-gray-fg); }
+
     /* ===== リスト反映の確認／提案バー ===== */
     .sync-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); cursor: pointer; }
     .sync-row input { width: 20px; height: 20px; padding: 0; margin-top: 2px; flex-shrink: 0; accent-color: var(--primary); }
@@ -496,6 +507,9 @@
         <button class="icon-btn" onclick="openUpdatesModal()" aria-label="お知らせ" title="お知らせ">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           <span class="notice-dot" id="noticeDot"></span>
+        </button>
+        <button class="icon-btn" onclick="openMembers()" aria-label="メンバーのリスト" title="メンバーのリスト">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         </button>
         <button class="icon-btn" onclick="openShareModal()" aria-label="設定・共有" title="設定・共有">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -788,9 +802,18 @@
     <div class="share-divider"></div>
 
     <div class="share-section">
-      <div class="share-section-title">閲覧できるリスト</div>
-      <p class="share-desc">他のメンバーから共有されているリストです。</p>
-      <div id="sharedWithMeList" style="margin-top:8px;font-size:0.85rem;color:var(--text-muted);">読み込み中...</div>
+      <div class="share-section-title">メンバーのリスト</div>
+      <p class="share-desc">他のメンバーから共有されているリストです。名前で検索でき、辞めた人は「OUT」に分かれます。</p>
+      <div class="share-actions"><button class="btn btn-outline btn-sm" onclick="closeShareModal();openMembers()">メンバーのリストを開く</button></div>
+    </div>
+
+    <div id="leaderAdminSection" style="display:none;">
+      <div class="share-divider"></div>
+      <div class="share-section">
+        <div class="share-section-title">リーダーの指定（ユニオン管理者）</div>
+        <p class="share-desc">リーダーに指定した人は、自分にリストを共有しているメンバーを「OUT」にできます（そのメンバーはログインできなくなります）。</p>
+        <div class="share-actions"><button class="btn btn-outline btn-sm" onclick="openLeaderAdmin()">リーダーを指定する</button></div>
+      </div>
     </div>
 
     <div class="share-divider"></div>
@@ -808,6 +831,46 @@
       <button class="btn btn-outline btn-sm" onclick="confirmSignOut()">ログアウト</button>
     </div>
   </div>
+</div>
+
+<!-- ===== メンバーのリスト（自分に共有されているリスト。活動中／OUT） ===== -->
+<div class="cd-editor" id="mbScreen">
+  <div class="cd-head">
+    <button type="button" class="cd-head-btn" onclick="closeMembers()">‹ 戻る</button>
+    <div class="cd-head-title"><div>メンバーのリスト</div><small>自分に共有されているリスト</small></div>
+    <span class="cd-state"></span>
+  </div>
+  <div class="mb-tools">
+    <label class="search-pill">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="mbSearch" placeholder="名前・ユニオンでさがす" oninput="renderMembers()">
+    </label>
+    <div class="chip-row">
+      <button type="button" class="chip active" id="mbTabActive" onclick="setMembersTab(false)">活動中</button>
+      <button type="button" class="chip" id="mbTabOut" onclick="setMembersTab(true)">OUT</button>
+    </div>
+  </div>
+  <div class="cd-body" id="mbBody"></div>
+</div>
+
+<!-- ===== リーダーの指定（ユニオン管理者） ===== -->
+<div class="cd-editor" id="ldScreen">
+  <div class="cd-head">
+    <button type="button" class="cd-head-btn" onclick="closeLeaderAdmin()">‹ 戻る</button>
+    <div class="cd-head-title"><div>リーダーの指定</div><small id="ldUnionName"></small></div>
+    <span class="cd-state"></span>
+  </div>
+  <div class="mb-tools">
+    <div class="adv-row" id="ldOwnerBar" style="display:none;">
+      <span>ユニオン</span>
+      <select id="ldUnionSel" onchange="openLeaderAdmin(this.value)" style="padding:8px 10px;font-size:0.9rem;"></select>
+    </div>
+    <label class="search-pill">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="ldSearch" placeholder="名前でさがす" oninput="renderLeaderAdmin()">
+    </label>
+  </div>
+  <div class="cd-body" id="ldBody"></div>
 </div>
 
 <!-- ===== 一覧から選ぶ（よくあるニーズ） ===== -->
@@ -1139,7 +1202,7 @@ onAuthStateChanged(auth, async user => {
       showScreen('nameScreen');
     } else {
       // 登録済み → （個人情報保護方針・利用規約に同意していなければ同意画面を挟んで）メイン画面へ
-      currentUser = { ...user, displayName: savedName, area: data.area || '', union: data.union || '', role: data.role || '' };
+      currentUser = { ...user, displayName: savedName, area: data.area || '', union: data.union || '', role: data.role || '', alLeader: data.alLeader === true };
       withConsent(user.uid, data, () => enterMainScreen(savedName));
     }
   } else {
@@ -1173,7 +1236,11 @@ function enterMainScreen(displayName) {
   migrateLegacyShares().then(loadSharedWithMe);
   handleShareLink();
   watchUnionTemplate();
-  document.getElementById('tplAdminSection').style.display = canEditUnionTpl() ? '' : 'none';
+  loadAdminUnions().then(() => {
+    document.getElementById('tplAdminSection').style.display = canEditUnionTpl() ? '' : 'none';
+    document.getElementById('leaderAdminSection').style.display = canEditUnionTpl() ? '' : 'none';
+    renderMembers();
+  });
 }
 
 // ===== プロフィールの変更（設定から。登録画面を「変更」モードで使う） =====
@@ -1282,33 +1349,169 @@ function newShareCode() {
 }
 const myShareCodes = () => getDocs(query(collection(db, 'alShareCodes'), where('owner', '==', currentUser.uid)));
 
-function _renderSharedList(shared) {
-  const el = document.getElementById('sharedWithMeList');
-  if (!el) return;
-  if (!shared || shared.length === 0) {
-    el.textContent = 'まだ共有されているリストはありません';
-    return;
-  }
-  el.innerHTML = shared.map(s => `
-    <div class="share-member-item" style="cursor:pointer;" onclick="switchToList('${s.uid}','${escHtml(s.name)}')">
-      <span class="share-member-email">${escHtml(s.name)}</span>
-      <span style="font-size:0.75rem;color:var(--accent-ink);">閲覧する →</span>
-    </div>`).join('');
+// ===== メンバーのリスト（自分に共有されているリスト） =====
+// members: [{ uid, name, union, area, status, outPrev, role }]
+// status は相手のプロフィール（users/{uid}.status）。'disabled' ＝ OUT（辞めた人。本人はログインできない）
+let members = [];
+let membersOutTab = false;
+const isOut = m => m.status === 'disabled';
+// 受信箱の一覧に、相手のプロフィール（ユニオン・状態）を足す
+async function withProfiles(list) {
+  return Promise.all(list.map(async x => {
+    try {
+      const d = (await getDoc(doc(db, 'users', x.uid))).data() || {};
+      return { uid: x.uid, name: d.displayName || d.name || x.name, union: d.union || '', area: d.area || '',
+               status: d.status || 'active', outPrev: d.outPrev || '', role: d.role || '' };
+    } catch (e) { return { uid: x.uid, name: x.name, union: '', area: '', status: 'active', outPrev: '', role: '' }; }
+  }));
 }
-// 自分宛ての共有（受信箱を読むだけ。他人の設定は見に行かない）
+// 自分宛ての共有（受信箱を読むだけ。他人の共有設定は見に行かない）
 async function loadSharedWithMe() {
   if (!currentUser) return;
+  let list;
   try {
     const snap = await getDocs(collection(db, 'alSharedWith', currentUser.uid, 'from'));
-    _renderSharedList(snap.docs.map(d => ({ uid: d.id, name: d.data().name || '（名前なし）' })));
+    list = snap.docs.map(d => ({ uid: d.id, name: d.data().name || '（名前なし）' }));
   } catch (e) {
     // 新しいルールがまだ反映されていない間だけ、以前の方式で探す
-    loadSharedLegacy().then(_renderSharedList).catch(() => {
-      const el = document.getElementById('sharedWithMeList');
-      if (el) el.textContent = '読み込みに失敗しました';
-    });
+    try { list = await loadSharedLegacy(); } catch (e2) { list = null; }
   }
+  if (!list) { members = []; renderMembers('読み込みに失敗しました'); return; }
+  members = (await withProfiles(list)).sort((a, b) => a.name.localeCompare(b.name, 'ja'));
+  renderMembers();
 }
+
+// OUT（利用停止）にできるか：オーナー／同じユニオンの管理者／管理者が指定したリーダー
+function canOut(m) {
+  if (!currentUser || m.uid === currentUser.uid || m.uid === OWNER_UID || m.role === 'admin') return false;
+  if (currentUser.uid === OWNER_UID || currentUser.alLeader) return true;
+  return !!m.union && myAdminUnions.includes(m.union);
+}
+
+window.openMembers = () => {
+  document.getElementById('mbSearch').value = '';
+  membersOutTab = false;
+  renderMembers('読み込み中...');
+  document.getElementById('mbScreen').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  loadSharedWithMe();
+};
+window.closeMembers = () => {
+  document.getElementById('mbScreen').classList.remove('open');
+  document.body.style.overflow = '';
+};
+window.setMembersTab = (out) => { membersOutTab = out; renderMembers(); };
+
+window.renderMembers = (note) => {
+  const body = document.getElementById('mbBody');
+  if (!body) return;
+  const nOut = members.filter(isOut).length;
+  const tabA = document.getElementById('mbTabActive'), tabO = document.getElementById('mbTabOut');
+  tabA.textContent = `活動中 ${members.length - nOut}`; tabA.classList.toggle('active', !membersOutTab);
+  tabO.textContent = `OUT ${nOut}`;                     tabO.classList.toggle('active', membersOutTab);
+  const q = document.getElementById('mbSearch').value.trim().toLowerCase();
+  const rows = members.filter(m => isOut(m) === membersOutTab)
+    .filter(m => !q || [m.name, m.union, m.area].some(v => (v || '').toLowerCase().includes(q)));
+  if (!rows.length) {
+    body.innerHTML = `<div class="mb-empty">${typeof note === 'string' ? note
+      : q ? '該当するメンバーがいません'
+      : membersOutTab ? 'OUTにしたメンバーはいません'
+      : 'まだ共有されているリストはありません。<br>メンバーに共有コードを発行してもらい、「設定・共有」で入力してください。'}</div>`;
+    return;
+  }
+  body.innerHTML = rows.map(m => `
+    <div class="mb-row" onclick="openMemberList('${m.uid}')">
+      <div class="avatar av-o">${escHtml((m.name || '?')[0])}</div>
+      <div class="mb-info">
+        <div class="mb-name">${escHtml(m.name)}</div>
+        <div class="mb-sub">${escHtml([m.union, m.area].filter(Boolean).join(' ・ '))}</div>
+      </div>
+      ${canOut(m) ? `<button type="button" class="btn btn-sm btn-ghost" onclick="event.stopPropagation();setMemberOut('${m.uid}',${!isOut(m)})">${isOut(m) ? '元に戻す' : 'OUTにする'}</button>` : ''}
+    </div>`).join('');
+};
+
+window.openMemberList = (uid) => {
+  const m = members.find(x => x.uid === uid);
+  if (!m) return;
+  closeMembers();
+  switchToList(uid, m.name);
+};
+
+// OUTにする＝アカウントの利用を止める（NAVIGATOR・GOAL SETTING も含めてログインできなくなる）。
+// 共有されていたリストは、共有を受けていた側で引き続き閲覧できる。
+window.setMemberOut = async (uid, out) => {
+  const m = members.find(x => x.uid === uid);
+  if (!m || !canOut(m)) return;
+  if (!confirm(out
+    ? `${m.name} さんをOUTにしますか？\n\n・本人はログインできなくなります（NAVIGATOR・GOAL SETTING も同じ）\n・このリストは、引き続きあなたが閲覧できます\n・「OUT」のタブから元に戻せます`
+    : `${m.name} さんを元に戻しますか？\n本人がまたログインできるようになります。`)) return;
+  try {
+    const data = out
+      ? { status: 'disabled', outPrev: m.status || 'active', disabledAt: serverTimestamp(), disabledBy: currentUser.uid }
+      : { status: m.outPrev || 'active' };
+    await updateDoc(doc(db, 'users', uid), data);
+    if (out) { m.outPrev = data.outPrev; m.status = 'disabled'; } else { m.status = data.status; }
+    renderMembers();
+    showToast(out ? `${m.name} さんをOUTにしました` : `${m.name} さんを元に戻しました`);
+  } catch (e) {
+    showToast(e?.code === 'permission-denied' ? 'この操作をする権限がありません' : '変更に失敗しました');
+  }
+};
+
+// ===== リーダーの指定（オーナー／ユニオン管理者） =====
+let ld = null;   // { union, users:[{uid,name,area,alLeader}] }
+window.openLeaderAdmin = async (un) => {
+  if (!canEditUnionTpl()) return;
+  const { names, union } = adminUnionChoice(un);
+  if (!union) { showToast('所属ユニオンが未設定です'); return; }
+  closeShareModal();
+  ld = { union, users: [] };
+  fillUnionSelect('ldOwnerBar', 'ldUnionSel', names, union);
+  document.getElementById('ldUnionName').textContent = union;
+  document.getElementById('ldSearch').value = '';
+  document.getElementById('ldBody').innerHTML = '<div class="loading"><div class="spinner"></div>読み込み中...</div>';
+  document.getElementById('ldScreen').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  try {
+    const snap = await getDocs(query(collection(db, 'users'), where('union', '==', union)));
+    if (!ld || ld.union !== union) return;
+    ld.users = snap.docs.filter(d => d.id !== currentUser.uid && d.data().status !== 'disabled')
+      .map(d => ({ uid: d.id, name: d.data().displayName || d.data().name || '（名前なし）', area: d.data().area || '', alLeader: d.data().alLeader === true }))
+      .sort((a, b) => a.name.localeCompare(b.name, 'ja'));
+    renderLeaderAdmin();
+  } catch (e) {
+    document.getElementById('ldBody').innerHTML = '<div class="mb-empty">読み込みに失敗しました</div>';
+  }
+};
+window.closeLeaderAdmin = () => {
+  ld = null;
+  document.getElementById('ldScreen').classList.remove('open');
+  document.body.style.overflow = '';
+};
+window.renderLeaderAdmin = () => {
+  if (!ld) return;
+  const q = document.getElementById('ldSearch').value.trim().toLowerCase();
+  const rows = ld.users.filter(u => !q || u.name.toLowerCase().includes(q));
+  document.getElementById('ldBody').innerHTML = rows.length ? rows.map(u => `
+    <div class="mb-row" style="cursor:default;">
+      <div class="avatar av-o">${escHtml(u.name[0])}</div>
+      <div class="mb-info"><div class="mb-name">${escHtml(u.name)}</div><div class="mb-sub">${escHtml(u.area)}</div></div>
+      <button type="button" class="cd-switch${u.alLeader ? ' on' : ''}" role="switch" aria-checked="${u.alLeader}" aria-label="${escHtml(u.name)} をリーダーにする" onclick="toggleLeader('${u.uid}')"><i></i></button>
+    </div>`).join('') : `<div class="mb-empty">${q ? '該当するメンバーがいません' : 'このユニオンに登録しているメンバーがいません'}</div>`;
+};
+window.toggleLeader = async (uid) => {
+  const u = ld?.users.find(x => x.uid === uid);
+  if (!u) return;
+  try {
+    await updateDoc(doc(db, 'users', uid), { alLeader: !u.alLeader });
+    u.alLeader = !u.alLeader;
+    renderLeaderAdmin();
+    showToast(u.alLeader ? `${u.name} さんをリーダーにしました` : `${u.name} さんのリーダー指定を外しました`);
+  } catch (e) {
+    showToast(e?.code === 'permission-denied' ? 'この操作をする権限がありません' : '変更に失敗しました');
+  }
+};
+
 // 以前の方式：全ユーザーの共有設定を見て、自分のメールアドレスが入っているものを探す。
 // ルール変更後は読めなくなる（＝この関数は使われなくなる）ので、移行が済んだら削除してよい。
 async function loadSharedLegacy() {
@@ -1347,22 +1550,24 @@ async function migrateLegacyShares() {
 }
 
 // ===== 他のユーザーのリストに切り替え =====
+let viewingOut = false;   // 閲覧中のリストの持ち主が OUT か
 window.switchToList = (uid, name) => {
+  const m = members.find(x => x.uid === uid);
   viewingUserName = name;
+  viewingOut = !!m && isOut(m);
   closeShareModal();
   loadMyList(uid, () => {
-    // 共有を解除されたなど、読めなくなっていた場合
+    // 読めなかった場合。OUT の人は、ルールが反映されるまで読めないことがあるので受信箱からは外さない
     showToast(`${name} のリストは閲覧できなくなっています`);
-    deleteDoc(doc(db, 'alSharedWith', currentUser.uid, 'from', uid)).catch(() => {});
+    if (!viewingOut) deleteDoc(doc(db, 'alSharedWith', currentUser.uid, 'from', uid)).catch(() => {});
     backToMyList();
   });
   showToast(`${name} のリストを表示中`);
   // ヘッダー表示を更新
   document.getElementById('userNameDisplay').textContent = '';
   const banner = document.getElementById('writerBanner');
-  const writerNameEl = document.getElementById('writerName');
   if (uid !== currentUser.uid) {
-    writerNameEl.textContent = name;
+    document.getElementById('writerName').innerHTML = escHtml(name) + (viewingOut ? ' <span class="out-tag">OUT</span>' : '');
     banner.style.display = 'block';
   } else {
     banner.style.display = 'none';
@@ -1371,6 +1576,7 @@ window.switchToList = (uid, name) => {
 
 // ===== 自分のリストに戻る =====
 function backToMyList() {
+  viewingOut = false;
   loadMyList(currentUser.uid);
   document.getElementById('userNameDisplay').textContent = currentUser.displayName || '';
   document.getElementById('writerBanner').style.display = 'none';
@@ -1703,9 +1909,11 @@ window.renderList = function() {
           ${p.insta?`<div class="detail-item"><div class="detail-label">インスタ</div><div class="detail-value"><a href="${escHtml(p.insta)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;color:#e1306c;font-weight:600;text-decoration:none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="#e1306c"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>Instagram</a></div></div>`:''}
           ${p.memo?`<div class="detail-item full"><div class="detail-label">備考</div><div class="detail-value" style="white-space:pre-wrap;">${escHtml(p.memo)}</div></div>`:''}
         </div>
+        ${p.copiedFrom ? `<div class="detail-label" style="margin-top:10px;">引き継ぎ元：${escHtml(p.copiedFrom)} さんのリスト</div>` : ''}
         ${cdataBlockHtml(p, canEdit)}
         <div class="card-actions">
           <button class="btn btn-outline btn-sm" onclick="copyCardText('${p.id}',this)">📋 コピー</button>
+          ${isReadOnly && viewingOut ? `<button class="btn btn-outline btn-sm" onclick="copyPersonToMine('${p.id}',this)">自分のリストにコピー</button>` : ''}
           ${canEdit?`<button class="btn btn-outline btn-sm" onclick="openEditModal('${p.id}')">編集</button>
           <button class="btn btn-danger btn-sm" onclick="askDelete('${p.id}')">削除</button>`:''}
         </div>
@@ -1985,7 +2193,34 @@ const TPL_MUST = { cdata: f => f.type === 'datetime', event: f => f.fmt === 'na'
 const tplValid = (fields, kind = 'cdata') => Array.isArray(fields)
   && fields.some(f => f.key && !tplLocked(f, kind))
   && fields.some(TPL_MUST[kind]);
-function canEditUnionTpl() { return !!currentUser && (currentUser.uid === OWNER_UID || currentUser.role === 'admin'); }
+// 自分が管理しているユニオン：管理者の印（role=admin）があれば所属ユニオン＋兼務のユニオン
+// （兼務は NAVIGATOR と同じく checkinUnions/{ユニオン}.coreAdmins で決まる）
+let myAdminUnions = [];
+async function loadAdminUnions() {
+  const set = new Set();
+  if (currentUser?.role === 'admin' && currentUser.union) set.add(currentUser.union);
+  try {
+    const qs = await getDocs(query(collection(db, 'checkinUnions'), where('coreAdmins', 'array-contains', currentUser.uid)));
+    qs.docs.forEach(d => set.add(d.id));
+  } catch (e) {}
+  myAdminUnions = [...set];
+}
+function canEditUnionTpl() { return !!currentUser && (currentUser.uid === OWNER_UID || myAdminUnions.length > 0); }
+// 管理画面で選べるユニオン（オーナーは全ユニオン）と、最初に開くユニオン
+function adminUnionChoice(un) {
+  const isOwner = currentUser.uid === OWNER_UID;
+  const names = isOwner ? UNION_LIST.map(u => u.name) : [...myAdminUnions];
+  if (isOwner && currentUser.union && !names.includes(currentUser.union)) names.push(currentUser.union);
+  const union = (un && names.includes(un)) ? un : (names.includes(currentUser.union) ? currentUser.union : names[0]);
+  return { names, union };
+}
+// ユニオンの切り替え（選べるユニオンが2つ以上のときだけ出す）
+function fillUnionSelect(barId, selId, names, union) {
+  document.getElementById(barId).style.display = names.length > 1 ? '' : 'none';
+  const sel = document.getElementById(selId);
+  sel.innerHTML = names.map(n => `<option value="${escHtml(n)}">${escHtml(n)}</option>`).join('');
+  sel.value = union;
+}
 function stopTplWatch() { unsubTpls.forEach(u => u()); unsubTpls = []; unionTpls = { cdata: null, event: null }; }
 function watchUnionTemplate() {
   stopTplWatch();
@@ -2959,20 +3194,12 @@ function teClean(fields) {
 
 window.openTplEditor = async (un, kind = 'cdata') => {
   if (!canEditUnionTpl()) return;
-  const isOwner = currentUser.uid === OWNER_UID;
-  const union = (isOwner && un) || currentUser.union;
+  const { names, union } = adminUnionChoice(un);
   if (!union) { showToast('所属ユニオンが未設定です'); return; }
   closeShareModal();
   te = { kind, union, fields: [], open: new Set(), dirty: false, preview: false, loading: true };
   document.querySelectorAll('#teKindBar .chip').forEach(b => b.classList.toggle('active', b.dataset.kind === kind));
-  document.getElementById('teOwnerBar').style.display = isOwner ? '' : 'none';
-  if (isOwner) {
-    const names = UNION_LIST.map(u => u.name);
-    if (!names.includes(union)) names.push(union);
-    const sel = document.getElementById('teUnionSel');
-    sel.innerHTML = names.map(n => `<option value="${escHtml(n)}">${escHtml(n)}</option>`).join('');
-    sel.value = union;
-  }
+  fillUnionSelect('teOwnerBar', 'teUnionSel', names, union);
   document.getElementById('teUnionName').textContent = union;
   document.getElementById('teBody').innerHTML = '<div class="loading"><div class="spinner"></div>読み込み中...</div>';
   teSetState('');
@@ -3163,6 +3390,16 @@ function teRender() {
 // アップデートしたら先頭に { version, date, items } を追記する（先頭の version が表示バージョンになる）
 const UPDATES = [
   {
+    version: 'v15',
+    date: '2026/10/25',
+    items: [
+      '右上に「メンバーのリスト」（人のアイコン）を追加。自分に共有されているリストを、名前やユニオンで検索できます',
+      '辞めたメンバーを「OUT」にできるようになりました（オーナー・ユニオン管理者・指定されたリーダー）。OUTにした人はログインできなくなり、リストは「OUT」のタブにまとまります',
+      'OUTにした人のリストは引き続き閲覧でき、気になる人は「自分のリストにコピー」で引き継げます（シートも一緒にコピーされます）',
+      'ユニオン管理者は「設定・共有」からリーダーを指定できます。兼務しているユニオンの管理（フォーマット編集・リーダー指定・OUT）もできるようになりました',
+    ],
+  },
+  {
     version: 'v14',
     date: '2026/10/13',
     items: [
@@ -3350,6 +3587,26 @@ window.copyCardText = (id, btn) => {
   navigator.clipboard.writeText(lines.join('\n\n'))
     .then(() => { flashCopied(btn); showToast('コピーしました'); })
     .catch(() => showToast('コピーに失敗しました'));
+};
+
+// OUT にした人のリストから、気になる人を自分のリストへ引き継ぐ（シートも一緒にコピーする）
+window.copyPersonToMine = async (pid, btn) => {
+  const p = people.find(x => x.id === pid);
+  if (!p || !currentUser || viewingUserId === currentUser.uid) return;
+  const key = viewingUserId + '_' + pid;
+  const mine = collection(db, 'users', currentUser.uid, 'people');
+  try {
+    const dup = await getDocs(query(mine, where('copiedFromKey', '==', key)));
+    if (dup.docs.length) { showToast('すでに自分のリストにコピー済みです'); return; }
+    const data = {};
+    FIELDS.forEach(f => { data[f] = p[f] || ''; });
+    Object.keys(SHEET_KINDS).forEach(k => { if (p[k]) data[k] = p[k]; });
+    // sortOrder: 自分のリストの一番上に入れる（現在は相手のリストを表示中で、自分の並び順を知らないため）
+    await addDoc(mine, { ...data, writer: writerName(), copiedFromKey: key, copiedFrom: viewingUserName,
+                         sortOrder: -Date.now(), createdAt: serverTimestamp() });
+    flashCopied(btn);
+    showToast(`${p.name} さんを自分のリストにコピーしました`);
+  } catch (e) { showToast('コピーに失敗しました'); }
 };
 
 window.toggleFavorite = async (id) => {
