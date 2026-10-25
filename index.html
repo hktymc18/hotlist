@@ -341,6 +341,45 @@
     .mb-empty { padding: 48px 16px; text-align: center; font-size: 0.9rem; color: var(--text-muted); line-height: 1.7; }
     .out-tag { font-size: 0.65rem; font-weight: 700; padding: 1px 7px; border-radius: 999px; background: var(--t-gray-bg); color: var(--t-gray-fg); }
 
+    /* ===== Family DATA ===== */
+    .fm-fs { border: none; margin: 0; padding: 0; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+    .fm-fs:disabled .cd-chip:not(.on), .fm-fs:disabled .cd-add, .fm-fs:disabled .cd-pick-btn, .fm-fs:disabled .cd-x { display: none; }
+    .fm-fs:disabled .cd-chip.on { cursor: default; }
+    .fm-fs:disabled input:placeholder-shown, .fm-fs:disabled textarea:placeholder-shown { display: none; }   /* 閲覧のみ：空の欄は出さない */
+    .fm-fs:disabled input, .fm-fs:disabled textarea, .fm-fs:disabled select { opacity: 1; color: var(--text); -webkit-text-fill-color: var(--text); }
+    .fm-banner { padding: 10px 12px; margin-bottom: 12px; border-radius: 12px; background: var(--t-blue-bg); color: var(--t-blue-fg); font-size: 0.82rem; line-height: 1.6; }
+    .fm-sec-h { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 12px 14px 0; font-weight: 700; font-size: 0.95rem; color: var(--text); }
+    .fm-sec-h small { font-size: 0.72rem; font-weight: 500; color: var(--text-muted); }
+    .fm-tree { position: relative; margin: 8px 0 0; overflow: auto; -webkit-overflow-scrolling: touch; }
+    .fm-tree svg { display: block; margin: 0 auto; }
+    .fm-zoom { display: flex; justify-content: flex-end; gap: 8px; padding: 6px 14px 0; }
+    .fm-zoom button { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border-strong); background: var(--surface); color: var(--text-muted); font-size: 1.05rem; line-height: 1; cursor: pointer; }
+    .fm-legend { display: flex; flex-wrap: wrap; gap: 6px 12px; padding: 4px 14px 2px; font-size: 0.72rem; color: var(--text-muted); }
+    .fm-legend span { display: inline-flex; align-items: center; gap: 5px; }
+    .fm-legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+    .fm-note { padding: 4px 14px 12px; font-size: 0.7rem; color: var(--text-muted); line-height: 1.5; }
+    .fm-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .fm-row:last-of-type { border-bottom: none; }
+    .fm-rank { width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: var(--text); color: var(--bg); font-family: 'Inter', sans-serif; font-size: 0.8rem; font-weight: 700; }
+    .fm-info { flex: 1; min-width: 0; }
+    .fm-name { font-size: 0.95rem; font-weight: 600; color: var(--text); }
+    .fm-name .fm-star { color: #E0A93B; }
+    .fm-sub { font-size: 0.75rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .fm-tags { display: flex; gap: 4px; flex-shrink: 0; }
+    .fm-tags span { font-size: 0.65rem; padding: 2px 7px; border-radius: 999px; background: var(--surface2); color: var(--text-muted); }
+    .fm-tags .fm-adv-tag { background: var(--t-blue-bg); color: var(--t-blue-fg); }
+    .fm-move { display: flex; flex-direction: column; flex-shrink: 0; }
+    .fm-move button { background: none; border: none; color: var(--text-muted); font-size: 0.7rem; padding: 3px 6px; cursor: pointer; opacity: 0.7; }
+    .fm-move button:disabled { opacity: 0.2; }
+    .fm-sl { display: flex; align-items: center; gap: 10px; }
+    .fm-sl span { min-width: 64px; font-size: 0.85rem; color: var(--text); }
+    .fm-sl input { flex: 1; padding: 0; accent-color: var(--accent); }
+    .fm-sl em { min-width: 40px; text-align: right; font-style: normal; font-size: 0.85rem; font-weight: 600; color: var(--text); }
+    .fm-hint { margin-top: 6px; font-size: 0.72rem; color: var(--text-muted); line-height: 1.5; }
+    .fm-adv { padding: 10px 12px; margin-bottom: 8px; border-radius: 12px; background: var(--t-blue-bg); color: var(--t-blue-fg); font-size: 0.88rem; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+    .fm-adv small { display: block; margin-bottom: 2px; font-size: 0.72rem; opacity: 0.75; }
+    .fm-del { align-self: center; background: none; border: none; color: var(--danger, #E5484D); font-size: 0.85rem; padding: 8px; cursor: pointer; }
+
     /* ===== リスト反映の確認／提案バー ===== */
     .sync-row { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); cursor: pointer; }
     .sync-row input { width: 20px; height: 20px; padding: 0; margin-top: 2px; flex-shrink: 0; accent-color: var(--primary); }
@@ -507,6 +546,9 @@
         <button class="icon-btn" onclick="openUpdatesModal()" aria-label="お知らせ" title="お知らせ">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           <span class="notice-dot" id="noticeDot"></span>
+        </button>
+        <button class="icon-btn" onclick="openFamily()" aria-label="Family DATA" title="Family DATA">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9v12h14V9"/><path d="M10 21v-6h4v6"/></svg>
         </button>
         <button class="icon-btn" onclick="openMembers()" aria-label="メンバーのリスト" title="メンバーのリスト">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -802,6 +844,14 @@
     <div class="share-divider"></div>
 
     <div class="share-section">
+      <div class="share-section-title">Family DATA</div>
+      <p class="share-desc">家族の図・一人ひとりのニーズ・アプローチ作戦をまとめます。リストを共有している相手に見せるかどうかは、Family DATA の画面の下で選べます。</p>
+      <div class="share-actions"><button class="btn btn-outline btn-sm" onclick="closeShareModal();openFamily(currentUserUid())">Family DATA を開く</button></div>
+    </div>
+
+    <div class="share-divider"></div>
+
+    <div class="share-section">
       <div class="share-section-title">メンバーのリスト</div>
       <p class="share-desc">他のメンバーから共有されているリストです。名前で検索でき、辞めた人は「OUT」に分かれます。</p>
       <div class="share-actions"><button class="btn btn-outline btn-sm" onclick="closeShareModal();openMembers()">メンバーのリストを開く</button></div>
@@ -871,6 +921,17 @@
     </label>
   </div>
   <div class="cd-body" id="ldBody"></div>
+</div>
+
+<!-- ===== Family DATA（家族の情報） ===== -->
+<div class="cd-editor" id="fmScreen">
+  <div class="cd-head">
+    <button type="button" class="cd-head-btn" id="fmBack" onclick="famBack()">‹ 戻る</button>
+    <div class="cd-head-title"><div id="fmTitle">Family DATA</div><small id="fmSub"></small></div>
+    <span class="cd-state" id="fmState"></span>
+  </div>
+  <div class="cd-body" id="fmBody"></div>
+  <div class="cd-foot" id="fmFoot"></div>
 </div>
 
 <!-- ===== 一覧から選ぶ（よくあるニーズ） ===== -->
@@ -1426,6 +1487,7 @@ window.renderMembers = (note) => {
         <div class="mb-name">${escHtml(m.name)}</div>
         <div class="mb-sub">${escHtml([m.union, m.area].filter(Boolean).join(' ・ '))}</div>
       </div>
+      <button type="button" class="btn btn-sm btn-ghost" onclick="event.stopPropagation();openFamily('${m.uid}')">Family</button>
       ${canOut(m) ? `<button type="button" class="btn btn-sm btn-ghost" onclick="event.stopPropagation();setMemberOut('${m.uid}',${!isOut(m)})">${isOut(m) ? '元に戻す' : 'OUTにする'}</button>` : ''}
     </div>`).join('');
 };
@@ -3056,8 +3118,9 @@ function openPickModal(k) {
   document.getElementById('pickModal').classList.add('open');
   document.querySelector('#pickModal .modal').scrollTop = 0;
 }
-window.closePickModal = () => { document.getElementById('pickModal').classList.remove('open'); pickKey = null; };
+window.closePickModal = () => { document.getElementById('pickModal').classList.remove('open'); pickKey = null; famPicking = null; };
 window.applyPicks = () => {
+  if (famPicking) { famApplyPicks(); return; }
   if (!cd || !pickKey) return;
   const k = pickKey, f = cdField(k);
   const checked = new Set([...document.querySelectorAll('#pickList input:checked')].map(el => el.value));
@@ -3386,9 +3449,607 @@ function teRender() {
   });
 })();
 
+// ===== Family DATA（家族の情報。users/{uid}/family/main に1人1つ） =====
+// 家族の並び順＝影響力の順番。リストを共有している相手（Uライン）は、本人が share=true にしたときだけ読め、
+// 「Uラインからのアドバイス」（advice.{家族のid}.{書いた人のuid}）だけ書き込める（ルールで制限）。
+// 健康の欄は「気にしていること」だけ。病名や薬は要配慮個人情報なので書かない運用。
+const FAM_RELS = [   // [続柄, 世代（0＝自分）, 父方／母方を選ぶか]
+  ['父',-1],['母',-1],['祖父',-2,1],['祖母',-2,1],['叔父',-1,1],['叔母',-1,1],['義父',-1],['義母',-1],
+  ['兄',0],['姉',0],['弟',0],['妹',0],['配偶者',0],['彼氏・彼女',0],['いとこ',0,1],['義兄弟',0],['義姉妹',0],
+  ['子',1],['甥',1],['姪',1],['孫',2],['その他',0],
+];
+const FAM_REL = Object.fromEntries(FAM_RELS.map(([r, g, s]) => [r, { gen: g, side: !!s }]));
+const FAM_TYPES = [['C','コントローラー'],['P','プロモーター'],['A','アナライザー'],['S','サポーター']];
+const FAM_SLIDERS = [['trust','信頼度'],['beauty','美意識'],['healthMind','健康意識']];
+const FAM_HOME_COLORS = ['blue','teal','amber','purple','green','pink','red','gray'];
+const famId = () => Math.random().toString(36).slice(2, 10);
+const famCircled = n => n <= 20 ? String.fromCharCode(0x245F + n) : `(${n})`;
+let fm = null;          // { uid, name, ro, d, view:'top'|家族のid, zoom, preview, dirty, timer }
+let famPicking = null;  // よくあるニーズを選んでいる家族のid
+
+window.currentUserUid = () => currentUser?.uid;
+
+function famNorm(d) {
+  const me = d.me || {};
+  return {
+    members: (Array.isArray(d.members) ? d.members : []).filter(m => m && m.id).map(m => ({
+      id: m.id, rel: m.rel || '', side: m.side || '', parent: m.parent || '', name: m.name || '', age: m.age || '',
+      home: m.home || '', key: m.key === true,
+      needs: Array.isArray(m.needs) ? m.needs.map(n => ({ k: n?.k || '', t: n?.t || '' })) : [],
+      health: m.health || '', trust: m.trust ?? null, beauty: m.beauty ?? null, healthMind: m.healthMind ?? null,
+      type: m.type || '', plan: m.plan || '',
+    })),
+    me: { home: me.home || '', past: me.past || '', image: me.image || '', biz: me.biz || '', react: me.react || '' },
+    share: d.share === true,
+    advice: d.advice && typeof d.advice === 'object' ? d.advice : {},
+  };
+}
+const famMember = id => fm?.d.members.find(m => m.id === id);
+const famRelLabel = m => m.rel ? (FAM_REL[m.rel]?.side && m.side ? m.side : '') + m.rel : '続柄未入力';
+const famHomeKey = m => m.home === '同居' ? (fm.d.me.home || '自分の家') : m.home;
+const famAdvice = id => Object.entries(fm.d.advice[id] || {})
+  .filter(([, a]) => a && a.text).map(([uid, a]) => ({ uid, ...a })).sort((a, b) => (a.at || 0) - (b.at || 0));
+const famDate = t => { const d = new Date(t || 0); return `${d.getMonth() + 1}/${d.getDate()}`; };
+
+window.openFamily = async (uid) => {
+  if (!currentUser) return;
+  uid = uid || viewingUserId || currentUser.uid;
+  const ro = uid !== currentUser.uid;
+  const name = !ro ? writerName() : (members.find(x => x.uid === uid)?.name || (uid === viewingUserId ? viewingUserName : '') || '');
+  closeMembers();
+  fm = { uid, name, ro, d: null, view: 'top', zoom: 1, preview: false, dirty: false, timer: null };
+  document.getElementById('fmBody').innerHTML = '<div class="loading"><div class="spinner"></div>読み込み中...</div>';
+  document.getElementById('fmFoot').innerHTML = '';
+  famHead();
+  document.getElementById('fmScreen').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  let d = null, err = null;
+  try {
+    const s = await getDoc(doc(db, 'users', uid, 'family', 'main'));
+    d = s.exists() ? s.data() : null;
+  } catch (e) { err = e; }
+  if (!fm || fm.uid !== uid) return;
+  if (ro && (!d || d.share !== true)) {
+    document.getElementById('fmBody').innerHTML = `<div class="mb-empty">${escHtml(name || 'このメンバー')} さんの Family DATA は<br>共有されていません。<br><br>本人の Family DATA の画面で<br>「Family DATA も共有する」をオンにしてもらってください。</div>`;
+    famFoot();
+    return;
+  }
+  if (err && !ro) { document.getElementById('fmBody').innerHTML = '<div class="mb-empty">読み込みに失敗しました</div>'; return; }
+  fm.d = famNorm(d || {});
+  famRender();
+};
+
+window.famBack = () => {
+  if (!fm) return;
+  if (fm.view !== 'top') {
+    // 何も書かずに戻った家族は消す
+    const m = famMember(fm.view);
+    if (m && !fm.ro && !m.rel && !m.name && !m.age) { fm.d.members = fm.d.members.filter(x => x !== m); famTouch(); }
+    fm.view = 'top';
+    famRender();
+    return;
+  }
+  if (fm.preview) { fm.preview = false; famRender(); return; }
+  closeFamily();
+};
+window.closeFamily = () => {
+  if (fm?.dirty) famSave();
+  fm = null;
+  document.getElementById('fmScreen').classList.remove('open');
+  document.body.style.overflow = '';
+};
+
+function famState(t) { document.getElementById('fmState').textContent = t; }
+function famTouch() {
+  if (!fm || fm.ro) return;
+  fm.dirty = true;
+  famState('保存中…');
+  clearTimeout(fm.timer);
+  fm.timer = setTimeout(famSave, 700);
+}
+async function famSave() {
+  if (!fm || fm.ro || !fm.dirty) return;
+  const f = fm;
+  f.dirty = false;
+  clearTimeout(f.timer);
+  try {
+    // advice は Uラインが書く欄なので、本人の保存では触らない（merge で残す）
+    await setDoc(doc(db, 'users', f.uid, 'family', 'main'),
+      { members: f.d.members, me: f.d.me, share: f.d.share, updatedAt: serverTimestamp() }, { merge: true });
+    if (fm === f && !f.dirty) famState('保存済み');
+  } catch (e) {
+    if (fm === f) famState('未保存');
+    showToast('保存に失敗しました');
+  }
+}
+
+function famHead() {
+  const m = fm.view !== 'top' ? famMember(fm.view) : null;
+  document.getElementById('fmTitle').textContent = m ? famRelLabel(m) : 'Family DATA';
+  document.getElementById('fmSub').textContent = m ? (m.name || 'Family DATA') : (fm.name + (fm.ro ? '（共有）' : ''));
+  document.getElementById('fmBack').textContent = m ? '‹ 一覧' : (fm.preview ? '‹ 入力' : '‹ 戻る');
+  famState(fm.ro ? '閲覧のみ' : '');
+}
+function famFoot() {
+  const f = document.getElementById('fmFoot');
+  if (!fm.d) { f.innerHTML = '<button type="button" class="btn btn-primary btn-sm" onclick="closeFamily()">閉じる</button>'; return; }
+  if (fm.view !== 'top') {
+    f.innerHTML = `${fm.ro ? '' : '<button type="button" class="btn btn-ghost btn-sm" data-act="delMember">この家族を削除</button>'}
+      <button type="button" class="btn btn-primary btn-sm" onclick="famBack()">一覧に戻る</button>`;
+    return;
+  }
+  f.innerHTML = `${fm.ro ? '' : `<button type="button" class="btn btn-ghost btn-sm" data-act="preview">${fm.preview ? '入力に戻る' : 'プレビュー'}</button>`}
+    <button type="button" class="btn btn-ghost btn-sm" data-act="copy">📋 コピー</button>
+    <button type="button" class="btn btn-primary btn-sm" onclick="closeFamily()">${fm.ro ? '閉じる' : '完了'}</button>`;
+}
+
+function famRender() {
+  if (!fm || !fm.d) return;
+  const body = document.getElementById('fmBody');
+  const keep = fm.lastView === fm.view ? body.scrollTop : 0;
+  fm.lastView = fm.view;
+  famHead();
+  famFoot();
+  if (fm.view !== 'top' && !famMember(fm.view)) fm.view = 'top';
+  if (fm.view !== 'top') body.innerHTML = famMemberHtml(famMember(fm.view));
+  else if (fm.preview) body.innerHTML = `<pre class="cd-preview">${escHtml(famText())}</pre>`;
+  else body.innerHTML = famTopHtml();
+  body.scrollTop = keep;
+  if (fm.view === 'top' && !fm.preview) famCenterTree(!keep);
+}
+
+// ----- 一覧（トップ） -----
+function famTopHtml() {
+  const d = fm.d, ro = fm.ro, ms = d.members;
+  const chip = (act, v, cur, label) => `<button type="button" class="cd-chip${v === cur ? ' on' : ''}" data-act="${act}" data-v="${escHtml(v)}">${escHtml(label || v)}</button>`;
+  const rows = ms.map((m, i) => {
+    const needs = m.needs.map(n => n.k || n.t).filter(Boolean);
+    const sub = [m.name, m.age && `${m.age}歳`, m.home === '同居' ? '同居' : m.home, needs[0]].filter(Boolean).join(' ・ ');
+    const nAdv = famAdvice(m.id).length;
+    return `<div class="fm-row" data-act="open" data-m="${m.id}">
+      <span class="fm-rank">${i + 1}</span>
+      <div class="fm-info"><div class="fm-name">${escHtml(famRelLabel(m))}${m.key ? ' <span class="fm-star">★</span>' : ''}</div>
+        <div class="fm-sub">${escHtml(sub) || '&nbsp;'}</div></div>
+      <div class="fm-tags">${m.trust != null ? `<span>信 ${m.trust}</span>` : ''}${m.type ? `<span>${m.type}</span>` : ''}${nAdv ? '<span class="fm-adv-tag">助言</span>' : ''}</div>
+      ${ro ? '' : `<div class="fm-move"><button type="button" data-act="up" data-m="${m.id}" aria-label="上へ"${i ? '' : ' disabled'}>▲</button><button type="button" data-act="down" data-m="${m.id}" aria-label="下へ"${i < ms.length - 1 ? '' : ' disabled'}>▼</button></div>`}
+    </div>`;
+  }).join('');
+  return `
+    ${ro ? `<div class="fm-banner">${escHtml(fm.name)} さんの Family DATA です。家族ごとの「Uラインからのアドバイス」だけ書き込めます（家族をタップ）。</div>` : ''}
+    <div class="cd-sec">
+      <div class="fm-sec-h">家族の図 <small>自動で描きます</small></div>
+      ${ms.length ? `<div class="fm-tree" id="fmTree">${famTreeSvg()}</div>
+        <div class="fm-zoom"><button type="button" data-act="zoomOut" aria-label="図を小さく">－</button><button type="button" data-act="zoomIn" aria-label="図を大きく">＋</button></div>${famLegendHtml()}
+        <div class="fm-note">黒丸の数字＝影響力の順番 ・ ★＝キーパーソン ・ 色＝住んでいる家（同じ色は同じ家）</div>`
+        : `<div class="fm-note" style="padding-top:12px;">家族を追加すると、ここに家族の図ができます。</div>`}
+    </div>
+    <div class="cd-sec">
+      <div class="fm-sec-h">家族 <small>${ms.length}人 ・ 上から影響力の順${ro ? '' : '（▲▼で並べ替え）'}</small></div>
+      <div class="cd-sec-body" style="border-top:none;gap:0;padding-top:4px;">
+        ${rows || '<div class="fm-hint" style="padding:6px 0;">まだ家族が登録されていません。</div>'}
+        ${ro ? '' : '<button type="button" class="cd-add" data-act="add" style="margin-top:10px;">＋ 家族を追加</button>'}
+      </div>
+    </div>
+    <div class="cd-sec">
+      <div class="fm-sec-h">自分と家族について</div>
+      <div class="cd-sec-body" style="border-top:none;">
+        <fieldset class="fm-fs"${ro ? ' disabled' : ''}>
+          <div class="cd-field"><div class="cd-label">自分の住まい（市区町村まで）</div>
+            <input type="text" data-me="home" value="${escHtml(d.me.home)}" placeholder="例：福岡市"></div>
+          <div class="cd-field"><div class="cd-label">過去の自分は家族にどう映ってる？</div>
+            <textarea rows="2" data-me="past" placeholder="例：飽きっぽくて、続かない人">${escHtml(d.me.past)}</textarea></div>
+          <div class="cd-field"><div class="cd-label">自分の中での家族の印象はどんな人？</div>
+            <textarea rows="2" data-me="image" placeholder="例：心配性だけど、応援してくれる">${escHtml(d.me.image)}</textarea></div>
+          <div class="cd-field"><div class="cd-label">ビジネスを伝えてる？</div>
+            <div class="cd-chips">${chip('biz', 'YES', d.me.biz)}${chip('biz', 'NO', d.me.biz)}</div>
+            ${d.me.biz === 'YES' ? `<input type="text" data-me="react" value="${escHtml(d.me.react)}" placeholder="反応は？" style="margin-top:8px;">` : ''}</div>
+        </fieldset>
+      </div>
+    </div>
+    ${ro ? '' : `<div class="cd-sec"><div class="cd-sec-body" style="border-top:none;">
+      <div class="cd-check" style="border:none;padding:0;"><div><b>Family DATA も共有する</b>
+        <div class="fm-hint" style="margin-top:2px;">オンにすると、リストを共有している相手（Uライン）が見られて、アドバイスを書けます。オフにすると、リストは共有したまま Family DATA だけ見せません。</div></div>
+        <button type="button" class="cd-switch${d.share ? ' on' : ''}" role="switch" aria-checked="${d.share}" aria-label="Family DATA も共有する" data-act="share"><i></i></button></div>
+    </div></div>`}`;
+}
+
+// ----- 家族の図（SVG を自動で描く） -----
+// 世代ごとに横一列に並べ、父方を左・母方を右に置く。線は「親の真ん中から下ろして横に分ける」形で引く
+function famTreeLayout() {
+  const ms = fm.d.members.filter(m => m.rel);
+  const idx = new Map(fm.d.members.map((m, i) => [m.id, i]));
+  const sideRank = s => s === '父方' ? 0 : s === '母方' ? 2 : 1;
+  const ORDER = {
+    '-2': m => sideRank(m.side) * 2 + (m.rel === '祖母' ? 1 : 0),
+    '-1': m => m.rel === '父' ? 1 : m.rel === '母' ? 2 : m.rel === '義父' ? 5 : m.rel === '義母' ? 6
+              : m.side === '父方' ? 0 : m.side === '母方' ? 3 : 4,
+    '0':  m => ({ '兄': 1, '姉': 1, '配偶者': 3, '彼氏・彼女': 3.5, '弟': 4, '妹': 4, '義兄弟': 5, '義姉妹': 5, 'その他': 8 })[m.rel]
+              ?? (m.side === '父方' ? 0 : m.side === '母方' ? 7 : 6),
+    '1':  m => m.rel === '子' ? 0 : 1,
+    '2':  () => 0,
+  };
+  const ageOf = m => parseInt(String(m.age).replace(/[^\d]/g, ''), 10);
+  const rows = {};
+  ms.forEach(m => { const g = FAM_REL[m.rel]?.gen ?? 0; (rows[g] = rows[g] || []).push({ m }); });
+  (rows[0] = rows[0] || []).push({ m: { id: '_me', rel: '自分' }, me: true });
+  const G = 72;
+  for (const g in rows) {
+    rows[g].sort((a, b) => {
+      const oa = a.me ? 2 : ORDER[g](a.m), ob = b.me ? 2 : ORDER[g](b.m);
+      if (oa !== ob) return oa - ob;
+      const aa = ageOf(a.m), ab = ageOf(b.m);   // 同じ並びの中は年上を左に
+      if (!isNaN(aa) && !isNaN(ab) && aa !== ab) return ab - aa;
+      return (idx.get(a.m.id) ?? 0) - (idx.get(b.m.id) ?? 0);
+    });
+    rows[g].forEach((n, i) => { n.x = i * G; n.gen = +g; });
+  }
+  const all = Object.values(rows).flat();
+  const by = (g, f) => (rows[g] || []).filter(n => !n.me && f(n.m));
+  const mid = ns => ns.length ? ns.reduce((s, n) => s + n.x, 0) / ns.length : null;
+  const rowMid = g => (rows[g][0].x + rows[g][rows[g].length - 1].x) / 2;
+  const shift = (g, from, to) => { if (rows[g] && from != null && to != null) rows[g].forEach(n => { n.x += to - from; }); };
+  const me = rows[0].find(n => n.me);
+  // 行どうしの位置合わせ：親の行は「父母の真ん中」を自分の上に。祖父母は父（いなければ母）の上に
+  const parents = by(-1, m => m.rel === '父' || m.rel === '母');
+  if (rows[-1]) shift(-1, parents.length ? mid(parents) : rowMid(-1), me.x);
+  if (rows[-2]) {
+    const pat = by(-2, m => m.side === '父方'), mat = by(-2, m => m.side === '母方');
+    const fa = by(-1, m => m.rel === '父'), mo = by(-1, m => m.rel === '母');
+    if (pat.length && fa.length) shift(-2, mid(pat), fa[0].x);
+    else if (mat.length && mo.length) shift(-2, mid(mat), mo[0].x);
+    else shift(-2, rowMid(-2), me.x);
+  }
+  const spouse = by(0, m => m.rel === '配偶者');
+  const kids = () => by(1, m => m.rel === '子');
+  if (rows[1]) shift(1, kids().length ? mid(kids()) : rowMid(1), mid([me, ...spouse]));
+  if (rows[2]) shift(2, rowMid(2), kids().length ? mid(kids()) : me.x);
+  // 線
+  const lines = [], dotted = [];
+  const couple = (a, b) => { if (a && b) lines.push([a, b, 'couple']); };
+  const descend = (ps, cs) => { if (cs.length && (ps.length || cs.length > 1)) lines.push([ps, cs, 'desc']); };
+  const one = (g, f) => by(g, f)[0];
+  ['父方', '母方', ''].forEach(s => {
+    const gf = one(-2, m => m.rel === '祖父' && m.side === s), gm = one(-2, m => m.rel === '祖母' && m.side === s);
+    couple(gf, gm);
+    if (s) {
+      const kidsOf = by(-1, m => (s === '父方' ? m.rel === '父' : m.rel === '母') || ((m.rel === '叔父' || m.rel === '叔母') && m.side === s));
+      descend([gf, gm].filter(Boolean), kidsOf);
+    }
+  });
+  const fa = one(-1, m => m.rel === '父'), mo = one(-1, m => m.rel === '母');
+  couple(fa, mo);
+  couple(one(-1, m => m.rel === '義父'), one(-1, m => m.rel === '義母'));
+  descend([fa, mo].filter(Boolean), [me, ...by(0, m => ['兄', '姉', '弟', '妹'].includes(m.rel))]);
+  const inlaw = by(-1, m => m.rel === '義父' || m.rel === '義母');
+  if (spouse.length && inlaw.length) descend(inlaw, spouse.slice(0, 1));
+  couple(me, spouse[0] || one(0, m => m.rel === '彼氏・彼女'));
+  descend([me, ...spouse.slice(0, 1)], kids());
+  descend(kids(), by(2, () => true));
+  by(-1, m => m.rel === '叔父' || m.rel === '叔母').forEach(p => descend([p], by(0, m => m.rel === 'いとこ' && m.parent === p.m.id)));
+  // 甥・姪は兄弟（1人だけならその人）から点線
+  const sibs = by(0, m => ['兄', '姉', '弟', '妹'].includes(m.rel));
+  if (sibs.length === 1) by(1, m => m.rel === '甥' || m.rel === '姪').forEach(n => dotted.push([sibs[0], n]));
+  // 左端をそろえる
+  const minX = Math.min(...all.map(n => n.x));
+  all.forEach(n => { n.x = n.x - minX + 46; });
+  const gens = [...new Set(all.map(n => n.gen))].sort((a, b) => a - b);
+  all.forEach(n => { n.y = 44 + gens.indexOf(n.gen) * 104; });
+  const w = Math.max(...all.map(n => n.x)) + 46, h = 44 + (gens.length - 1) * 104 + 62;
+  return { all, lines, dotted, w, h, me };
+}
+function famHomeColors() {
+  const map = new Map();
+  const add = k => { if (k && !map.has(k)) map.set(k, FAM_HOME_COLORS[map.size % FAM_HOME_COLORS.length]); };
+  add(fm.d.me.home || (fm.d.members.some(m => m.home === '同居') ? '自分の家' : ''));
+  fm.d.members.forEach(m => add(famHomeKey(m)));
+  return map;
+}
+function famTreeSvg() {
+  const L = famTreeLayout(), colors = famHomeColors(), R = 22;
+  const myHome = fm.d.me.home || '自分の家';
+  const rank = new Map(fm.d.members.map((m, i) => [m.id, i + 1]));
+  let s = '';
+  L.lines.forEach(([a, b, kind]) => {
+    if (kind === 'couple') { s += `<path d="M${a.x + R} ${a.y} H${b.x - R}" class="fl"/>`; return; }
+    const cy = b[0].y - R - 16, xs = b.map(n => n.x);
+    // 親がいないとき（兄弟だけ）は、上に横線を引いてつなぐ
+    const px = a.length ? a.reduce((t, n) => t + n.x, 0) / a.length : (Math.min(...xs) + Math.max(...xs)) / 2;
+    const py = !a.length ? cy : a.length === 2 ? a[0].y : a[0].y + R;
+    s += `<path d="M${px} ${py} V${cy} M${Math.min(px, ...xs)} ${cy} H${Math.max(px, ...xs)} ${xs.map(x => `M${x} ${cy} V${b[0].y - R}`).join(' ')}" class="fl"/>`;
+  });
+  L.dotted.forEach(([a, b]) => { s += `<path d="M${a.x} ${a.y + R} L${b.x} ${b.y - R}" class="fl" stroke-dasharray="3 4"/>`; });
+  L.all.forEach(n => {
+    const m = n.m, home = n.me ? (colors.has(myHome) ? myHome : '') : famHomeKey(m);
+    const c = home && colors.get(home);
+    const fill = c ? `var(--t-${c}-bg)` : 'var(--surface)';
+    const lab = n.me ? '自分' : m.rel;
+    const fs = lab.length >= 4 ? 9 : lab.length === 3 ? 11 : 13;
+    s += `<g data-act="${n.me ? '' : 'open'}" data-m="${n.me ? '' : m.id}" style="cursor:${n.me ? 'default' : 'pointer'}">`;
+    const stroke = n.me || m.key ? '' : c ? `;stroke:var(--t-${c}-fg)` : '';
+    s += `<circle cx="${n.x}" cy="${n.y}" r="${R}" style="fill:${fill}${stroke}" class="${n.me ? 'fme' : m.key ? 'fkey' : 'fc'}"/>`;
+    s += `<text x="${n.x}" y="${n.y}" class="ft" style="font-size:${fs}px">${escHtml(lab)}</text>`;
+    let sub = n.me ? '' : (m.name || (m.age ? `${m.age}歳` : ''));
+    if (sub.length > 6) sub = sub.slice(0, 6) + '…';
+    if (!n.me && m.side && FAM_REL[m.rel]?.side) sub = m.side + (sub ? '・' + sub : '');
+    if (sub) s += `<text x="${n.x}" y="${n.y + R + 13}" class="fs">${escHtml(sub)}</text>`;
+    if (!n.me) {
+      s += `<circle cx="${n.x + R - 3}" cy="${n.y - R + 3}" r="9" class="frk"/><text x="${n.x + R - 3}" y="${n.y - R + 3}" class="frt">${rank.get(m.id)}</text>`;
+      if (m.key) s += `<text x="${n.x - R + 1}" y="${n.y - R + 5}" class="fstar">★</text>`;
+    }
+    s += '</g>';
+  });
+  const z = fm.zoom;
+  return `<svg width="${Math.round(L.w * z)}" height="${Math.round(L.h * z)}" viewBox="0 0 ${L.w} ${L.h}" role="img" aria-label="家族の図">
+    <style>.fl{stroke:var(--text-muted);stroke-width:1.6;fill:none}.fc{stroke:var(--text);stroke-width:1.6}.fme{stroke:var(--accent);stroke-width:3}.fkey{stroke:var(--accent);stroke-width:2.5}
+    .ft{font-family:'Noto Sans JP',sans-serif;font-weight:700;fill:var(--text);text-anchor:middle;dominant-baseline:central}
+    .fs{font:500 10px 'Noto Sans JP',sans-serif;fill:var(--text-muted);text-anchor:middle}
+    .frk{fill:var(--text)}.frt{font:700 10px Inter,sans-serif;fill:var(--bg);text-anchor:middle;dominant-baseline:central}
+    .fstar{font:700 14px sans-serif;fill:#E0A93B;text-anchor:middle}</style>${s}</svg>`;
+}
+function famLegendHtml() {
+  const colors = famHomeColors();
+  if (!colors.size) return '';
+  const myHome = fm.d.me.home || '自分の家';
+  return `<div class="fm-legend">${[...colors].map(([home, c]) => {
+    const who = [...(home === myHome ? ['自分'] : []), ...fm.d.members.filter(m => m.rel && famHomeKey(m) === home).map(m => m.rel)];
+    return `<span><i style="background:var(--t-${c}-bg);border:1.5px solid var(--t-${c}-fg);"></i>${escHtml(home)}（${escHtml(who.join('・'))}）</span>`;
+  }).join('')}</div>`;
+}
+// 図を「自分」が真ん中に来るようにスクロールする
+function famCenterTree(center) {
+  const t = document.getElementById('fmTree');
+  if (!t) return;
+  if (center) {
+    const L = famTreeLayout();
+    t.scrollLeft = Math.max(0, L.me.x * fm.zoom - t.clientWidth / 2);
+  }
+}
+
+// ----- 家族1人の入力 -----
+function famMemberHtml(m) {
+  const ro = fm.ro, d = fm.d;
+  const chip = (act, v, cur, label) => `<button type="button" class="cd-chip${v === cur ? ' on' : ''}" data-act="${act}" data-v="${escHtml(v)}">${escHtml(label || v)}</button>`;
+  const rel = FAM_REL[m.rel];
+  const homes = [...new Set([d.me.home, ...d.members.map(x => x.home)].filter(h => h && h !== '同居'))];
+  const uncles = d.members.filter(x => (x.rel === '叔父' || x.rel === '叔母') && (!m.side || !x.side || x.side === m.side));
+  const needRows = m.needs.map((n, i) => {
+    const ask = n.k ? cdChoice(NEED_PICKS.find(raw => cdChoice(raw).label === n.k) || '').ask : '';
+    return n.k
+      ? `<div class="cd-need"><div class="cd-need-head">${escHtml(n.k)}<button type="button" class="cd-x" data-act="needDel" data-i="${i}" aria-label="削除">✕</button></div>
+          ${ask || n.t ? `<input type="text" data-need="${i}" value="${escHtml(n.t)}" placeholder="${escHtml(ask || 'くわしく')}">` : ''}</div>`
+      : `<div class="cd-row"><input type="text" data-need="${i}" value="${escHtml(n.t)}" placeholder="ニーズを書く"><button type="button" class="cd-x" data-act="needDel" data-i="${i}" aria-label="削除">✕</button></div>`;
+  }).join('');
+  const adv = famAdvice(m.id);
+  const mine = adv.find(a => a.uid === currentUser.uid);
+  return `
+    <div class="cd-sec"><div class="cd-sec-body" style="border-top:none;">
+      <fieldset class="fm-fs"${ro ? ' disabled' : ''}>
+        <div class="cd-field"><div class="cd-label">続柄</div>
+          <div class="cd-chips">${FAM_RELS.map(([r]) => chip('rel', r, m.rel)).join('')}</div>
+          ${rel?.side ? `<div class="cd-chips" style="margin-top:8px;">${chip('side', '父方', m.side)}${chip('side', '母方', m.side)}</div>` : ''}
+          ${m.rel === 'いとこ' && uncles.length ? `<div class="cd-label" style="margin-top:10px;">誰の子？（任意）</div>
+            <div class="cd-chips">${uncles.map(u => chip('parent', u.id, m.parent, famRelLabel(u) + (u.name ? `（${u.name}）` : ''))).join('')}</div>` : ''}
+        </div>
+        <div class="cd-field"><div class="cd-label">名前（任意）・年齢</div>
+          <div class="cd-inline"><input type="text" data-f="name" value="${escHtml(m.name)}" placeholder="例：ゆみ">
+            <input type="text" data-f="age" value="${escHtml(m.age)}" placeholder="年齢" inputmode="numeric" style="flex:0 0 90px;"></div></div>
+        <div class="cd-field"><div class="cd-label">住まい</div>
+          <div class="cd-chips">${chip('home', '同居', m.home, '自分と同居')}${homes.map(h => chip('home', h, m.home)).join('')}</div>
+          <input type="text" data-f="home" value="${escHtml(m.home === '同居' ? '' : m.home)}" placeholder="別の住所を入力（例：福岡市）" style="margin-top:8px;"></div>
+        <div class="cd-check" style="border:none;padding:0;"><b>影響力の順番</b>
+          <select data-rank aria-label="影響力の順番" style="width:auto;padding:8px 12px;font-size:16px;">${d.members.map((x, i) =>
+            `<option value="${i}"${x === m ? ' selected' : ''}>${i + 1}番目</option>`).join('')}</select></div>
+        <div class="cd-check" style="border:none;padding:0;"><b>キーパーソン</b>
+          <button type="button" class="cd-switch${m.key ? ' on' : ''}" role="switch" aria-checked="${m.key}" aria-label="キーパーソン" data-act="key"><i></i></button></div>
+      </fieldset>
+    </div></div>
+    <div class="cd-sec"><div class="cd-sec-body" style="border-top:none;">
+      <fieldset class="fm-fs"${ro ? ' disabled' : ''}>
+        <div class="cd-field"><div class="cd-label">ニーズ</div>
+          <button type="button" class="cd-pick-btn" data-act="picks">よくあるニーズから選ぶ</button>
+          ${needRows}
+          <button type="button" class="cd-add" data-act="needAdd">＋ 自由に書く</button></div>
+        <div class="cd-field"><div class="cd-label">健康で気にしていること</div>
+          <textarea rows="2" data-f="health" placeholder="例：体重が増えてきた、疲れやすい">${escHtml(m.health)}</textarea>
+          <div class="fm-hint">病名や飲んでいる薬は書かないでください</div></div>
+      </fieldset>
+    </div></div>
+    <div class="cd-sec"><div class="cd-sec-body" style="border-top:none;">
+      <fieldset class="fm-fs"${ro ? ' disabled' : ''}>
+        ${FAM_SLIDERS.map(([k, l]) => `<div class="fm-sl"><span>${l}</span>
+          <input type="range" min="0" max="100" step="10" value="${m[k] ?? 0}" data-sl="${k}" aria-label="${l}">
+          <em id="fmSl_${k}">${m[k] == null ? '–' : m[k] + '%'}</em></div>`).join('')}
+        <div class="cd-field"><div class="cd-label">4つのタイプ</div>
+          <div class="cd-chips">${FAM_TYPES.map(([c, l]) => chip('type', c, m.type, `${c} ${l}`)).join('')}</div></div>
+      </fieldset>
+    </div></div>
+    <div class="cd-sec"><div class="fm-sec-h">アプローチ作戦</div><div class="cd-sec-body" style="border-top:none;">
+      <fieldset class="fm-fs"${ro ? ' disabled' : ''}>
+        <textarea rows="4" data-f="plan" placeholder="例：まずは「元気でいたい」の話から。帰省する11月の連休で話す">${escHtml(m.plan)}</textarea>
+      </fieldset>
+    </div></div>
+    <div class="cd-sec"><div class="fm-sec-h">Uラインからのアドバイス <small>Uラインが書く欄</small></div><div class="cd-sec-body" style="border-top:none;gap:0;">
+      ${adv.filter(a => !ro || a.uid !== currentUser.uid).map(a => `<div class="fm-adv"><small>${escHtml(a.name || '')} ・ ${famDate(a.at)}</small>${escHtml(a.text)}</div>`).join('')}
+      ${ro ? `<div class="cd-label" style="margin-top:4px;">あなたのアドバイス</div>
+          <textarea rows="4" id="fmAdvInput" placeholder="アドバイスを書く">${escHtml(mine?.text || '')}</textarea>
+          <div style="display:flex;justify-content:flex-end;margin-top:8px;"><button type="button" class="btn btn-primary btn-sm" data-act="advSave">${mine ? '更新する' : '送る'}</button></div>`
+        : `<div class="fm-hint">${adv.length ? '' : 'まだアドバイスはありません。'}ここは Uライン だけが書き込めます。あなたは読むだけです。</div>`}
+    </div></div>`;
+}
+
+// ----- 入力の受け取り -----
+document.getElementById('fmScreen').addEventListener('input', e => {
+  if (!fm || fm.ro || !fm.d) return;
+  const t = e.target, m = famMember(fm.view);
+  if (t.dataset.me != null) { fm.d.me[t.dataset.me] = t.value; famTouch(); return; }
+  if (!m) return;
+  if (t.dataset.f) {
+    m[t.dataset.f] = t.value;
+    if (t.dataset.f === 'home') document.querySelectorAll('#fmBody [data-act="home"]').forEach(b => b.classList.toggle('on', b.dataset.v === t.value));
+    if (t.dataset.f === 'name') famHead();
+  } else if (t.dataset.rank != null) {
+    const ms = fm.d.members;   // 選んだ順番へ移す
+    ms.splice(ms.indexOf(m), 1);
+    ms.splice(+t.value, 0, m);
+  } else if (t.dataset.need != null) {
+    m.needs[+t.dataset.need].t = t.value;
+  } else if (t.dataset.sl) {
+    m[t.dataset.sl] = +t.value;
+    document.getElementById('fmSl_' + t.dataset.sl).textContent = t.value + '%';
+  } else return;
+  famTouch();
+});
+document.getElementById('fmScreen').addEventListener('click', async e => {
+  const t = e.target.closest('[data-act]');
+  if (!fm || !t || !t.dataset.act) return;
+  const act = t.dataset.act, v = t.dataset.v, m = famMember(fm.view);
+  if (act === 'open') { fm.view = t.dataset.m; famRender(); document.getElementById('fmBody').scrollTop = 0; return; }
+  if (act === 'copy') { famCopy(t); return; }
+  if (act === 'zoomIn' || act === 'zoomOut') {
+    fm.zoom = Math.min(2, Math.max(0.5, +(fm.zoom + (act === 'zoomIn' ? 0.25 : -0.25)).toFixed(2)));
+    document.getElementById('fmTree').innerHTML = famTreeSvg();
+    return;
+  }
+  if (act === 'advSave') { famSaveAdvice(t); return; }
+  if (fm.ro) return;
+  const ms = fm.d.members;
+  if (act === 'preview') { fm.preview = !fm.preview; famRender(); return; }
+  if (act === 'add') {
+    const n = famNorm({ members: [{ id: famId() }] }).members[0];
+    ms.push(n); fm.view = n.id; famRender(); return;
+  }
+  if (act === 'up' || act === 'down') {
+    const i = ms.findIndex(x => x.id === t.dataset.m), j = act === 'up' ? i - 1 : i + 1;
+    if (i < 0 || j < 0 || j >= ms.length) return;
+    [ms[i], ms[j]] = [ms[j], ms[i]];
+    famTouch(); famRender(); return;
+  }
+  if (act === 'share') {
+    fm.d.share = !fm.d.share;
+    famTouch(); famRender();
+    showToast(fm.d.share ? 'Family DATA を共有しました' : 'Family DATA の共有をやめました');
+    return;
+  }
+  if (act === 'biz') { fm.d.me.biz = fm.d.me.biz === v ? '' : v; famTouch(); famRender(); return; }
+  if (!m) return;
+  if (act === 'rel') {
+    m.rel = m.rel === v ? '' : v;
+    if (!FAM_REL[m.rel]?.side) m.side = '';
+    if (m.rel !== 'いとこ') m.parent = '';
+  } else if (act === 'side') { m.side = m.side === v ? '' : v; }
+  else if (act === 'parent') { m.parent = m.parent === v ? '' : v; }
+  else if (act === 'home') { m.home = m.home === v ? '' : v; }
+  else if (act === 'key') {
+    m.key = !m.key;
+    if (m.key) ms.forEach(x => { if (x !== m) x.key = false; });   // キーパーソンは1人
+  }
+  else if (act === 'type') { m.type = m.type === v ? '' : v; }
+  else if (act === 'needAdd') { m.needs.push({ k: '', t: '' }); }
+  else if (act === 'needDel') { m.needs.splice(+t.dataset.i, 1); }
+  else if (act === 'picks') { famOpenPicks(m); return; }
+  else if (act === 'delMember') {
+    if (!confirm(`「${famRelLabel(m)}」を削除しますか？`)) return;
+    fm.d.members = ms.filter(x => x !== m);
+    fm.d.members.forEach(x => { if (x.parent === m.id) x.parent = ''; });
+    fm.view = 'top';
+  } else return;
+  famTouch(); famRender();
+});
+
+// よくあるニーズ（CDATA と同じ一覧）から選ぶ
+function famOpenPicks(m) {
+  famPicking = m.id;
+  const chosen = new Set(m.needs.map(n => n.k).filter(Boolean));
+  document.getElementById('pickList').innerHTML = NEED_PICKS.map(raw => {
+    const x = cdChoice(raw);
+    return `<label class="sync-row"><input type="checkbox" value="${escHtml(x.label)}"${chosen.has(x.label) ? ' checked' : ''}><div class="sync-val">${escHtml(x.label)}</div></label>`;
+  }).join('');
+  document.getElementById('pickModal').classList.add('open');
+  document.querySelector('#pickModal .modal').scrollTop = 0;
+}
+function famApplyPicks() {
+  const m = famMember(famPicking);
+  const checked = new Set([...document.querySelectorAll('#pickList input:checked')].map(el => el.value));
+  closePickModal();
+  if (!fm || !m) return;
+  const picked = NEED_PICKS.map(raw => cdChoice(raw).label).filter(l => checked.has(l))
+    .map(l => m.needs.find(n => n.k === l) || { k: l, t: '' });
+  m.needs = [...picked, ...m.needs.filter(n => !n.k)];
+  famTouch(); famRender();
+}
+
+// Uライン（共有を受けた人）がアドバイスを書く。自分の分だけ（advice.{家族のid}.{自分のuid}）
+async function famSaveAdvice(btn) {
+  const m = famMember(fm.view);
+  if (!fm.ro || !m) return;
+  const text = document.getElementById('fmAdvInput').value.trim();
+  const f = fm;
+  btn.disabled = true;
+  try {
+    const val = text ? { text, name: writerName(), at: Date.now() } : deleteField();
+    await updateDoc(doc(db, 'users', f.uid, 'family', 'main'), { [`advice.${m.id}.${currentUser.uid}`]: val, adviceAt: serverTimestamp() });
+    if (fm !== f) return;
+    f.d.advice[m.id] = f.d.advice[m.id] || {};
+    if (text) f.d.advice[m.id][currentUser.uid] = { text, name: writerName(), at: Date.now() };
+    else delete f.d.advice[m.id][currentUser.uid];
+    showToast(text ? 'アドバイスを送りました' : 'アドバイスを消しました');
+    famRender();
+  } catch (e) {
+    btn.disabled = false;
+    showToast(e?.code === 'permission-denied' ? 'Family DATA の共有が止められています' : '送れませんでした');
+  }
+}
+
+// LINE などに貼る文章
+function famText() {
+  const d = fm.d, me = d.me, L = [`【Family DATA】${fm.name}`, '', '■ 自分と家族について'];
+  if (me.home) L.push(`自分の住まい：${me.home}`);
+  L.push(`過去の自分は家族にどう映ってる？：${me.past}`, `自分の中での家族の印象はどんな人？：${me.image}`,
+         `ビジネスを伝えてる？：${me.biz}${me.biz === 'YES' && me.react ? `（反応：${me.react}）` : ''}`);
+  L.push('', '■ 家族（上から影響力の順）');
+  d.members.forEach((m, i) => {
+    L.push('', `${famCircled(i + 1)} ${famRelLabel(m)}${m.key ? ' ★キーパーソン' : ''}`);
+    const info = [m.name, m.age && `${m.age}歳`, m.home === '同居' ? '自分と同居' : m.home].filter(Boolean).join('・');
+    if (info) L.push(`　${info}`);
+    const needs = m.needs.map(n => n.k ? n.k + (n.t ? `（${n.t}）` : '') : n.t).filter(Boolean);
+    if (needs.length) L.push(`　ニーズ：${needs.join('、')}`);
+    if (m.health) L.push(`　健康で気にしていること：${m.health}`);
+    const sl = FAM_SLIDERS.filter(([k]) => m[k] != null).map(([k, l]) => `${l} ${m[k]}%`);
+    if (sl.length) L.push(`　${sl.join('／')}`);
+    if (m.type) L.push(`　4つのタイプ：${m.type} ${Object.fromEntries(FAM_TYPES)[m.type] || ''}`);
+    if (m.plan) L.push(`　アプローチ作戦：${m.plan}`);
+    famAdvice(m.id).forEach(a => L.push(`　Uラインからのアドバイス（${a.name || ''}）：${a.text}`));
+  });
+  return L.join('\n');
+}
+function famCopy(btn) {
+  if (!fm?.d) return;
+  const text = famText();
+  const done = () => { flashCopied(btn); showToast('コピーしました'); };
+  if (navigator.clipboard?.writeText) navigator.clipboard.writeText(text).then(done, () => famCopyFallback(text, done));
+  else famCopyFallback(text, done);
+}
+function famCopyFallback(text, done) {
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); done(); } catch (e) { showToast('コピーできませんでした'); }
+  ta.remove();
+}
+
 // ===== バージョン＆お知らせ =====
 // アップデートしたら先頭に { version, date, items } を追記する（先頭の version が表示バージョンになる）
 const UPDATES = [
+  {
+    version: 'v16',
+    date: '2026/10/25',
+    items: [
+      '「Family DATA」を追加しました（右上の家のアイコン）。家族を登録すると家族の図を自動で描き、影響力の順番・キーパーソン・住んでいる家が一目でわかります',
+      '家族一人ひとりに、ニーズ・健康で気にしていること・信頼度などと「アプローチ作戦」を書けます。祖父母・叔父叔母・いとこは父方／母方も選べます',
+      '「Family DATA も共有する」をオンにすると、リストを共有している相手（Uライン）が見られて、家族ごとに「Uラインからのアドバイス」を書いてくれます',
+      'メンバーのリストの「Family」ボタンから、メンバーの Family DATA を開けます',
+    ],
+  },
   {
     version: 'v15',
     date: '2026/10/25',
