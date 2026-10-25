@@ -3480,6 +3480,11 @@ const FAM_TOK = Object.fromEntries(FAM_LINKS);
 // メニューのボタン。「パートナー」は次に妻・夫・彼氏・彼女から選ぶ（データは 彼氏／彼女 ＋ 結婚しているか）
 const FAM_MENU = ['父', '母', '息子', '娘', 'パートナー', 'その他'];
 const FAM_PARTNER = { '妻': ['彼女', true], '夫': ['彼氏', true], '彼氏': ['彼氏', false], '彼女': ['彼女', false] };
+// 父の相手は、ふつうは自分の母（母の相手は父）。そのときは「父のパートナー」ではなく「母」として持つ
+function famCounterParent(x) {
+  if (!x || !'FM'.includes(FAM_TOK[x.link] || '')) return null;
+  return x.link === '父' ? '母' : '父';
+}
 const famPartnerKind = m => m.link === '彼女' ? (m.married ? '妻' : '彼女') : m.link === '彼氏' ? (m.married ? '夫' : '彼氏') : '';
 const famAgeNum = a => { const n = parseInt(String(a || '').replace(/[^\d]/g, ''), 10); return isNaN(n) ? null : n; };
 function famBlank(m) {
@@ -3496,7 +3501,17 @@ function famNorm(d) {
   const me = d.me || {};
   const raw = (Array.isArray(d.members) ? d.members : []).filter(m => m && m.id);
   const ms = raw.map(m => Object.assign(famBlank(m), m.link ? {} : { rel: m.rel || '', side: m.side || '', parent: m.parent || '' }));
-  const migrated = famMigrate(ms);
+  let migrated = famMigrate(ms);
+  if ((+d.v || 1) < 2) {
+    // v2 より前は「父 → パートナー → 妻」としか入れられなかったので、相手の親がいなければ「母」に置き換える
+    ms.forEach(m => {
+      const a = ms.find(x => x.id === m.of), cp = famCounterParent(a);
+      if (cp && m.married && (m.link === '彼女' || m.link === '彼氏') && !ms.some(y => y.of === a.of && y.link === cp)) {
+        Object.assign(m, { of: a.of, link: cp, married: false });
+        migrated = true;
+      }
+    });
+  }
   ms.forEach(m => { delete m.rel; delete m.side; delete m.parent; });
   const ids = new Set(ms.map(m => m.id));
   ms.forEach(m => { if (m.of !== '_me' && !ids.has(m.of)) m.of = '_me'; });
@@ -3582,6 +3597,7 @@ function famKin(m) {
   const a = famMember(m.of);
   if (/^[BG][FM]$/.test(s) && a?.married) return { short: male ? '義父' : '義母', side: '' };
   if (/^[FM][SD][BG]$/.test(s) && m.married) return { short: male ? '義兄弟' : '義姉妹', side: '' };
+  if (/^(FG|MB)$/.test(s) && m.married) return { short: last === 'G' ? '継母' : '継父', side: '' };
   if (/^[SD][BG]$/.test(s) && m.married) return { short: male ? '婿' : '嫁', side: '' };
   return { short: (a ? famRelLabel(a) : '') + 'の' + word, side: '' };
 }
@@ -3680,7 +3696,7 @@ async function famSave() {
   try {
     // advice は Uラインが書く欄なので、本人の保存では触らない（merge で残す）
     await setDoc(doc(db, 'users', f.uid, 'family', 'main'),
-      { members: f.d.members, me: f.d.me, share: f.d.share, updatedAt: serverTimestamp() }, { merge: true });
+      { v: 2, members: f.d.members, me: f.d.me, share: f.d.share, updatedAt: serverTimestamp() }, { merge: true });
     if (fm === f && !f.dirty) famState('保存済み');
   } catch (e) {
     if (fm === f) famState('未保存');
@@ -3996,16 +4012,22 @@ document.getElementById('fmSheet').addEventListener('click', e => {
   if (!t || !fm || fm.ro) return;
   if (t.dataset.act === 'open') { famCloseSheet(); fm.view = t.dataset.m; famRender(); document.getElementById('fmBody').scrollTop = 0; return; }
   if (t.dataset.act === 'addLink' && t.dataset.v === 'パートナー') {
-    // 2段目：妻・夫・彼氏・彼女
+    // 2段目：妻・夫・彼氏・彼女。父母の相手なら、まず「母（父）」を出す
+    const x = famMember(t.dataset.of), cp = famCounterParent(x);
+    const who = x && x.of !== '_me' ? famAnchorLabel(x) + 'の' : '自分の';
+    const opts = cp
+      ? [['__cp', `${cp}（${who}${cp}）`], cp === '母' ? ['妻', '継母（再婚相手）'] : ['夫', '継父（再婚相手）'], cp === '母' ? ['彼女', '彼女'] : ['彼氏', '彼氏']]
+      : Object.keys(FAM_PARTNER).map(k => [k, k]);
     document.getElementById('fmSheetBody').innerHTML = `
       <div class="cd-label" style="margin-top:6px;">どんなパートナー？</div>
-      <div class="fm-sheet-grid" style="grid-template-columns:repeat(2,1fr);">${Object.keys(FAM_PARTNER).map(k =>
-        `<button type="button" class="fm-sheet-btn" data-act="addLink" data-of="${t.dataset.of}" data-v="${k}">${k}</button>`).join('')}</div>`;
+      <div class="fm-sheet-grid" style="grid-template-columns:repeat(${cp ? 1 : 2},1fr);">${opts.map(([v, l]) =>
+        `<button type="button" class="fm-sheet-btn" data-act="addLink" data-of="${t.dataset.of}" data-v="${v}">${escHtml(l)}</button>`).join('')}</div>`;
     return;
   }
   if (t.dataset.act === 'addLink') {
-    const [link, married] = FAM_PARTNER[t.dataset.v] || [t.dataset.v, false];
-    const n = famBlank({ id: famId(), of: t.dataset.of, link, married });
+    let of = t.dataset.of, [link, married] = FAM_PARTNER[t.dataset.v] || [t.dataset.v, false];
+    if (t.dataset.v === '__cp') { const x = famMember(of); link = famCounterParent(x); married = false; of = x.of; }
+    const n = famBlank({ id: famId(), of, link, married });
     fm.d.members.push(n);
     famCloseSheet();
     fm.view = n.id;
@@ -4039,6 +4061,8 @@ function famMemberHtml(m) {
             <div class="cd-chips">${chip('older', '上', m.older, '年上')}${chip('older', '下', m.older, '年下')}</div>
             ${m.older ? '' : '<div class="fm-hint">選ばないときは、年齢から決めます</div>'}` : ''}
           ${t === 'B' || t === 'G' ? `<div class="cd-chips" style="margin-top:8px;">${Object.keys(FAM_PARTNER).map(k => chip('pkind', k, famPartnerKind(m))).join('')}</div>` : ''}
+          ${(t === 'B' || t === 'G') && famCounterParent(famMember(m.of)) && !d.members.some(y => y.of === famMember(m.of).of && y.link === famCounterParent(famMember(m.of)))
+            ? `<button type="button" class="cd-add" data-act="toParent" style="margin-top:8px;">「${famCounterParent(famMember(m.of))}」にする（${escHtml(famAnchorLabel(famMember(m.of)))}の${famCounterParent(famMember(m.of))}）</button>` : ''}
           ${t === 'O' ? `<div class="cd-label" style="margin-top:10px;">どんな関係？</div>
             <input type="text" data-f="other" value="${escHtml(m.other)}" placeholder="例：育ての親、近所のおばちゃん">
             <div class="cd-label" style="margin-top:10px;">図での段（${escHtml(famAnchorLabel(m))}と比べて）</div>
@@ -4165,6 +4189,7 @@ document.getElementById('fmScreen').addEventListener('click', async e => {
   }
   else if (act === 'older') { m.older = m.older === v ? '' : v; }
   else if (act === 'pkind') { [m.link, m.married] = FAM_PARTNER[v]; }
+  else if (act === 'toParent') { const a = famMember(m.of); Object.assign(m, { of: a.of, link: famCounterParent(a), married: false }); }
   else if (act === 'otherGen') { m.otherGen = +v; }
   else if (act === 'home') { m.home = m.home === v ? '' : v; }
   else if (act === 'key') {
