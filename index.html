@@ -3477,6 +3477,10 @@ window.currentUserUid = () => currentUser?.uid;
 // 家族は「誰（of＝その人のid。自分は '_me'）から見て、何（link）か」で持つ。続柄の名前は道のりから自動で決める
 const FAM_LINKS = [['父','F'],['母','M'],['息子','S'],['娘','D'],['彼氏','B'],['彼女','G'],['その他','O']];
 const FAM_TOK = Object.fromEntries(FAM_LINKS);
+// メニューのボタン。「パートナー」は次に妻・夫・彼氏・彼女から選ぶ（データは 彼氏／彼女 ＋ 結婚しているか）
+const FAM_MENU = ['父', '母', '息子', '娘', 'パートナー', 'その他'];
+const FAM_PARTNER = { '妻': ['彼女', true], '夫': ['彼氏', true], '彼氏': ['彼氏', false], '彼女': ['彼女', false] };
+const famPartnerKind = m => m.link === '彼女' ? (m.married ? '妻' : '彼女') : m.link === '彼氏' ? (m.married ? '夫' : '彼氏') : '';
 const famAgeNum = a => { const n = parseInt(String(a || '').replace(/[^\d]/g, ''), 10); return isNaN(n) ? null : n; };
 function famBlank(m) {
   return {
@@ -3976,8 +3980,8 @@ function famOpenSheet(id) {
   if (id !== '_me' && !x) return;
   const label = x ? famRelLabel(x) : '自分';
   document.getElementById('fmSheetTitle').textContent = label + (x?.name ? `（${x.name}）` : '');
-  const btns = FAM_LINKS.filter(([l]) => famCanAdd(id, l))
-    .map(([l]) => `<button type="button" class="fm-sheet-btn" data-act="addLink" data-of="${id}" data-v="${l}">${l}</button>`).join('');
+  const btns = FAM_MENU.filter(l => famCanAdd(id, l === 'パートナー' ? '彼女' : l))
+    .map(l => `<button type="button" class="fm-sheet-btn" data-act="addLink" data-of="${id}" data-v="${l}">${l}</button>`).join('');
   document.getElementById('fmSheetBody').innerHTML = `
     ${x ? `<button type="button" class="cd-pick-btn" data-act="open" data-m="${id}">この人の情報を入力</button>` : ''}
     <div class="cd-label" style="margin-top:6px;">${escHtml(label)} から見て…</div>
@@ -3991,8 +3995,17 @@ document.getElementById('fmSheet').addEventListener('click', e => {
   const t = e.target.closest('[data-act]');
   if (!t || !fm || fm.ro) return;
   if (t.dataset.act === 'open') { famCloseSheet(); fm.view = t.dataset.m; famRender(); document.getElementById('fmBody').scrollTop = 0; return; }
+  if (t.dataset.act === 'addLink' && t.dataset.v === 'パートナー') {
+    // 2段目：妻・夫・彼氏・彼女
+    document.getElementById('fmSheetBody').innerHTML = `
+      <div class="cd-label" style="margin-top:6px;">どんなパートナー？</div>
+      <div class="fm-sheet-grid" style="grid-template-columns:repeat(2,1fr);">${Object.keys(FAM_PARTNER).map(k =>
+        `<button type="button" class="fm-sheet-btn" data-act="addLink" data-of="${t.dataset.of}" data-v="${k}">${k}</button>`).join('')}</div>`;
+    return;
+  }
   if (t.dataset.act === 'addLink') {
-    const n = famBlank({ id: famId(), of: t.dataset.of, link: t.dataset.v });
+    const [link, married] = FAM_PARTNER[t.dataset.v] || [t.dataset.v, false];
+    const n = famBlank({ id: famId(), of: t.dataset.of, link, married });
     fm.d.members.push(n);
     famCloseSheet();
     fm.view = n.id;
@@ -4021,12 +4034,11 @@ function famMemberHtml(m) {
     <div class="cd-sec"><div class="cd-sec-body" style="border-top:none;">
       <fieldset class="fm-fs"${ro ? ' disabled' : ''}>
         <div class="cd-field"><div class="cd-label">${escHtml(famAnchorLabel(m))} から見て</div>
-          <div class="cd-chips">${FAM_LINKS.map(([l]) => chip('link', l, m.link)).join('')}</div>
+          <div class="cd-chips">${FAM_MENU.map(l => chip('link', l, famPartnerKind(m) ? 'パートナー' : m.link)).join('')}</div>
           ${/^[FM][SD]$/.test(path) ? `<div class="cd-label" style="margin-top:10px;">自分より</div>
             <div class="cd-chips">${chip('older', '上', m.older, '年上')}${chip('older', '下', m.older, '年下')}</div>
             ${m.older ? '' : '<div class="fm-hint">選ばないときは、年齢から決めます</div>'}` : ''}
-          ${t === 'B' || t === 'G' ? `<div class="cd-check" style="border:none;padding:10px 0 0;"><b>結婚している</b>
-            <button type="button" class="cd-switch${m.married ? ' on' : ''}" role="switch" aria-checked="${m.married}" aria-label="結婚している" data-act="married"><i></i></button></div>` : ''}
+          ${t === 'B' || t === 'G' ? `<div class="cd-chips" style="margin-top:8px;">${Object.keys(FAM_PARTNER).map(k => chip('pkind', k, famPartnerKind(m))).join('')}</div>` : ''}
           ${t === 'O' ? `<div class="cd-label" style="margin-top:10px;">どんな関係？</div>
             <input type="text" data-f="other" value="${escHtml(m.other)}" placeholder="例：育ての親、近所のおばちゃん">
             <div class="cd-label" style="margin-top:10px;">図での段（${escHtml(famAnchorLabel(m))}と比べて）</div>
@@ -4147,9 +4159,12 @@ document.getElementById('fmScreen').addEventListener('click', async e => {
   }
   if (act === 'biz') { fm.d.me.biz = fm.d.me.biz === v ? '' : v; famTouch(); famRender(); return; }
   if (!m) return;
-  if (act === 'link') { if (v !== m.link) { m.link = v; if (v !== 'その他') m.otherGen = 0; } }
+  if (act === 'link') {
+    if (v === 'パートナー') { if (!famPartnerKind(m)) { m.link = '彼女'; m.married = false; } }   // 下の「妻・夫・彼氏・彼女」で選び直す
+    else if (v !== m.link) { m.link = v; m.married = false; if (v !== 'その他') m.otherGen = 0; }
+  }
   else if (act === 'older') { m.older = m.older === v ? '' : v; }
-  else if (act === 'married') { m.married = !m.married; }
+  else if (act === 'pkind') { [m.link, m.married] = FAM_PARTNER[v]; }
   else if (act === 'otherGen') { m.otherGen = +v; }
   else if (act === 'home') { m.home = m.home === v ? '' : v; }
   else if (act === 'key') {
@@ -4238,7 +4253,7 @@ const UPDATES = [
     version: 'v17',
     date: '2026/10/25',
     items: [
-      'Family DATA の家族の追加を、家族の図からできるようにしました。丸をタップして「父・母・息子・娘・彼氏・彼女・その他」を選ぶだけで、続柄（父方祖母・叔母・いとこ・甥など）は自動で決まります',
+      'Family DATA の家族の追加を、家族の図からできるようにしました。丸をタップして「父・母・息子・娘・パートナー（妻・夫・彼氏・彼女）・その他」を選ぶだけで、続柄（父方祖母・叔母・いとこ・甥など）は自動で決まります',
       '血はつながっていないけれど身近な人は「その他」で関係を書けます（図では点線でつながります）',
       '情報が入っていない人は図で薄く表示され、影響力の順番には入りません。兄弟の上下は、自分と兄弟の年齢から決まります（「年上／年下」でも選べます）',
       '家族を入力する画面の上に、家族の図を表示するようにしました',
