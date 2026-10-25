@@ -342,6 +342,8 @@
     .out-tag { font-size: 0.65rem; font-weight: 700; padding: 1px 7px; border-radius: 999px; background: var(--t-gray-bg); color: var(--t-gray-fg); }
 
     /* ===== Family DATA ===== */
+    .fm-mini { position: sticky; top: -12px; z-index: 2; margin: -12px -12px 12px; padding: 10px 12px 6px; background: var(--bg); border-bottom: 1px solid var(--border); text-align: center; }
+    .fm-mini svg { display: block; margin: 0 auto; height: auto; }
     .fm-fs { border: none; margin: 0; padding: 0; min-width: 0; display: flex; flex-direction: column; gap: 16px; }
     .fm-fs:disabled .cd-chip:not(.on), .fm-fs:disabled .cd-add, .fm-fs:disabled .cd-pick-btn, .fm-fs:disabled .cd-x { display: none; }
     .fm-fs:disabled .cd-chip.on { cursor: default; }
@@ -3742,7 +3744,8 @@ function famHomeColors() {
   fm.d.members.forEach(m => add(famHomeKey(m)));
   return map;
 }
-function famTreeSvg() {
+// hi: 入力中の家族のid（1人ずつの画面の上に出す小さい図。その人を目立たせ、画面幅に合わせて縮める）
+function famTreeSvg(hi) {
   const L = famTreeLayout(), colors = famHomeColors(), R = 22;
   const myHome = fm.d.me.home || '自分の家';
   const rank = new Map(fm.d.members.map((m, i) => [m.id, i + 1]));
@@ -3763,6 +3766,7 @@ function famTreeSvg() {
     const lab = n.me ? '自分' : m.rel;
     const fs = lab.length >= 4 ? 9 : lab.length === 3 ? 11 : 13;
     s += `<g data-act="${n.me ? '' : 'open'}" data-m="${n.me ? '' : m.id}" style="cursor:${n.me ? 'default' : 'pointer'}">`;
+    if (hi && !n.me && m.id === hi) s += `<circle cx="${n.x}" cy="${n.y}" r="${R + 8}" class="fhi"/>`;
     const stroke = n.me || m.key ? '' : c ? `;stroke:var(--t-${c}-fg)` : '';
     s += `<circle cx="${n.x}" cy="${n.y}" r="${R}" style="fill:${fill}${stroke}" class="${n.me ? 'fme' : m.key ? 'fkey' : 'fc'}"/>`;
     s += `<text x="${n.x}" y="${n.y}" class="ft" style="font-size:${fs}px">${escHtml(lab)}</text>`;
@@ -3777,8 +3781,9 @@ function famTreeSvg() {
     s += '</g>';
   });
   const z = fm.zoom;
-  return `<svg width="${Math.round(L.w * z)}" height="${Math.round(L.h * z)}" viewBox="0 0 ${L.w} ${L.h}" role="img" aria-label="家族の図">
-    <style>.fl{stroke:var(--text-muted);stroke-width:1.6;fill:none}.fc{stroke:var(--text);stroke-width:1.6}.fme{stroke:var(--accent);stroke-width:3}.fkey{stroke:var(--accent);stroke-width:2.5}
+  const size = hi ? `width="100%" style="max-height:200px;max-width:${L.w}px;"` : `width="${Math.round(L.w * z)}" height="${Math.round(L.h * z)}"`;
+  return `<svg ${size} viewBox="0 0 ${L.w} ${L.h}" role="img" aria-label="家族の図">
+    <style>.fhi{fill:var(--accent-soft);stroke:var(--accent);stroke-width:2;stroke-dasharray:4 3}.fl{stroke:var(--text-muted);stroke-width:1.6;fill:none}.fc{stroke:var(--text);stroke-width:1.6}.fme{stroke:var(--accent);stroke-width:3}.fkey{stroke:var(--accent);stroke-width:2.5}
     .ft{font-family:'Noto Sans JP',sans-serif;font-weight:700;fill:var(--text);text-anchor:middle;dominant-baseline:central}
     .fs{font:500 10px 'Noto Sans JP',sans-serif;fill:var(--text-muted);text-anchor:middle}
     .frk{fill:var(--text)}.frt{font:700 10px Inter,sans-serif;fill:var(--bg);text-anchor:middle;dominant-baseline:central}
@@ -3822,6 +3827,7 @@ function famMemberHtml(m) {
   const adv = famAdvice(m.id);
   const mine = adv.find(a => a.uid === currentUser.uid);
   return `
+    <div class="fm-mini" id="fmMini"${m.rel ? '' : ' style="display:none;"'}>${m.rel ? famTreeSvg(m.id) : ''}</div>
     <div class="cd-sec"><div class="cd-sec-body" style="border-top:none;">
       <fieldset class="fm-fs"${ro ? ' disabled' : ''}>
         <div class="cd-field"><div class="cd-label">続柄</div>
@@ -3876,6 +3882,12 @@ function famMemberHtml(m) {
     </div></div>`;
 }
 
+// 名前・年齢・住所を打ったときは、上の小さい図だけ描き直す（入力欄のフォーカスを外さないため）
+function famMiniTree(m) {
+  const el = document.getElementById('fmMini');
+  if (el && m.rel) el.innerHTML = famTreeSvg(m.id);
+}
+
 // ----- 入力の受け取り -----
 document.getElementById('fmScreen').addEventListener('input', e => {
   if (!fm || fm.ro || !fm.d) return;
@@ -3886,6 +3898,7 @@ document.getElementById('fmScreen').addEventListener('input', e => {
     m[t.dataset.f] = t.value;
     if (t.dataset.f === 'home') document.querySelectorAll('#fmBody [data-act="home"]').forEach(b => b.classList.toggle('on', b.dataset.v === t.value));
     if (t.dataset.f === 'name') famHead();
+    famMiniTree(m);
   } else if (t.dataset.rank != null) {
     const ms = fm.d.members;   // 選んだ順番へ移す
     ms.splice(ms.indexOf(m), 1);
