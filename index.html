@@ -3478,7 +3478,7 @@ window.currentUserUid = () => currentUser?.uid;
 const FAM_LINKS = [['父','F'],['母','M'],['息子','S'],['娘','D'],['彼氏','B'],['彼女','G'],['その他','O']];
 const FAM_TOK = Object.fromEntries(FAM_LINKS);
 // メニューのボタン。「パートナー」は次に妻・夫・彼氏・彼女から選ぶ（データは 彼氏／彼女 ＋ 結婚しているか）
-const FAM_MENU = ['父', '母', '息子', '娘', 'パートナー', 'その他'];
+const FAM_MENU = ['父', '母', '兄弟姉妹', '息子', '娘', 'パートナー', 'その他'];
 const FAM_PARTNER = { '妻': ['彼女', true], '夫': ['彼氏', true], '彼氏': ['彼氏', false], '彼女': ['彼女', false] };
 // 父の相手は、ふつうは自分の母（母の相手は父）。そのときは「父のパートナー」ではなく「母」として持つ
 function famCounterParent(x) {
@@ -3593,6 +3593,11 @@ function famKin(m) {
   if (/^[FM][FM][SD][SD]$/.test(s)) return { short: 'いとこ', side };
   if (/^[FM][SD][SD]$/.test(s)) return { short: male ? '甥' : '姪', side: '' };
   if (/^[SD][SD]$/.test(s)) return { short: '孫', side: '' };
+  if (/^[FM][FM][FM][SD]$/.test(s)) return { short: male ? '大叔父' : '大叔母', side };
+  if (/^[BG][FM][SD]$/.test(s)) {
+    const pt = famMember(famMember(m.of)?.of);
+    return { short: pt?.married ? (male ? '義兄弟' : '義姉妹') : `${pt ? famRelLabel(pt) : ''}の${male ? '兄弟' : '姉妹'}`, side: '' };
+  }
   if (/^[SD][SD][SD]$/.test(s)) return { short: 'ひ孫', side: '' };
   const a = famMember(m.of);
   if (/^[BG][FM]$/.test(s) && a?.married) return { short: male ? '義父' : '義母', side: '' };
@@ -3996,7 +4001,7 @@ function famOpenSheet(id) {
   if (id !== '_me' && !x) return;
   const label = x ? famRelLabel(x) : '自分';
   document.getElementById('fmSheetTitle').textContent = label + (x?.name ? `（${x.name}）` : '');
-  const btns = FAM_MENU.filter(l => famCanAdd(id, l === 'パートナー' ? '彼女' : l))
+  const btns = FAM_MENU.filter(l => l === '兄弟姉妹' ? !(x && famTokOf(x) === 'O') : famCanAdd(id, l === 'パートナー' ? '彼女' : l))
     .map(l => `<button type="button" class="fm-sheet-btn" data-act="addLink" data-of="${id}" data-v="${l}">${l}</button>`).join('');
   document.getElementById('fmSheetBody').innerHTML = `
     ${x ? `<button type="button" class="cd-pick-btn" data-act="open" data-m="${id}">この人の情報を入力</button>` : ''}
@@ -4011,6 +4016,31 @@ document.getElementById('fmSheet').addEventListener('click', e => {
   const t = e.target.closest('[data-act]');
   if (!t || !fm || fm.ro) return;
   if (t.dataset.act === 'open') { famCloseSheet(); fm.view = t.dataset.m; famRender(); document.getElementById('fmBody').scrollTop = 0; return; }
+  if (t.dataset.act === 'addLink' && t.dataset.v === '兄弟姉妹') {
+    document.getElementById('fmSheetBody').innerHTML = `
+      <div class="cd-label" style="margin-top:6px;">${escHtml(t.dataset.of === '_me' ? '自分' : famRelLabel(famMember(t.dataset.of)))} の…</div>
+      <div class="fm-sheet-grid" style="grid-template-columns:repeat(2,1fr);">${['兄', '姉', '弟', '妹'].map(k =>
+        `<button type="button" class="fm-sheet-btn" data-act="addSib" data-of="${t.dataset.of}" data-v="${k}">${k}</button>`).join('')}</div>`;
+    return;
+  }
+  if (t.dataset.act === 'addSib') {
+    // 兄弟は「親の子」として持つ。親がいなければ情報なしの父を作る（子として足した人なら、足した側の人が親）
+    const id = t.dataset.of, x = id === '_me' ? null : famMember(id), v = t.dataset.v, ms = fm.d.members;
+    let pid;
+    if (x && 'SD'.includes(famTokOf(x))) pid = x.of;
+    else {
+      const p = ms.find(y => y.of === id && y.link === '父') || ms.find(y => y.of === id && y.link === '母')
+        || (ms.push(famBlank({ id: famId(), of: id, link: '父' })), ms[ms.length - 1]);
+      pid = p.id;
+    }
+    const n = famBlank({ id: famId(), of: pid, link: v === '兄' || v === '弟' ? '息子' : '娘', older: id === '_me' ? (v === '兄' || v === '姉' ? '上' : '下') : '' });
+    ms.push(n);
+    famCloseSheet();
+    fm.view = n.id;
+    famTouch(); famRender();
+    document.getElementById('fmBody').scrollTop = 0;
+    return;
+  }
   if (t.dataset.act === 'addLink' && t.dataset.v === 'パートナー') {
     // 2段目：妻・夫・彼氏・彼女。父母の相手なら、まず「母（父）」を出す
     const x = famMember(t.dataset.of), cp = famCounterParent(x);
@@ -4056,7 +4086,7 @@ function famMemberHtml(m) {
     <div class="cd-sec"><div class="cd-sec-body" style="border-top:none;">
       <fieldset class="fm-fs"${ro ? ' disabled' : ''}>
         <div class="cd-field"><div class="cd-label">${escHtml(famAnchorLabel(m))} から見て</div>
-          <div class="cd-chips">${FAM_MENU.map(l => chip('link', l, famPartnerKind(m) ? 'パートナー' : m.link)).join('')}</div>
+          <div class="cd-chips">${FAM_MENU.filter(l => l !== '兄弟姉妹').map(l => chip('link', l, famPartnerKind(m) ? 'パートナー' : m.link)).join('')}</div>
           ${/^[FM][SD]$/.test(path) ? `<div class="cd-label" style="margin-top:10px;">自分より</div>
             <div class="cd-chips">${chip('older', '上', m.older, '年上')}${chip('older', '下', m.older, '年下')}</div>
             ${m.older ? '' : '<div class="fm-hint">選ばないときは、年齢から決めます</div>'}` : ''}
