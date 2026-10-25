@@ -3118,9 +3118,8 @@ function openPickModal(k) {
   document.getElementById('pickModal').classList.add('open');
   document.querySelector('#pickModal .modal').scrollTop = 0;
 }
-window.closePickModal = () => { document.getElementById('pickModal').classList.remove('open'); pickKey = null; famPicking = null; };
+window.closePickModal = () => { document.getElementById('pickModal').classList.remove('open'); pickKey = null; };
 window.applyPicks = () => {
-  if (famPicking) { famApplyPicks(); return; }
   if (!cd || !pickKey) return;
   const k = pickKey, f = cdField(k);
   const checked = new Set([...document.querySelectorAll('#pickList input:checked')].map(el => el.value));
@@ -3465,7 +3464,6 @@ const FAM_HOME_COLORS = ['blue','teal','amber','purple','green','pink','red','gr
 const famId = () => Math.random().toString(36).slice(2, 10);
 const famCircled = n => n <= 20 ? String.fromCharCode(0x245F + n) : `(${n})`;
 let fm = null;          // { uid, name, ro, d, view:'top'|家族のid, zoom, preview, dirty, timer }
-let famPicking = null;  // よくあるニーズを選んでいる家族のid
 
 window.currentUserUid = () => currentUser?.uid;
 
@@ -3812,6 +3810,8 @@ function famMemberHtml(m) {
   const rel = FAM_REL[m.rel];
   const homes = [...new Set([d.me.home, ...d.members.map(x => x.home)].filter(h => h && h !== '同居'))];
   const uncles = d.members.filter(x => (x.rel === '叔父' || x.rel === '叔母') && (!m.side || !x.side || x.side === m.side));
+  // ニーズは自由に書く（「よくあるニーズ」はビジネス向けの一覧なので家族には出さない）
+  if (!ro && !m.needs.length) m.needs.push({ k: '', t: '' });
   const needRows = m.needs.map((n, i) => {
     const ask = n.k ? cdChoice(NEED_PICKS.find(raw => cdChoice(raw).label === n.k) || '').ask : '';
     return n.k
@@ -3846,9 +3846,8 @@ function famMemberHtml(m) {
     <div class="cd-sec"><div class="cd-sec-body" style="border-top:none;">
       <fieldset class="fm-fs"${ro ? ' disabled' : ''}>
         <div class="cd-field"><div class="cd-label">ニーズ</div>
-          <button type="button" class="cd-pick-btn" data-act="picks">よくあるニーズから選ぶ</button>
           ${needRows}
-          <button type="button" class="cd-add" data-act="needAdd">＋ 自由に書く</button></div>
+          <button type="button" class="cd-add" data-act="needAdd">＋ ニーズを追加</button></div>
         <div class="cd-field"><div class="cd-label">健康で気にしていること</div>
           <textarea rows="2" data-f="health" placeholder="例：体重が増えてきた、疲れやすい">${escHtml(m.health)}</textarea>
           <div class="fm-hint">病名や飲んでいる薬は書かないでください</div></div>
@@ -3946,7 +3945,6 @@ document.getElementById('fmScreen').addEventListener('click', async e => {
   else if (act === 'type') { m.type = m.type === v ? '' : v; }
   else if (act === 'needAdd') { m.needs.push({ k: '', t: '' }); }
   else if (act === 'needDel') { m.needs.splice(+t.dataset.i, 1); }
-  else if (act === 'picks') { famOpenPicks(m); return; }
   else if (act === 'delMember') {
     if (!confirm(`「${famRelLabel(m)}」を削除しますか？`)) return;
     fm.d.members = ms.filter(x => x !== m);
@@ -3955,28 +3953,6 @@ document.getElementById('fmScreen').addEventListener('click', async e => {
   } else return;
   famTouch(); famRender();
 });
-
-// よくあるニーズ（CDATA と同じ一覧）から選ぶ
-function famOpenPicks(m) {
-  famPicking = m.id;
-  const chosen = new Set(m.needs.map(n => n.k).filter(Boolean));
-  document.getElementById('pickList').innerHTML = NEED_PICKS.map(raw => {
-    const x = cdChoice(raw);
-    return `<label class="sync-row"><input type="checkbox" value="${escHtml(x.label)}"${chosen.has(x.label) ? ' checked' : ''}><div class="sync-val">${escHtml(x.label)}</div></label>`;
-  }).join('');
-  document.getElementById('pickModal').classList.add('open');
-  document.querySelector('#pickModal .modal').scrollTop = 0;
-}
-function famApplyPicks() {
-  const m = famMember(famPicking);
-  const checked = new Set([...document.querySelectorAll('#pickList input:checked')].map(el => el.value));
-  closePickModal();
-  if (!fm || !m) return;
-  const picked = NEED_PICKS.map(raw => cdChoice(raw).label).filter(l => checked.has(l))
-    .map(l => m.needs.find(n => n.k === l) || { k: l, t: '' });
-  m.needs = [...picked, ...m.needs.filter(n => !n.k)];
-  famTouch(); famRender();
-}
 
 // Uライン（共有を受けた人）がアドバイスを書く。自分の分だけ（advice.{家族のid}.{自分のuid}）
 async function famSaveAdvice(btn) {
