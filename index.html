@@ -4026,6 +4026,20 @@ document.getElementById('fmSheet').addEventListener('click', e => {
   if (t.dataset.act === 'addSib') {
     // 兄弟は「親の子」として持つ。親がいなければ情報なしの父を作る（子として足した人なら、足した側の人が親）
     const id = t.dataset.of, x = id === '_me' ? null : famMember(id), v = t.dataset.v, ms = fm.d.members;
+    // 自分の兄弟から足したときは、自分と比べた上下を決める（姉の姉→年上、弟の弟→年下）。決まらなければ聞く
+    let older = id === '_me' ? (v === '兄' || v === '姉' ? '上' : '下') : '';
+    if (x && /^[FM][SD]$/.test(famPath(x).join(''))) {
+      const xo = { '兄': '上', '姉': '上', '弟': '下', '妹': '下' }[famSibLabel(x, true).replace('姉', '兄').replace('妹', '弟')] || '';
+      const up = v === '兄' || v === '姉';
+      older = t.dataset.older || (xo === '上' && up ? '上' : xo === '下' && !up ? '下' : '');
+      if (!older) {
+        document.getElementById('fmSheetBody').innerHTML = `
+          <div class="cd-label" style="margin-top:6px;">その${v}は、自分より…</div>
+          <div class="fm-sheet-grid" style="grid-template-columns:repeat(2,1fr);">${[['上', '年上'], ['下', '年下']].map(([o, l]) =>
+            `<button type="button" class="fm-sheet-btn" data-act="addSib" data-of="${id}" data-v="${v}" data-older="${o}">${l}</button>`).join('')}</div>`;
+        return;
+      }
+    }
     let pid;
     if (x && 'SD'.includes(famTokOf(x))) pid = x.of;
     else {
@@ -4033,7 +4047,7 @@ document.getElementById('fmSheet').addEventListener('click', e => {
         || (ms.push(famBlank({ id: famId(), of: id, link: '父' })), ms[ms.length - 1]);
       pid = p.id;
     }
-    const n = famBlank({ id: famId(), of: pid, link: v === '兄' || v === '弟' ? '息子' : '娘', older: id === '_me' ? (v === '兄' || v === '姉' ? '上' : '下') : '' });
+    const n = famBlank({ id: famId(), of: pid, link: v === '兄' || v === '弟' ? '息子' : '娘', older });
     ms.push(n);
     famCloseSheet();
     fm.view = n.id;
