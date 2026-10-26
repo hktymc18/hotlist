@@ -850,7 +850,7 @@
 
     <div class="share-section">
       <div class="share-section-title">Family DATA</div>
-      <p class="share-desc">家族の図・一人ひとりのニーズ・アプローチ作戦をまとめます。リストを共有している相手に見せるかどうかは、Family DATA の画面の下で選べます。</p>
+      <p class="share-desc">家族の図・一人ひとりのニーズ・アプローチ作戦をまとめます。見せる相手は、リストを共有している人の中から、Family DATA の画面のいちばん下で1人ずつ選べます。</p>
       <div class="share-actions"><button class="btn btn-outline btn-sm" onclick="closeShareModal();openFamily(currentUserUid())">Family DATA を開く</button></div>
     </div>
 
@@ -3518,7 +3518,8 @@ function famNorm(d) {
   return {
     members: ms,
     me: { home: me.home || '', age: me.age || '', past: me.past || '', image: me.image || '', biz: me.biz || '', react: me.react || '' },
-    share: d.share === true,
+    // 見せる人（uid の一覧）。リストを共有している人の中から1人ずつ選ぶ。旧版の share（全員に見せる）は引き継がない
+    viewers: Array.isArray(d.viewers) ? d.viewers.filter(u => typeof u === 'string') : [],
     advice: d.advice && typeof d.advice === 'object' ? d.advice : {},
     migrated,
   };
@@ -3657,14 +3658,15 @@ window.openFamily = async (uid) => {
     d = s.exists() ? s.data() : null;
   } catch (e) { err = e; }
   if (!fm || fm.uid !== uid) return;
-  if (ro && (!d || d.share !== true)) {
-    document.getElementById('fmBody').innerHTML = `<div class="mb-empty">${escHtml(name || 'このメンバー')} さんの Family DATA は<br>共有されていません。<br><br>本人の Family DATA の画面で<br>「Family DATA も共有する」をオンにしてもらってください。</div>`;
+  if (ro && (!d || !(d.viewers || []).includes(currentUser.uid))) {
+    document.getElementById('fmBody').innerHTML = `<div class="mb-empty">${escHtml(name || 'このメンバー')} さんの Family DATA は<br>あなたに共有されていません。<br><br>本人の Family DATA の画面の<br>「Family DATA を見せる人」で<br>あなたをオンにしてもらってください。</div>`;
     famFoot();
     return;
   }
   if (err && !ro) { document.getElementById('fmBody').innerHTML = '<div class="mb-empty">読み込みに失敗しました</div>'; return; }
   fm.d = famNorm(d || {});
   famRender();
+  if (!ro) famLoadRecipients();
   if (fm.d.migrated && !ro) famTouch();   // 初版の形から置き換えたので保存し直す
 };
 
@@ -3685,6 +3687,16 @@ window.closeFamily = () => {
   document.body.style.overflow = '';
 };
 
+// Family DATA を見せられる相手＝リストを共有している人（users/{自分}/alShares）
+async function famLoadRecipients() {
+  const f = fm;
+  try {
+    const snap = await getDocs(collection(db, 'users', currentUser.uid, 'alShares'));
+    if (fm !== f) return;
+    f.recips = snap.docs.map(x => ({ uid: x.id, name: x.data().name || '（名前なし）' })).sort((a, b) => a.name.localeCompare(b.name, 'ja'));
+  } catch (e) { if (fm === f) f.recips = []; }
+  if (fm === f && f.view === 'top' && !f.preview) famRender();
+}
 function famState(t) { document.getElementById('fmState').textContent = t; }
 function famTouch() {
   if (!fm || fm.ro) return;
@@ -3701,7 +3713,7 @@ async function famSave() {
   try {
     // advice は Uラインが書く欄なので、本人の保存では触らない（merge で残す）
     await setDoc(doc(db, 'users', f.uid, 'family', 'main'),
-      { v: 2, members: f.d.members, me: f.d.me, share: f.d.share, updatedAt: serverTimestamp() }, { merge: true });
+      { v: 2, members: f.d.members, me: f.d.me, viewers: f.d.viewers, share: deleteField(), updatedAt: serverTimestamp() }, { merge: true });
     if (fm === f && !f.dirty) famState('保存済み');
   } catch (e) {
     if (fm === f) famState('未保存');
@@ -3797,11 +3809,14 @@ function famTopHtml() {
         </fieldset>
       </div>
     </div>
-    ${ro ? '' : `<div class="cd-sec"><div class="cd-sec-body" style="border-top:none;">
-      <div class="cd-check" style="border:none;padding:0;"><div><b>Family DATA も共有する</b>
-        <div class="fm-hint" style="margin-top:2px;">オンにすると、リストを共有している相手（Uライン）が見られて、アドバイスを書けます。オフにすると、リストは共有したまま Family DATA だけ見せません。</div></div>
-        <button type="button" class="cd-switch${d.share ? ' on' : ''}" role="switch" aria-checked="${d.share}" aria-label="Family DATA も共有する" data-act="share"><i></i></button></div>
-    </div></div>`}`;
+    ${ro ? '' : `<div class="cd-sec"><div class="fm-sec-h">Family DATA を見せる人 <small>${d.viewers.filter(u => (fm.recips || []).some(r => r.uid === u)).length}人に見せています</small></div>
+      <div class="cd-sec-body" style="border-top:none;gap:0;">
+        <div class="fm-hint" style="margin:0 0 6px;">リストを共有している人の中から、Family DATA も見せる人だけオンにしてください。オンにした人は「Uラインからのアドバイス」を書けます。</div>
+        ${fm.recips == null ? '<div class="fm-hint">読み込み中...</div>'
+          : fm.recips.length ? fm.recips.map(r => `<div class="cd-check"><span>${escHtml(r.name)}</span>
+              <button type="button" class="cd-switch${d.viewers.includes(r.uid) ? ' on' : ''}" role="switch" aria-checked="${d.viewers.includes(r.uid)}" aria-label="${escHtml(r.name)} に見せる" data-act="viewer" data-u="${r.uid}"><i></i></button></div>`).join('')
+          : '<div class="fm-hint">リストを共有している人がいません。「設定・共有」で共有コードを発行して、先にリストを共有してください。</div>'}
+      </div></div>`}`;
 }
 
 // ----- 家族の図（SVG を自動で描く） -----
@@ -4219,10 +4234,13 @@ document.getElementById('fmScreen').addEventListener('click', async e => {
     [ms[a], ms[b]] = [ms[b], ms[a]];
     famTouch(); famRender(); return;
   }
-  if (act === 'share') {
-    fm.d.share = !fm.d.share;
+  if (act === 'viewer') {
+    const u = t.dataset.u, r = (fm.recips || []).find(x => x.uid === u), on = !fm.d.viewers.includes(u);
+    // リストの共有を解除した人は一覧から消えるので、ここで見せる人からも外しておく
+    fm.d.viewers = fm.d.viewers.filter(x => x !== u && (fm.recips || []).some(y => y.uid === x));
+    if (on) fm.d.viewers.push(u);
     famTouch(); famRender();
-    showToast(fm.d.share ? 'Family DATA を共有しました' : 'Family DATA の共有をやめました');
+    showToast(on ? `${r?.name || ''} さんに Family DATA を見せます` : `${r?.name || ''} さんには Family DATA を見せません`);
     return;
   }
   if (act === 'biz') { fm.d.me.biz = fm.d.me.biz === v ? '' : v; famTouch(); famRender(); return; }
@@ -4318,6 +4336,15 @@ function famCopyFallback(text, done) {
 // ===== バージョン＆お知らせ =====
 // アップデートしたら先頭に { version, date, items } を追記する（先頭の version が表示バージョンになる）
 const UPDATES = [
+  {
+    version: 'v18',
+    date: '2026/10/26',
+    items: [
+      'Family DATA を見せる人を、1人ずつ選べるようにしました（Family DATA の画面のいちばん下）。リストを共有している人の中から、見せたい人だけオンにしてください',
+      'これまで「Family DATA も共有する」をオンにしていた場合も、いったん誰にも見せない状態に戻っています。見せたい人を選び直してください',
+      'Family DATA の丸のメニューに「兄弟姉妹」と「パートナー（妻・夫・彼氏・彼女）」を追加しました。父の丸からパートナーを選ぶと「母」として登録できます',
+    ],
+  },
   {
     version: 'v17',
     date: '2026/10/25',
