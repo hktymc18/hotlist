@@ -1189,8 +1189,8 @@ const UNION_LIST = [
   { name:'LIEN', upbd:'小川拓郎' }, { name:'BEYOND', upbd:'堀田めぐみ' },
   { name:'FELIN', upbd:'平井凛太郎' }, { name:'FORMULA', upbd:'木下文貴' },
   { name:'REVITALIZE', upbd:'藤原拓晶' }, { name:'INFLUENCE', upbd:'高島健佑' },
-  { name:'BASE ANTARES', upbd:'馬越雅哉' }, { name:'BASE REVE', upbd:'浦田美沙子' },
-  { name:'LIEN LOAD', upbd:'松田郁愛' }, { name:'DEFI', upbd:'中原賢三' },
+  { name:'ANTARES', upbd:'馬越雅哉' }, { name:'REVE', upbd:'浦田美沙子' },
+  { name:'ALTAIR', upbd:'松田郁愛' }, { name:'DEFI', upbd:'中原賢三' },
   { name:'GRANDIR', upbd:'嶽本尚希' }, { name:'SFIDA', upbd:'' },
   { name:'AMASIA', upbd:'' }, { name:'UPBD', upbd:'渡邉寛' }
 ];
@@ -1254,6 +1254,12 @@ onAuthStateChanged(auth, async user => {
     const userDocRef = doc(db, 'users', user.uid);
     const userSnap = await getDoc(userDocRef);
     const data = userSnap.exists() ? userSnap.data() : {};
+    // 🔁 ユニオン名の変更（旧名 → 新名）。旧名のまま残っている人は、開いた時に新しい名前へ直す（NAVIGATOR・受付と同じ対応表）
+    const UNION_RENAMED = { 'BASE ANTARES': 'ANTARES', 'BASE REVE': 'REVE', 'LIEN LOAD': 'ALTAIR', 'LOAD': 'ALTAIR' };
+    if (data.union && UNION_RENAMED[data.union]) {
+      data.union = UNION_RENAMED[data.union];
+      setDoc(userDocRef, { union: data.union }, { merge: true }).catch(() => {});
+    }
 
     // 管理者に無効化されたアカウントはブロック
     if (data.status === 'disabled') {
