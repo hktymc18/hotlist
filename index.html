@@ -1000,7 +1000,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, setPersistence, browserLocalPersistence, browserSessionPersistence, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, confirmPasswordReset, verifyPasswordResetCode, onAuthStateChanged, signOut }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, getDocs, getDoc, setDoc, addDoc, updateDoc, deleteDoc, deleteField, onSnapshot, query, where, serverTimestamp }
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, getDocs, getDocsFromCache, getDoc, setDoc, addDoc, updateDoc, deleteDoc, deleteField, onSnapshot, query, where, serverTimestamp, Timestamp }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 // ===== Firebase設定 =====
@@ -1289,6 +1289,7 @@ onAuthStateChanged(auth, async user => {
     currentUser = null;
     showScreen('loginScreen');
     if (unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
+    if (unsubscribeDelta) { unsubscribeDelta(); unsubscribeDelta = null; }
     stopTplWatch();
   }
 });
@@ -1395,21 +1396,84 @@ window.saveName = async () => {
 
 // ===== 自分のリスト購読 =====
 // onDenied: 読めなかったとき（共有を解除された等）に呼ぶ
+// 読み取りを減らす（Firestoreの無料枠対策）:
+//   前は開くたびに（30分以上あくと）リストの全員を読み直していた。
+//   いまは「12時間に1回だけ全員を読む」＋「それ以外は、端末の控え（オフラインの保存）＋前回より後に変わった人だけを読む」。
+//   ・変わった人＝ updatedAt が新しい人（書きかえる時は必ず updatedAt を入れる）
+//   ・ほかの端末で消した人は、次の「全員を読む」（最大12時間後）で消える。この端末で消した人はすぐ消える
+//   ・端末の控えが消えていた時（iPhoneの長期未使用など）は、全員を読む
+const AL_FULL_MS = 12 * 3600 * 1000, AL_MARGIN_MS = 15 * 60 * 1000;
+const alSyncKey = uid => 'al_sync_' + uid;
+function alSyncGet(uid) { try { return JSON.parse(localStorage.getItem(alSyncKey(uid)) || 'null'); } catch (e) { return null; } }
+function alSyncSet(uid, o) { try { localStorage.setItem(alSyncKey(uid), JSON.stringify(o)); } catch (e) {} }
+const alMs = t => (t && typeof t.toMillis === 'function') ? t.toMillis() : 0;
+function alSortPeople(list) {
+  list.sort((a, b) => {
+    if (a.sortOrder != null && b.sortOrder != null) return a.sortOrder - b.sortOrder;
+    if (a.sortOrder != null) return -1;
+    if (b.sortOrder != null) return 1;
+    return (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0);
+  });
+  return list;
+}
+let alListGen = 0;   // リストを切りかえた時に、前のリストの遅れた結果を捨てるため
+let unsubscribeDelta = null;
+function alShowDocs(docs, targetUid) {
+  people = alSortPeople(docs.map(d => ({ id: d.id, ...d.data() })));
+  renderList();
+  if (targetUid === currentUser?.uid) alWriteSummary();
+}
 function loadMyList(uid, onDenied) {
-  if (unsubscribeSnapshot) { unsubscribeSnapshot(); }
+  if (unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot = null; }
+  if (unsubscribeDelta) { unsubscribeDelta(); unsubscribeDelta = null; }
   const targetUid = uid || currentUser.uid;
   viewingUserId = targetUid;
+  const gen = ++alListGen;
   const colRef = collection(db, 'users', targetUid, 'people');
-  unsubscribeSnapshot = onSnapshot(colRef, snapshot => {
-    people = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-    people.sort((a, b) => {
-      if (a.sortOrder != null && b.sortOrder != null) return a.sortOrder - b.sortOrder;
-      if (a.sortOrder != null) return -1;
-      if (b.sortOrder != null) return 1;
-      return (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0);
-    });
-    renderList();
-  }, () => { if (onDenied) onDenied(); });
+  const st = alSyncGet(targetUid), now = Date.now();
+  const denied = () => { if (gen === alListGen && onDenied) onDenied(); };
+  const maxOf = (docs, base) => { let m = base || 0; docs.forEach(d => { if (!d.metadata.hasPendingWrites) m = Math.max(m, alMs(d.get('updatedAt')), alMs(d.get('createdAt'))); }); return m; };
+  const full = () => {   // 全員を読む（今までと同じ）
+    let fullAt = 0;
+    unsubscribeSnapshot = onSnapshot(colRef, snapshot => {
+      if (gen !== alListGen) return;
+      alShowDocs(snapshot.docs, targetUid);
+      if (!snapshot.metadata.fromCache) {
+        if (!fullAt) fullAt = Date.now();
+        alSyncSet(targetUid, { full: fullAt, max: maxOf(snapshot.docs, 0), n: snapshot.size });
+      }
+    }, denied);
+  };
+  if (!st || !st.full || now - st.full > AL_FULL_MS || !st.max) { full(); return; }
+  // 差分: 画面は端末の控えを見て描く（読み取り0回・この端末で足した／消した人もすぐ出る）。
+  //   サーバーからは「前回より後に変わった人」だけを購読する（届いた分は控えに入り、上の画面に出る）
+  getDocsFromCache(colRef).then(qs => {
+    if (gen !== alListGen) return;
+    if (qs.size < Math.max(1, Math.floor((st.n || 0) * 0.5))) { full(); return; }   // 控えが消えている → 全員を読む
+    unsubscribeSnapshot = onSnapshot(colRef, { source: 'cache' }, snap => {
+      if (gen !== alListGen) return;
+      alShowDocs(snap.docs, targetUid);
+    }, () => {});
+    const since = Timestamp.fromMillis(Math.max(0, st.max - AL_MARGIN_MS));
+    unsubscribeDelta = onSnapshot(query(colRef, where('updatedAt', '>=', since)), snap => {
+      if (gen !== alListGen || snap.metadata.fromCache) return;
+      st.max = maxOf(snap.docs, st.max); st.n = Math.max(st.n || 0, qs.size);
+      alSyncSet(targetUid, st);
+      // 念のため: 届いた変更を控えから描き直す（控えだけの購読が知らせてこない場合にそなえて）
+      if (snap.docChanges().length) getDocsFromCache(colRef).then(q2 => { if (gen === alListGen) alShowDocs(q2.docs, targetUid); }).catch(() => {});
+    }, denied);
+  }).catch(() => { if (gen === alListGen) full(); });
+}
+// NAVIGATOR の PLAN（手元のリストの人数）用のまとめ: users/{uid}/appData/alSummary = { n: 未着手・連絡中, apo: CT予定, total, at }
+//   NAVIGATOR はこれを1件読むだけにする（前はリストの全員を読んでいた）。変わった時だけ書く
+function alWriteSummary() {
+  if (!currentUser || viewingUserId !== currentUser.uid) return;
+  let n = 0, apo = 0;
+  people.forEach(p => { const s = p.status || '未着手'; if (s === '未着手' || s === '連絡中') n++; else if (s === 'CT予定') apo++; });
+  const sig = n + '|' + apo + '|' + people.length, k = 'al_sum_' + currentUser.uid;
+  try { if (localStorage.getItem(k) === sig) return; } catch (e) {}
+  setDoc(doc(db, 'users', currentUser.uid, 'appData', 'alSummary'), { n, apo, total: people.length, at: Date.now() })
+    .then(() => { try { localStorage.setItem(k, sig); } catch (e) {} }).catch(() => {});
 }
 
 // ===== 共有（共有コード方式） =====
@@ -1436,12 +1500,20 @@ let members = [];
 let membersOutTab = false;
 const isOut = m => m.status === 'disabled';
 // 受信箱の一覧に、相手のプロフィール（ユニオン・状態）を足す
+// 読み取りを減らす: 相手のプロフィールは端末に12時間覚える（OUT・戻すをこの端末でした時は覚えた分を直す）
+const AL_PF_MS = 12 * 3600 * 1000;
+function alPfGet(uid) { try { const o = JSON.parse(localStorage.getItem('al_pf_' + uid) || 'null'); return o && Date.now() - o.at < AL_PF_MS ? o.p : null; } catch (e) { return null; } }
+function alPfSet(uid, p) { try { localStorage.setItem('al_pf_' + uid, JSON.stringify({ at: Date.now(), p })); } catch (e) {} }
 async function withProfiles(list) {
   return Promise.all(list.map(async x => {
     try {
+      const c = alPfGet(x.uid);
+      if (c) return { ...c, uid: x.uid, name: c.name || x.name };
       const d = (await getDoc(doc(db, 'users', x.uid))).data() || {};
-      return { uid: x.uid, name: d.displayName || d.name || x.name, union: d.union || '', area: d.area || '',
+      const p = { uid: x.uid, name: d.displayName || d.name || x.name, union: d.union || '', area: d.area || '',
                status: d.status || 'active', outPrev: d.outPrev || '', role: d.role || '' };
+      alPfSet(x.uid, p);
+      return p;
     } catch (e) { return { uid: x.uid, name: x.name, union: '', area: '', status: 'active', outPrev: '', role: '' }; }
   }));
 }
@@ -1532,6 +1604,7 @@ window.setMemberOut = async (uid, out) => {
       : { status: m.outPrev || 'active' };
     await updateDoc(doc(db, 'users', uid), data);
     if (out) { m.outPrev = data.outPrev; m.status = 'disabled'; } else { m.status = data.status; }
+    alPfSet(m.uid, { uid: m.uid, name: m.name, union: m.union, area: m.area, status: m.status, outPrev: m.outPrev || '', role: m.role || '' });
     renderMembers();
     showToast(out ? `${m.name} さんをOUTにしました` : `${m.name} さんを元に戻しました`);
   } catch (e) {
@@ -2101,7 +2174,7 @@ function setupDragDrop() {
     if (!viewingUserId) return;
     try {
       await Promise.all(newOrder.map((id,i) =>
-        updateDoc(doc(db,'users',viewingUserId,'people',id), {sortOrder:i})
+        updateDoc(doc(db,'users',viewingUserId,'people',id), {sortOrder:i, updatedAt: serverTimestamp()})
       ));
     } catch(err) { showToast('並び替えに失敗しました'); }
   };
@@ -2945,7 +3018,7 @@ window.deleteCdata = async () => {
   cd.touched.clear();
   closeCdata();
   try {
-    await updateDoc(doc(db, 'users', currentUser.uid, 'people', pid), { [kind + '.' + id]: deleteField() });
+    await updateDoc(doc(db, 'users', currentUser.uid, 'people', pid), { [kind + '.' + id]: deleteField(), updatedAt: serverTimestamp() });
     showToast('削除しました');
   } catch (e) { showToast('削除に失敗しました'); }
 };
@@ -4585,7 +4658,7 @@ window.copyPersonToMine = async (pid, btn) => {
     Object.keys(SHEET_KINDS).forEach(k => { if (p[k]) data[k] = p[k]; });
     // sortOrder: 自分のリストの一番上に入れる（現在は相手のリストを表示中で、自分の並び順を知らないため）
     await addDoc(mine, { ...data, writer: writerName(), copiedFromKey: key, copiedFrom: viewingUserName,
-                         sortOrder: -Date.now(), createdAt: serverTimestamp() });
+                         sortOrder: -Date.now(), createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
     flashCopied(btn);
     showToast(`${p.name} さんを自分のリストにコピーしました`);
   } catch (e) { showToast('コピーに失敗しました'); }
@@ -4657,7 +4730,7 @@ window.savePerson = async (e) => {
     } else {
       // 既存の最小 sortOrder より小さい値を付けてリストの一番上に表示する
       const minOrder = people.reduce((m,p)=> (p.sortOrder!=null && p.sortOrder<m) ? p.sortOrder : m, 0);
-      await addDoc(collection(db,'users',currentUser.uid,'people'), { ...data, writer: writerName(), sortOrder: minOrder-1, createdAt: serverTimestamp() });
+      await addDoc(collection(db,'users',currentUser.uid,'people'), { ...data, writer: writerName(), sortOrder: minOrder-1, createdAt: serverTimestamp(), updatedAt: serverTimestamp() });
       showToast('追加しました');
     }
     closeEditModal();
@@ -4721,7 +4794,7 @@ window.importData = async (e) => {
         const data={};
         FIELDS.forEach(f=>{ data[f]=p[f]||''; });
         data.writer = p.writer || writerName();
-        await addDoc(collection(db,'users',currentUser.uid,'people'),{...data,createdAt:serverTimestamp()});
+        await addDoc(collection(db,'users',currentUser.uid,'people'),{...data,createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
         count++;
       }
       showToast(`${count}件インポートしました`);
@@ -4748,6 +4821,7 @@ window.clearAll = async () => {
 window.confirmSignOut = async () => {
   if (!confirm('ログアウトしますか？')) return;
   if (unsubscribeSnapshot) { unsubscribeSnapshot(); unsubscribeSnapshot=null; }
+  if (unsubscribeDelta) { unsubscribeDelta(); unsubscribeDelta=null; }
   await signOut(auth);
 };
 
