@@ -3921,6 +3921,41 @@ function famTreeLayout() {
   const order = [];
   const visit = id => ms.filter(c => c.of === id).forEach(c => { if (!order.includes(c)) { order.push(c); visit(c.id); } });
   visit('_me');
+  // 親子のまとまり（同じ親の子どもたち）。線を引くのと、横に並べるときに家ごとにまとめるのに使う
+  const groups = new Map(), couples = [];
+  const group = (ps, c) => {
+    const key = ps.map(p => p.id).sort().join('|') || 'none:' + c.id;
+    if (!groups.has(key)) groups.set(key, { key, ps, cs: [] });
+    const g = groups.get(key);
+    if (!g.cs.includes(c)) g.cs.push(c);
+  };
+  [...nodes.values()].forEach(n => {
+    const ps = parentsOf(n.id).map(p => nodes.get(p.id));
+    if (ps.length) {
+      group(ps, n);
+      ps.forEach(p => ms.filter(c => c.of === p.id && 'SD'.includes(tok(c))).forEach(c => group(ps, nodes.get(c.id))));
+      if (ps.length === 2) couples.push([ps[0], ps[1], 'couple', true]);
+    }
+  });
+  ms.forEach(c => {
+    const t = tok(c), A = nodes.get(c.of) || me;
+    if ((t === 'S' || t === 'D') && !(A.m && 'FM'.includes(tok(A.m)))) group([A, partnerOf(A.id)].filter(Boolean), nodes.get(c.id));
+  });
+  const blockOf = new Map();
+  groups.forEach(g => g.cs.forEach(c => blockOf.set(c.id, g)));
+  const avg = a => a.reduce((t, v) => t + v, 0) / a.length;
+  // その人が入る「家」（親子のまとまり）。パートナーと「その他」の人は、つながっている人の家に入れる
+  const blockFor = n => {
+    let x = n;
+    for (let k = 0; k < 6; k++) {
+      const g = blockOf.get(x.id);
+      if (g) return { key: g.key, center: g.ps.length ? avg(g.ps.map(p => p.x)) : avg(g.cs.map(c => c.ideal ?? c.x)) };
+      if (x.m && 'BGO'.includes(tok(x.m))) { x = nodes.get(x.m.of) || me; continue; }
+      break;
+    }
+    return { key: 'own:' + x.id, center: x.ideal ?? x.x };
+  };
+  nodes.forEach(n => { if (n.x == null) n.x = 0; });   // 並び順によっては、まだ位置が決まっていない人を参照するため
   const place = () => {
     order.forEach(m => {
       const n = nodes.get(m.id), A = nodes.get(m.of) || me, t = tok(m);
@@ -3962,36 +3997,20 @@ function famTreeLayout() {
     [...nodes.values()].forEach(n => { (rows[n.gen] = rows[n.gen] || []).push(n); });
     Object.values(rows).forEach(row => {
       row.forEach(n => { if (n.me) n.ideal = n.x; });
-      row.sort((a, b) => a.ideal - b.ideal || (a.i ?? -1) - (b.i ?? -1));
+      // 家ごとにまとめて並べる（自分の兄弟の間に、いとこが入り込まないように）
+      const bk = new Map(row.map(n => [n, blockFor(n)]));
+      row.sort((a, b) => bk.get(a).center - bk.get(b).center || (bk.get(a).key < bk.get(b).key ? -1 : bk.get(a).key > bk.get(b).key ? 1 : 0)
+        || a.ideal - b.ideal || (a.i ?? -1) - (b.i ?? -1));
       row.forEach((n, k) => { n.x = k ? Math.max(n.ideal, row[k - 1].x + 1) : n.ideal; });
       const back = row.reduce((t, n) => t + (n.x - n.ideal), 0) / row.length;
       row.forEach(n => { n.x -= back; });
     });
   };
-  place(); place();
+  place(); place(); place();
   // 線
-  const lines = [], dotted = [];
-  const groups = new Map();
-  const group = (ps, c) => {
-    const key = ps.map(p => p.id).sort().join('|') || 'none:' + c.id;
-    if (!groups.has(key)) groups.set(key, { ps, cs: [] });
-    const g = groups.get(key);
-    if (!g.cs.includes(c)) g.cs.push(c);
-  };
-  [...nodes.values()].forEach(n => {
-    const ps = parentsOf(n.id).map(p => nodes.get(p.id));
-    if (ps.length) {
-      group(ps, n);
-      ps.forEach(p => ms.filter(c => c.of === p.id && 'SD'.includes(tok(c))).forEach(c => group(ps, nodes.get(c.id))));
-      if (ps.length === 2) lines.push([ps[0], ps[1], 'couple', true]);
-    }
-  });
+  const lines = [...couples], dotted = [];
   ms.forEach(c => {
     const t = tok(c), A = nodes.get(c.of) || me;
-    if ((t === 'S' || t === 'D') && !(A.m && 'FM'.includes(tok(A.m)))) {
-      const P = partnerOf(A.id);
-      group([A, P].filter(Boolean), nodes.get(c.id));
-    }
     if (t === 'B' || t === 'G') lines.push([A, nodes.get(c.id), 'couple', c.married]);
     if (t === 'O') dotted.push([A, nodes.get(c.id)]);
   });
