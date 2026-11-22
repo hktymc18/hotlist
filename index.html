@@ -42,6 +42,9 @@
       --shadow: 0 10px 30px rgba(0,0,0,0.05);
       --fab-shadow: 0 12px 26px rgba(0,0,0,0.18);
       --flow-on: #5A3B40;
+      --cta-bg: #5A3B40; --cta-fg: #FBF2DC;
+      --tab-login-bg: #C9A9D3; --tab-login-fg: #3E2A48;
+      --tab-signup-bg: #F6C4DC; --tab-signup-fg: #5A3B40;
       /* 色ラベル（淡い地＋濃い文字）: gray / blue / amber / amber2 / pink / teal / green / purple / red */
       --t-gray-bg: #EDEDED;   --t-gray-fg: #6F6B6A;
       --t-blue-bg: #E8EEF7;   --t-blue-fg: #3E5A7E;
@@ -83,6 +86,9 @@
       --shadow: none;
       --fab-shadow: 0 12px 26px rgba(0,0,0,0.45);
       --flow-on: #FBF2DC;
+      --cta-bg: #7A5048; --cta-fg: #FBF2DC;
+      --tab-login-bg: #7E6290; --tab-login-fg: #F7EEFA;
+      --tab-signup-bg: #9C6680; --tab-signup-fg: #FFF1F7;
       --t-gray-bg: rgba(255,255,255,0.08);   --t-gray-fg: #C9BFC2;
       --t-blue-bg: rgba(140,170,215,0.18);   --t-blue-fg: #C3D4EE;
       --t-amber-bg: rgba(251,242,220,0.14);  --t-amber-fg: #F3E3BC;
@@ -110,7 +116,7 @@
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       min-height: 100vh; padding: 24px; gap: 24px;
     }
-    .login-title { font-family: 'Outfit', 'Inter', sans-serif; font-size: 2.3rem; font-weight: 700; letter-spacing: 0.01em; color: var(--text); line-height: 1; }
+    .login-title { font-family: 'Outfit', 'Inter', sans-serif; font-size: 2.5rem; font-weight: 700; letter-spacing: -0.02em; color: var(--text); line-height: 1; }
     .login-subtitle { font-size: 0.88rem; color: var(--text-muted); text-align: center; line-height: 1.9; letter-spacing: 0.12em; }
 
     /* ===== ヘッダー ===== */
@@ -120,7 +126,7 @@
       position: sticky; top: 0; z-index: 100;
     }
     .header-top { display: flex; align-items: center; justify-content: space-between; }
-    .logo { font-family: 'Outfit', 'Inter', sans-serif; font-size: 1.55rem; font-weight: 700; letter-spacing: 0.01em; color: var(--text); line-height: 1.2; }
+    .logo { font-family: 'Outfit', 'Inter', sans-serif; font-size: 1.6rem; font-weight: 700; letter-spacing: -0.02em; color: var(--text); line-height: 1.2; }
     .stat-card { display: flex; background: var(--surface); border-radius: 22px; box-shadow: var(--shadow); padding: 14px 6px; }
     :root.dark-mode .stat-card { border: 1px solid var(--border); }
     .stat-card > div { flex: 1; text-align: center; }
@@ -509,12 +515,12 @@
 
 <!-- ===== ログイン画面 ===== -->
 <div id="loginScreen">
-  <div class="login-title">ATTACK LIST</div>
+  <div class="login-title">attack list</div>
   <div style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px;">
     <!-- タブ切り替え -->
     <div style="display:flex;border:1px solid var(--border);border-radius:999px;overflow:hidden;padding:3px;background:var(--surface);">
       <button id="tabLogin" onclick="setAuthMode('login')"
-        style="flex:1;padding:10px;border:none;border-radius:999px;background:var(--accent);color:var(--on-accent);font-size:0.95rem;font-weight:700;cursor:pointer;font-family:inherit;">ログイン</button>
+        style="flex:1;padding:10px;border:none;border-radius:999px;background:var(--tab-login-bg);color:var(--tab-login-fg);font-size:0.95rem;font-weight:700;cursor:pointer;font-family:inherit;">ログイン</button>
       <button id="tabSignup" onclick="setAuthMode('signup')"
         style="flex:1;padding:10px;border:none;border-radius:999px;background:transparent;color:var(--text-muted);font-size:0.95rem;font-weight:600;cursor:pointer;font-family:inherit;">新規登録</button>
     </div>
@@ -524,7 +530,7 @@
     <input id="authPassword" type="password" placeholder="パスワード（6文字以上）" autocomplete="current-password"
       style="padding:14px 18px;border-radius:14px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
     <button id="authSubmitBtn" onclick="submitAuth()"
-      style="padding:15px;border-radius:999px;border:none;letter-spacing:0.12em;background:var(--primary);color:var(--on-accent);font-size:1rem;font-weight:700;cursor:pointer;">ログイン</button>
+      style="padding:15px;border-radius:999px;border:none;letter-spacing:0.12em;background:var(--cta-bg);color:var(--cta-fg);font-size:1rem;font-weight:700;cursor:pointer;">ログイン</button>
     <button onclick="resetPassword()" style="padding:8px;border:none;background:transparent;color:var(--text-muted);font-size:0.82rem;cursor:pointer;">パスワードを忘れた方はこちら</button>
     <p id="authError" style="color:var(--danger);font-size:0.85rem;text-align:center;min-height:20px;"></p>
   </div>
@@ -533,7 +539,7 @@
 <!-- ===== パスワード再設定画面 ===== -->
 <div id="resetScreen" style="display:none;">
   <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;gap:20px;">
-    <div class="login-title">ATTACK LIST</div>
+    <div class="login-title">attack list</div>
     <p class="login-subtitle">新しいパスワードを設定してください</p>
     <div style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px;">
       <p id="resetEmailLabel" style="font-size:0.85rem;color:var(--text-muted);text-align:center;"></p>
@@ -542,7 +548,7 @@
       <input id="resetNewPassword2" type="password" placeholder="新しいパスワード（確認）" autocomplete="new-password"
         style="padding:14px 18px;border-radius:14px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
       <button onclick="confirmReset()"
-        style="padding:15px;border-radius:999px;border:none;letter-spacing:0.12em;background:var(--primary);color:var(--on-accent);font-size:1rem;font-weight:700;cursor:pointer;">パスワードを変更する</button>
+        style="padding:15px;border-radius:999px;border:none;letter-spacing:0.12em;background:var(--cta-bg);color:var(--cta-fg);font-size:1rem;font-weight:700;cursor:pointer;">パスワードを変更する</button>
       <p id="resetError" style="color:var(--danger);font-size:0.85rem;text-align:center;min-height:20px;"></p>
     </div>
   </div>
@@ -551,7 +557,7 @@
 <!-- ===== 名前入力画面（初回登録時） ===== -->
 <div id="nameScreen" style="display:none;">
   <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;gap:20px;">
-    <div class="login-title">ATTACK LIST</div>
+    <div class="login-title">attack list</div>
     <p class="login-subtitle" id="nameSub">あなたの名前を登録してください</p>
     <div style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px;">
       <label class="pe-lbl" for="registerName" style="display:none;font-size:0.78rem;font-weight:700;color:var(--text-muted);margin:4px 2px -6px;">名前（本名・フルネーム）</label>
@@ -576,7 +582,7 @@
       </p>
 
       <button id="startBtn" onclick="saveName()"
-        style="padding:15px;border-radius:999px;border:none;letter-spacing:0.12em;background:var(--primary);color:var(--on-accent);font-size:1rem;font-weight:700;cursor:pointer;transition:opacity 0.2s;"
+        style="padding:15px;border-radius:999px;border:none;letter-spacing:0.12em;background:var(--cta-bg);color:var(--cta-fg);font-size:1rem;font-weight:700;cursor:pointer;transition:opacity 0.2s;"
         onmouseenter="" onfocus="">登録して始める</button>
       <button id="nameCancelBtn" onclick="cancelProfileEdit()" style="display:none;padding:12px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:0.95rem;cursor:pointer;">キャンセル</button>
       <p id="nameError" style="color:var(--danger);font-size:0.85rem;text-align:center;min-height:20px;"></p>
@@ -588,7 +594,7 @@
 <div id="mainScreen" style="display:none;">
   <header>
     <div class="header-top">
-      <div class="logo">ATTACK LIST</div>
+      <div class="logo">attack list</div>
       <div class="header-icons">
         <button class="icon-btn" onclick="openUpdatesModal()" aria-label="お知らせ" title="お知らせ">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -1116,10 +1122,10 @@ let authMode = 'login';
 window.setAuthMode = (mode) => {
   authMode = mode;
   const isLogin = mode === 'login';
-  document.getElementById('tabLogin').style.background = isLogin ? 'var(--accent)' : 'transparent';
-  document.getElementById('tabLogin').style.color = isLogin ? 'var(--on-accent)' : 'var(--text-muted)';
-  document.getElementById('tabSignup').style.background = isLogin ? 'transparent' : 'var(--accent)';
-  document.getElementById('tabSignup').style.color = isLogin ? 'var(--text-muted)' : 'var(--on-accent)';
+  document.getElementById('tabLogin').style.background = isLogin ? 'var(--tab-login-bg)' : 'transparent';
+  document.getElementById('tabLogin').style.color = isLogin ? 'var(--tab-login-fg)' : 'var(--text-muted)';
+  document.getElementById('tabSignup').style.background = isLogin ? 'transparent' : 'var(--tab-signup-bg)';
+  document.getElementById('tabSignup').style.color = isLogin ? 'var(--text-muted)' : 'var(--tab-signup-fg)';
   document.getElementById('authSubmitBtn').textContent = isLogin ? 'ログイン' : '新規アカウントを作成';
   document.getElementById('authModeDesc').textContent = isLogin
     ? 'メールアドレスとパスワードでログイン'
