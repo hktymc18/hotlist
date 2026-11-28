@@ -7,78 +7,108 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="ATTACK LIST">
-  <meta name="theme-color" content="#FAF7F5">
+  <meta name="theme-color" content="#F3F3F3">
   <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png?v=2">
   <link rel="icon" type="image/png" href="icon.png?v=2">
   <link rel="manifest" href="manifest.json?v=2">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@600;700&family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap');
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ===== デザイントークン（白基調が標準。ダークは :root.dark-mode） =====
-       枠線と発光は使わず、アクセント色は「一番押してほしい所」だけに使う。 */
+    /* ===== デザイントークン（トーン：パステル×チョコ。白基調が標準、ダークは :root.dark-mode） =====
+       黒（ダークではクリーム）は「押すもの」だけに使う。状態は色が濃いほどゴールに近い。 */
     :root {
-      --primary: #F0506E;
-      --primary-dark: #DC3F5E;
-      --accent: #F0506E;
-      --accent-soft: #FDECEF;
-      --accent-ink: #C2334F;
-      --on-accent: #ffffff;
-      --danger: #E5484D;
-      --danger-soft: #FCEBEB;
-      --success: #2E9E6B;
-      --bg: #FAF7F5;
+      /* ブランド4色 */
+      --pink: #F6C4DC; --cream: #FBF2DC; --choco: #5A3B40; --lav: #C9A9D3;
+      --primary: #222222;
+      --primary-dark: #000000;
+      --accent: #222222;
+      --accent-soft: #FCE7F0;
+      --accent-ink: #5A3B40;
+      --on-accent: #FFFFFF;
+      --danger: #D9465A;
+      --danger-soft: #FBE9EC;
+      --success: #3C8C6A;
+      --bg: #F3F3F3;
       --surface: #FFFFFF;
-      --surface2: #F3EEEA;
-      --border: #EEE7E3;
-      --border-strong: #E0D7D2;
-      --text: #2B2626;
-      --text-muted: #8C8380;
-      --star: #E0A93B;
-      --radius: 18px;
-      --shadow: 0 1px 2px rgba(43,38,38,0.04), 0 4px 16px rgba(43,38,38,0.05);
+      --surface2: #F6F4F1;
+      --border: #ECECEC;
+      --border-strong: #DEDBD8;
+      --text: #222222;
+      --text-muted: #8A8584;
+      --star: #E9A93B;
+      --radius: 20px;
+      --shadow: 0 10px 30px rgba(0,0,0,0.05);
+      --fab-shadow: 0 12px 26px rgba(0,0,0,0.18);
+      --flow-on: #5A3B40;
+      --cta-bg: #5A3B40; --cta-fg: #FBF2DC;
+      --tab-login-bg: #C9A9D3; --tab-login-fg: #3E2A48;
+      --tab-signup-bg: #F6C4DC; --tab-signup-fg: #5A3B40;
       /* 色ラベル（淡い地＋濃い文字）: gray / blue / amber / amber2 / pink / teal / green / purple / red */
-      --t-gray-bg: #F1EFE8;   --t-gray-fg: #5F5E5A;
-      --t-blue-bg: #E6F1FB;   --t-blue-fg: #0C447C;
-      --t-amber-bg: #FAEEDA;  --t-amber-fg: #854F0B;
-      --t-amber2-bg: #FAC775; --t-amber2-fg: #633806;
-      --t-pink-bg: #FBEAF0;   --t-pink-fg: #72243E;
-      --t-teal-bg: #E1F5EE;   --t-teal-fg: #085041;
-      --t-green-bg: #EAF3DE;  --t-green-fg: #27500A;
-      --t-purple-bg: #EEEDFE; --t-purple-fg: #3C3489;
-      --t-red-bg: #FCEBEB;    --t-red-fg: #791F1F;
+      --t-gray-bg: #EDEDED;   --t-gray-fg: #6F6B6A;
+      --t-blue-bg: #E8EEF7;   --t-blue-fg: #3E5A7E;
+      --t-amber-bg: #FBF2DC;  --t-amber-fg: #8A6A3A;
+      --t-amber2-bg: #F5E2B8; --t-amber2-fg: #5A3B40;
+      --t-pink-bg: #FCE3EE;   --t-pink-fg: #7A3A55;
+      --t-teal-bg: #E2F2EC;   --t-teal-fg: #2F6B57;
+      --t-green-bg: #E6F1E2;  --t-green-fg: #3B6B33;
+      --t-purple-bg: #EFE6F5; --t-purple-fg: #6B4F80;
+      --t-red-bg: #FBE6E8;    --t-red-fg: #8A2F3A;
+      /* 状態（未着手→ユーザー：色が濃いほどゴールに近い） */
+      --st0-bg: #EDEDED; --st0-fg: #888888;   /* 未着手 */
+      --st1-bg: #FBF2DC; --st1-fg: #8A6A3A;   /* 連絡中 */
+      --st2-bg: #EFE6F5; --st2-fg: #7A5C8A;   /* CT予定 */
+      --st3-bg: #C9A9D3; --st3-fg: #3E2A48;   /* CT済み */
+      --st4-bg: #F6C4DC; --st4-fg: #5A3B40;   /* つながった */
+      --st5-bg: #EE9FC4; --st5-fg: #4A1F33;   /* 体感済み */
+      --st6-bg: #5A3B40; --st6-fg: #FBF2DC;   /* BPC済み */
+      --st7-bg: #3E2A2D; --st7-fg: #F6C4DC;   /* ユーザー */
     }
     :root.dark-mode {
-      --primary: #F4708A;
-      --primary-dark: #F0506E;
-      --accent: #F4708A;
-      --accent-soft: rgba(244,112,138,0.16);
-      --accent-ink: #F8A3B4;
-      --on-accent: #2B1318;
-      --danger: #F2777A;
-      --danger-soft: rgba(226,75,74,0.18);
-      --success: #5DCAA5;
-      --bg: #1C1917;
-      --surface: #262220;
-      --surface2: #302B28;
-      --border: #3A3431;
-      --border-strong: #4A433F;
-      --text: #F3EEEA;
-      --text-muted: #9C928D;
-      --star: #EFC062;
+      --primary: #FBF2DC;
+      --primary-dark: #F3E3BC;
+      --accent: #FBF2DC;
+      --accent-soft: rgba(246,196,220,0.14);
+      --accent-ink: #F6C4DC;
+      --on-accent: #2A1E21;
+      --danger: #F08A97;
+      --danger-soft: rgba(240,138,151,0.16);
+      --success: #7FD1AE;
+      --bg: #1B1618;
+      --surface: #251F21;
+      --surface2: #2F282B;
+      --border: #3A3235;
+      --border-strong: #4A4044;
+      --text: #F4ECEE;
+      --text-muted: #A3979A;
+      --star: #F0C26A;
       --shadow: none;
-      --t-gray-bg: rgba(180,178,169,0.16);   --t-gray-fg: #D3D1C7;
-      --t-blue-bg: rgba(55,138,221,0.20);    --t-blue-fg: #B5D4F4;
-      --t-amber-bg: rgba(239,159,39,0.18);   --t-amber-fg: #FAC775;
-      --t-amber2-bg: rgba(239,159,39,0.34);  --t-amber2-fg: #FAEEDA;
-      --t-pink-bg: rgba(212,83,126,0.22);    --t-pink-fg: #F4C0D1;
-      --t-teal-bg: rgba(29,158,117,0.22);    --t-teal-fg: #9FE1CB;
-      --t-green-bg: rgba(99,153,34,0.24);    --t-green-fg: #C0DD97;
-      --t-purple-bg: rgba(127,119,221,0.24); --t-purple-fg: #CECBF6;
-      --t-red-bg: rgba(226,75,74,0.20);      --t-red-fg: #F7C1C1;
+      --fab-shadow: 0 12px 26px rgba(0,0,0,0.45);
+      --flow-on: #FBF2DC;
+      --cta-bg: #7A5048; --cta-fg: #FBF2DC;
+      --tab-login-bg: #7E6290; --tab-login-fg: #F7EEFA;
+      --tab-signup-bg: #9C6680; --tab-signup-fg: #FFF1F7;
+      --t-gray-bg: rgba(255,255,255,0.08);   --t-gray-fg: #C9BFC2;
+      --t-blue-bg: rgba(140,170,215,0.18);   --t-blue-fg: #C3D4EE;
+      --t-amber-bg: rgba(251,242,220,0.14);  --t-amber-fg: #F3E3BC;
+      --t-amber2-bg: rgba(251,242,220,0.30); --t-amber2-fg: #FBF2DC;
+      --t-pink-bg: rgba(246,196,220,0.20);   --t-pink-fg: #FAD7E7;
+      --t-teal-bg: rgba(120,200,170,0.18);   --t-teal-fg: #A9E2CC;
+      --t-green-bg: rgba(140,200,120,0.18);  --t-green-fg: #C4E3B5;
+      --t-purple-bg: rgba(201,169,211,0.20); --t-purple-fg: #E2D0EA;
+      --t-red-bg: rgba(240,138,151,0.18);    --t-red-fg: #F7C3CA;
+      /* ダークでは「明るいほどゴールに近い」 */
+      --st0-bg: rgba(255,255,255,0.08);  --st0-fg: #B9AFB2;
+      --st1-bg: rgba(251,242,220,0.14);  --st1-fg: #F3E3BC;
+      --st2-bg: rgba(201,169,211,0.18);  --st2-fg: #DCC6E4;
+      --st3-bg: rgba(201,169,211,0.38);  --st3-fg: #F7EEFA;
+      --st4-bg: rgba(246,196,220,0.28);  --st4-fg: #FCE3EE;
+      --st5-bg: rgba(238,159,196,0.55);  --st5-fg: #FFFFFF;
+      --st6-bg: #FBF2DC;                 --st6-fg: #5A3B40;
+      --st7-bg: #F6C4DC;                 --st7-fg: #3E2A2D;
     }
-    body { font-family: 'Inter', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+    body { font-family: 'Inter', 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Hiragino Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; letter-spacing: 0.02em; }
     button, input, select, textarea { font-family: inherit; }
 
     /* ===== ログイン画面 ===== */
@@ -86,8 +116,8 @@
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       min-height: 100vh; padding: 24px; gap: 24px;
     }
-    .login-title { font-family: 'Inter', sans-serif; font-size: 2rem; font-weight: 600; letter-spacing: 0.5px; color: var(--text); line-height: 1; }
-    .login-subtitle { font-size: 0.88rem; color: var(--text-muted); text-align: center; line-height: 1.6; letter-spacing: 1px; }
+    .login-title { font-family: 'Outfit', 'Inter', sans-serif; font-size: 2.5rem; font-weight: 700; letter-spacing: -0.02em; color: var(--text); line-height: 1; }
+    .login-subtitle { font-size: 0.88rem; color: var(--text-muted); text-align: center; line-height: 1.9; letter-spacing: 0.12em; }
 
     /* ===== ヘッダー ===== */
     header {
@@ -96,8 +126,15 @@
       position: sticky; top: 0; z-index: 100;
     }
     .header-top { display: flex; align-items: center; justify-content: space-between; }
-    .logo { font-family: 'Inter', sans-serif; font-size: 1.35rem; font-weight: 600; letter-spacing: 0.3px; color: var(--text); line-height: 1.2; }
-    .logo .stat-line { display: block; margin-top: 2px; font-size: 0.75rem; font-weight: 400; letter-spacing: 0; color: var(--text-muted); }
+    .logo { font-family: 'Outfit', 'Inter', sans-serif; font-size: 1.6rem; font-weight: 700; letter-spacing: -0.02em; color: var(--text); line-height: 1.2; }
+    .stat-card { display: flex; background: var(--surface); border-radius: 22px; box-shadow: var(--shadow); padding: 14px 6px; }
+    :root.dark-mode .stat-card { border: 1px solid var(--border); }
+    .stat-card > div { flex: 1; text-align: center; }
+    .stat-card > div + div { border-left: 1px dashed var(--border-strong); }
+    .stat-card b { display: block; font-family: 'Outfit', 'Inter', sans-serif; font-size: 1.5rem; font-weight: 700; line-height: 1.15; color: var(--text); }
+    .stat-card b.won { color: var(--choco); }
+    :root.dark-mode .stat-card b.won { color: var(--pink); }
+    .stat-card span { font-size: 0.66rem; letter-spacing: 0.12em; color: var(--text-muted); }
     .header-count { display: none; }
     .header-icons { display: flex; gap: 2px; }
     .icon-btn { position: relative; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: transparent; border: none; border-radius: 50%; color: var(--text-muted); cursor: pointer; -webkit-tap-highlight-color: transparent; }
@@ -108,18 +145,18 @@
     .notice-dot.show { display: block; }
 
     /* ===== 検索・絞り込み ===== */
-    .toolbar { padding: 6px 14px 4px; display: flex; gap: 10px; flex-direction: column; background: var(--bg); }
+    .toolbar { padding: 8px 16px 4px; display: flex; gap: 12px; flex-direction: column; background: var(--bg); }
     .search-pill { display: flex; align-items: center; gap: 8px; padding: 0 16px; background: var(--surface); border-radius: 999px; box-shadow: var(--shadow); color: var(--text-muted); }
     :root.dark-mode .search-pill { border: 1px solid var(--border); }
     .search-pill svg { width: 17px; height: 17px; flex-shrink: 0; }
     .search-pill input { border: none; background: transparent; padding: 11px 0; border-radius: 0; font-size: 16px; }
     .chip-row { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
     .chip-row::-webkit-scrollbar { display: none; }
-    .chip { flex-shrink: 0; padding: 7px 14px; border: none; border-radius: 999px; background: var(--surface); color: var(--text-muted); font-size: 0.82rem; cursor: pointer; white-space: nowrap; -webkit-tap-highlight-color: transparent; }
+    .chip { flex-shrink: 0; padding: 7px 15px; border: none; border-radius: 999px; background: var(--surface); color: var(--text); font-size: 0.82rem; font-weight: 600; letter-spacing: 0.04em; cursor: pointer; white-space: nowrap; -webkit-tap-highlight-color: transparent; }
     .chip.active { background: var(--text); color: var(--bg); }
     .chip-icon { display: flex; align-items: center; padding: 7px 12px; }
     .chip-icon svg { width: 15px; height: 15px; }
-    .advanced-filters { display: flex; flex-direction: column; gap: 8px; padding: 12px; background: var(--surface); border-radius: 16px; }
+    .advanced-filters { display: flex; flex-direction: column; gap: 8px; padding: 14px; background: var(--surface); border-radius: var(--radius); }
     .advanced-filters input, .advanced-filters select { padding: 9px 10px; font-size: 0.92rem; }
     .adv-row { display: flex; align-items: center; gap: 8px; width: 100%; }
     .adv-row > span { font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; }
@@ -131,41 +168,42 @@
     /* ===== ボタン ===== */
     .btn {
       display: inline-flex; align-items: center; gap: 4px; padding: 10px 16px;
-      border: none; border-radius: 12px; font-size: 0.95rem; font-weight: 600;
+      border: none; border-radius: 999px; font-size: 0.95rem; font-weight: 700; letter-spacing: 0.06em;
       cursor: pointer; transition: opacity 0.15s, transform 0.1s; white-space: nowrap;
     }
     .btn:active { transform: scale(0.97); }
     .btn-primary { background: var(--accent); color: var(--on-accent); }
     .btn-primary:hover { background: var(--primary-dark); }
     .btn-danger { background: var(--danger-soft); color: var(--danger); }
-    .btn-outline { background: var(--accent-soft); color: var(--accent-ink); }
-    .btn-sm { padding: 6px 12px; font-size: 0.82rem; }
+    .btn-outline { background: transparent; color: var(--text); box-shadow: inset 0 0 0 1.5px var(--text); }
+    .btn-sm { padding: 7px 14px; font-size: 0.82rem; }
     .copied { background: var(--t-green-bg) !important; color: var(--t-green-fg) !important; border-color: transparent !important; }
     .btn-ghost { background: transparent; color: var(--text-muted); border: 1.5px solid var(--border-strong); }
     .btn-text-danger { background: transparent; color: var(--danger); }
-    .fab { display: flex; align-items: center; justify-content: center; position: fixed; right: 18px; bottom: calc(22px + env(safe-area-inset-bottom)); width: 56px; height: 56px; border: none; border-radius: 50%; background: var(--accent); color: var(--on-accent); box-shadow: 0 6px 18px rgba(240,80,110,0.35); cursor: pointer; z-index: 90; -webkit-tap-highlight-color: transparent; }
-    .fab:active { transform: scale(0.95); }
-    .fab svg { width: 24px; height: 24px; stroke-width: 2.4; }
+    .fab { display: flex; align-items: center; justify-content: center; gap: 6px; position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom)); height: 50px; padding: 0 30px 0 26px; border: none; border-radius: 999px; background: var(--accent); color: var(--on-accent); box-shadow: var(--fab-shadow); font-size: 0.95rem; font-weight: 700; letter-spacing: 0.14em; white-space: nowrap; cursor: pointer; z-index: 90; -webkit-tap-highlight-color: transparent; }
+    .fab:active { transform: translateX(-50%) scale(0.96); }
+    .fab svg { width: 18px; height: 18px; stroke-width: 2.6; }
 
     /* ===== 色ラベル（ステータス・信用度・立場・最終連絡・注目候補） ===== */
     .status-badge {
       display: inline-flex; align-items: center; font-size: 11px;
-      padding: 5px 11px; border: none; border-radius: 100px; font-weight: 500; white-space: nowrap;
+      padding: 5px 11px; border: none; border-radius: 100px; font-weight: 700; letter-spacing: 0.04em; white-space: nowrap;
       cursor: pointer; appearance: none; outline: none;
     }
-    .status-未着手 { background: var(--t-gray-bg); color: var(--t-gray-fg); }
-    .status-連絡中 { background: var(--t-blue-bg); color: var(--t-blue-fg); }
-    .status-CT予定 { background: var(--t-amber-bg); color: var(--t-amber-fg); }
-    .status-CT済み { background: var(--t-amber2-bg); color: var(--t-amber2-fg); }
-    .status-つながった { background: var(--t-pink-bg); color: var(--t-pink-fg); }
-    .status-体感済み { background: var(--t-teal-bg); color: var(--t-teal-fg); }
-    .status-BPC済み { background: var(--t-green-bg); color: var(--t-green-fg); }
-    .status-ユーザー { background: var(--t-purple-bg); color: var(--t-purple-fg); }
-    .status-NG { background: var(--t-red-bg); color: var(--t-red-fg); }
-    .badge { display: inline-flex; align-items: center; justify-content: center; min-width: 24px; padding: 2px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; }
-    .trust-S, .trust-A { background: var(--t-amber-bg); color: var(--t-amber-fg); }
-    .trust-B { background: var(--t-green-bg); color: var(--t-green-fg); }
-    .trust-C, .trust-D { background: var(--t-gray-bg); color: var(--t-gray-fg); }
+    .status-未着手 { background: var(--st0-bg); color: var(--st0-fg); }
+    .status-連絡中 { background: var(--st1-bg); color: var(--st1-fg); }
+    .status-CT予定 { background: var(--st2-bg); color: var(--st2-fg); }
+    .status-CT済み { background: var(--st3-bg); color: var(--st3-fg); }
+    .status-つながった { background: var(--st4-bg); color: var(--st4-fg); }
+    .status-体感済み { background: var(--st5-bg); color: var(--st5-fg); }
+    .status-BPC済み { background: var(--st6-bg); color: var(--st6-fg); }
+    .status-ユーザー { background: var(--st7-bg); color: var(--st7-fg); }
+    .status-NG { background: transparent; color: var(--text-muted); box-shadow: inset 0 0 0 1px var(--border-strong); }
+    .badge { display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 24px; padding: 0 7px; border-radius: 999px; font-family: 'Outfit', 'Inter', sans-serif; font-size: 0.78rem; font-weight: 700; }
+    .trust-S { background: var(--st6-bg); color: var(--st6-fg); }
+    .trust-A { background: var(--st1-bg); color: var(--st1-fg); }
+    .trust-B { background: var(--t-gray-bg); color: var(--t-gray-fg); }
+    .trust-C, .trust-D { background: transparent; color: var(--text-muted); box-shadow: inset 0 0 0 1px var(--border-strong); }
     .pos-badge { display: inline-block; padding: 1px 7px; border-radius: 999px; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.06em; vertical-align: middle; }
     .pos-up { background: var(--t-amber-bg); color: var(--t-amber-fg); }
     .pos-down { background: var(--t-gray-bg); color: var(--t-gray-fg); }
@@ -177,24 +215,27 @@
     .lc-old { background: var(--t-red-bg); color: var(--t-red-fg); }
     .lc-dead { background: var(--t-gray-bg); color: var(--t-gray-fg); }
     /* 注目候補は、名前の横の小さな印で示す */
-    .hl-mark { font-size: 0.65rem; font-weight: 600; padding: 1px 7px; border-radius: 999px; }
-    .hl-gold { background: var(--t-amber2-bg); color: var(--t-amber2-fg); }
-    .hl-blue { background: var(--t-blue-bg); color: var(--t-blue-fg); }
+    .hl-mark { font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; letter-spacing: 0.04em; }
+    .hl-gold { background: var(--st1-bg); color: var(--accent-ink); }
+    .hl-blue { background: var(--t-purple-bg); color: var(--t-purple-fg); }
 
     /* ===== カード ===== */
-    .list-container { padding: 10px 14px 110px; display: flex; flex-direction: column; gap: 10px; }
+    .list-container { padding: 12px 16px 120px; display: flex; flex-direction: column; gap: 12px; }
     .person-card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; border: 1px solid transparent; -webkit-user-select: none; user-select: none; }
     :root.dark-mode .person-card { border-color: var(--border); }
     .person-card.card-ng { opacity: 0.55; }
     .card-header { padding: 14px; display: flex; align-items: center; gap: 12px; cursor: pointer; -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; }
-    .avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; font-weight: 600; flex-shrink: 0; }
+    .avatar { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; font-weight: 700; flex-shrink: 0; }
     /* 性別は頭文字アイコンの色で見分ける（名前の文字色は全員同じ） */
     .av-f { background: var(--t-pink-bg); color: var(--t-pink-fg); }
-    .av-m { background: var(--t-blue-bg); color: var(--t-blue-fg); }
-    .av-o { background: var(--t-gray-bg); color: var(--t-gray-fg); }
+    .av-m { background: var(--t-purple-bg); color: var(--t-purple-fg); }
+    .av-o { background: var(--t-amber-bg); color: var(--t-amber-fg); }
+    :root.dark-mode .av-f { background: rgba(246,196,220,0.32); color: #FCE3EE; }
+    :root.dark-mode .av-m { background: rgba(201,169,211,0.30); color: #EFE3F4; }
+    :root.dark-mode .av-o { background: rgba(251,242,220,0.18); color: #F3E3BC; }
     .card-info { flex: 1; min-width: 0; }
-    .card-name { font-size: 1rem; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-    .card-sub { font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-name { font-size: 1rem; font-weight: 700; letter-spacing: 0.05em; color: var(--text); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .card-sub { font-size: 0.78rem; letter-spacing: 0.04em; color: var(--text-muted); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .card-badges { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
     .badge-row { display: flex; align-items: center; gap: 6px; }
     .star-btn { background: none; border: none; font-size: 1.05rem; cursor: pointer; color: var(--border-strong); transition: all 0.15s; flex-shrink: 0; padding: 2px 4px; line-height: 1; border-radius: 6px; }
@@ -203,20 +244,30 @@
     .chevron.open { transform: rotate(180deg); }
 
     /* ===== カード詳細 ===== */
-    .card-detail { display: none; padding: 0 14px 14px; border-top: 1px solid var(--border); }
+    .card-detail { display: none; padding: 0 16px 16px; border-top: 1px dashed var(--border-strong); }
     .card-detail.open { display: block; }
-    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 10px; margin-top: 14px; }
+    .flow { margin-top: 14px; }
+    .flow-bar { display: flex; gap: 4px; }
+    .flow-bar span { flex: 1; height: 5px; border-radius: 999px; background: var(--surface2); }
+    :root.dark-mode .flow-bar span { background: rgba(255,255,255,0.08); }
+    .flow-bar span.on, :root.dark-mode .flow-bar span.on { background: var(--flow-on); }
+    .flow-note { margin-top: 7px; font-size: 0.7rem; letter-spacing: 0.1em; color: var(--text-muted); }
+    .st-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
+    .st-chip { padding: 7px 12px; border: none; border-radius: 999px; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .st-chip.on { box-shadow: 0 0 0 2px var(--text); }
+    .st-chip.status-NG.on { box-shadow: inset 0 0 0 1px var(--border-strong), 0 0 0 2px var(--text); }
     .detail-item.full { grid-column: 1 / -1; }
-    .detail-label { font-size: 0.7rem; color: var(--text-muted); font-weight: 500; margin-bottom: 2px; }
-    .detail-value { font-size: 0.9rem; font-weight: 400; color: var(--text); word-break: break-all; }
+    .detail-label { font-size: 0.68rem; letter-spacing: 0.12em; color: var(--text-muted); font-weight: 500; margin-bottom: 3px; }
+    .detail-value { font-size: 0.9rem; font-weight: 400; line-height: 1.75; letter-spacing: 0.03em; color: var(--text); word-break: break-all; }
     .detail-value a { color: var(--accent-ink); text-decoration: none; }
-    .card-actions { display: flex; gap: 8px; margin-top: 12px; }
-    .card-actions .btn { background: var(--surface2); color: var(--text); }
-    .card-actions .btn-danger { background: transparent; color: var(--danger); margin-left: auto; }
+    .card-actions { display: flex; gap: 8px; margin-top: 16px; }
+    .card-actions .btn { background: transparent; color: var(--text); box-shadow: inset 0 0 0 1.5px var(--text); }
+    .card-actions .btn-danger { background: transparent; color: var(--danger); box-shadow: none; margin-left: auto; }
 
     /* ===== ドラッグ並び替え ===== */
     .card-dragging { opacity: 0.3 !important; pointer-events: none; }
-    @keyframes dragActivate { 0%{box-shadow:0 0 0 0 rgba(240,80,110,0);} 40%{box-shadow:0 0 0 6px rgba(240,80,110,0.28);} 100%{box-shadow:0 0 0 0 rgba(240,80,110,0);} }
+    @keyframes dragActivate { 0%{box-shadow:0 0 0 0 rgba(246,196,220,0);} 40%{box-shadow:0 0 0 6px rgba(246,196,220,0.7);} 100%{box-shadow:0 0 0 0 rgba(246,196,220,0);} }
     .card-drag-activate { animation: dragActivate 0.4s ease-out forwards; }
     .card-drag-ghost { position: fixed; z-index: 9999; pointer-events: none; opacity: 0.95; transform: scale(1.02); box-shadow: 0 12px 32px rgba(43,38,38,0.18); border: 1.5px solid var(--accent); border-radius: var(--radius); background: var(--surface); overflow: hidden; }
     .card-drop-indicator { height: 3px; background: var(--accent); border-radius: 2px; margin: 0 14px; }
@@ -229,8 +280,8 @@
     .modal-overlay.open { display: flex; align-items: flex-start; justify-content: center; }
     body:has(.modal-overlay.open) { overflow: hidden; }
     .modal-overlay.over-editor { z-index: 270; }   /* シートの編集画面より手前に出す */
-    .modal { --mp: 20px; background: var(--surface); border-radius: 22px; width: 100%; max-width: 520px; max-height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: var(--mp); box-shadow: 0 12px 40px rgba(43,38,38,0.18); }
-    .modal-title { font-size: 1.08rem; font-weight: 700; color: var(--text); margin: calc(-1 * var(--mp)) calc(-1 * var(--mp)) 14px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--surface); z-index: 1; padding: var(--mp) var(--mp) 12px; border-bottom: 1px solid var(--border); }
+    .modal { --mp: 22px; background: var(--surface); border-radius: 28px; width: 100%; max-width: 520px; max-height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: var(--mp); box-shadow: 0 12px 40px rgba(43,38,38,0.18); }
+    .modal-title { font-size: 1.08rem; font-weight: 700; letter-spacing: 0.08em; color: var(--text); margin: calc(-1 * var(--mp)) calc(-1 * var(--mp)) 14px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--surface); z-index: 1; padding: var(--mp) var(--mp) 12px; border-bottom: 1px solid var(--border); }
     .modal-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--text-muted); padding: 4px 8px; line-height: 1; border-radius: 6px; }
 
     /* ===== フォーム ===== */
@@ -238,7 +289,7 @@
     .form-group { display: flex; flex-direction: column; gap: 5px; }
     .form-group.full { grid-column: 1 / -1; }
     label { font-size: 0.8rem; font-weight: 500; color: var(--text-muted); }
-    input, select, textarea { width: 100%; padding: 13px 14px; border: 1.5px solid var(--border-strong); border-radius: 12px; font-size: 1rem; outline: none; transition: border-color 0.2s; background: var(--surface); color: var(--text); }
+    input, select, textarea { width: 100%; padding: 13px 14px; border: 1.5px solid var(--border-strong); border-radius: 14px; font-size: 1rem; outline: none; transition: border-color 0.2s; background: var(--surface); color: var(--text); }
     input::placeholder { color: var(--text-muted); }
     input:focus, select:focus, textarea:focus { border-color: var(--primary); }
     textarea { resize: vertical; min-height: 78px; }
@@ -315,7 +366,7 @@
     .cd-switch.on i { transform: translateX(20px); }
     .cd-sub { flex-shrink: 0; min-width: 34px; font-size: 0.82rem; font-weight: 600; color: var(--text-muted); }
     .cd-presets { margin-top: 8px; }
-    .cd-pick-btn { display: block; width: 100%; margin-bottom: 8px; padding: 10px; border: none; border-radius: 12px; background: var(--accent-soft); color: var(--accent-ink); font-size: 0.88rem; font-weight: 600; cursor: pointer; }
+    .cd-pick-btn { display: block; width: 100%; margin-bottom: 8px; padding: 11px; border: none; border-radius: 999px; background: var(--accent-soft); color: var(--accent-ink); font-size: 0.88rem; font-weight: 600; cursor: pointer; }
     .cd-need { margin-bottom: 8px; padding: 10px; border-radius: 12px; background: var(--bg); }
     .cd-need-head { display: flex; align-items: center; justify-content: space-between; font-size: 0.92rem; font-weight: 600; color: var(--text); }
     .cd-need input { margin-top: 6px; }
@@ -464,22 +515,22 @@
 
 <!-- ===== ログイン画面 ===== -->
 <div id="loginScreen">
-  <div class="login-title">ATTACK LIST</div>
+  <div class="login-title">attack list</div>
   <div style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px;">
     <!-- タブ切り替え -->
-    <div style="display:flex;border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+    <div style="display:flex;border:1px solid var(--border);border-radius:999px;overflow:hidden;padding:3px;background:var(--surface);">
       <button id="tabLogin" onclick="setAuthMode('login')"
-        style="flex:1;padding:11px;border:none;background:var(--accent);color:var(--on-accent);font-size:0.95rem;font-weight:700;cursor:pointer;font-family:inherit;">ログイン</button>
+        style="flex:1;padding:10px;border:none;border-radius:999px;background:var(--tab-login-bg);color:var(--tab-login-fg);font-size:0.95rem;font-weight:700;cursor:pointer;font-family:inherit;">ログイン</button>
       <button id="tabSignup" onclick="setAuthMode('signup')"
-        style="flex:1;padding:11px;border:none;background:transparent;color:var(--text-muted);font-size:0.95rem;font-weight:600;cursor:pointer;font-family:inherit;">新規登録</button>
+        style="flex:1;padding:10px;border:none;border-radius:999px;background:transparent;color:var(--text-muted);font-size:0.95rem;font-weight:600;cursor:pointer;font-family:inherit;">新規登録</button>
     </div>
     <p id="authModeDesc" style="font-size:0.82rem;color:var(--text-muted);text-align:center;line-height:1.6;">メールアドレスとパスワードでログイン</p>
     <input id="authEmail" type="email" placeholder="メールアドレス" autocomplete="email"
-      style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
+      style="padding:14px 18px;border-radius:14px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
     <input id="authPassword" type="password" placeholder="パスワード（6文字以上）" autocomplete="current-password"
-      style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
+      style="padding:14px 18px;border-radius:14px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
     <button id="authSubmitBtn" onclick="submitAuth()"
-      style="padding:14px;border-radius:12px;border:none;background:var(--primary);color:var(--on-accent);font-size:1rem;font-weight:700;cursor:pointer;">ログイン</button>
+      style="padding:15px;border-radius:999px;border:none;letter-spacing:0.12em;background:var(--cta-bg);color:var(--cta-fg);font-size:1rem;font-weight:700;cursor:pointer;">ログイン</button>
     <button onclick="resetPassword()" style="padding:8px;border:none;background:transparent;color:var(--text-muted);font-size:0.82rem;cursor:pointer;">パスワードを忘れた方はこちら</button>
     <p id="authError" style="color:var(--danger);font-size:0.85rem;text-align:center;min-height:20px;"></p>
   </div>
@@ -488,16 +539,16 @@
 <!-- ===== パスワード再設定画面 ===== -->
 <div id="resetScreen" style="display:none;">
   <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;gap:20px;">
-    <div class="login-title">ATTACK LIST</div>
+    <div class="login-title">attack list</div>
     <p class="login-subtitle">新しいパスワードを設定してください</p>
     <div style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px;">
       <p id="resetEmailLabel" style="font-size:0.85rem;color:var(--text-muted);text-align:center;"></p>
       <input id="resetNewPassword" type="password" placeholder="新しいパスワード（6文字以上）" autocomplete="new-password"
-        style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
+        style="padding:14px 18px;border-radius:14px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
       <input id="resetNewPassword2" type="password" placeholder="新しいパスワード（確認）" autocomplete="new-password"
-        style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
+        style="padding:14px 18px;border-radius:14px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
       <button onclick="confirmReset()"
-        style="padding:14px;border-radius:12px;border:none;background:var(--primary);color:var(--on-accent);font-size:1rem;font-weight:700;cursor:pointer;">パスワードを変更する</button>
+        style="padding:15px;border-radius:999px;border:none;letter-spacing:0.12em;background:var(--cta-bg);color:var(--cta-fg);font-size:1rem;font-weight:700;cursor:pointer;">パスワードを変更する</button>
       <p id="resetError" style="color:var(--danger);font-size:0.85rem;text-align:center;min-height:20px;"></p>
     </div>
   </div>
@@ -506,24 +557,24 @@
 <!-- ===== 名前入力画面（初回登録時） ===== -->
 <div id="nameScreen" style="display:none;">
   <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;gap:20px;">
-    <div class="login-title">ATTACK LIST</div>
+    <div class="login-title">attack list</div>
     <p class="login-subtitle" id="nameSub">あなたの名前を登録してください</p>
     <div style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px;">
       <label class="pe-lbl" for="registerName" style="display:none;font-size:0.78rem;font-weight:700;color:var(--text-muted);margin:4px 2px -6px;">名前（本名・フルネーム）</label>
       <input id="registerName" type="text" placeholder="例：山田 太郎" autocomplete="name"
-        style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
+        style="padding:14px 18px;border-radius:14px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
       <label class="pe-lbl" for="registerUnion" style="display:none;font-size:0.78rem;font-weight:700;color:var(--text-muted);margin:4px 2px -6px;">所属ユニオン</label>
       <select id="registerUnion" data-union-select data-ph="所属ユニオンを選択" onchange="onUnionSelect(this,'registerUpBd')"
-        style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;-webkit-appearance:none;appearance:none;"><option value="">所属ユニオンを選択</option></select>
+        style="padding:14px 18px;border-radius:14px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;-webkit-appearance:none;appearance:none;"><option value="">所属ユニオンを選択</option></select>
       <label class="pe-lbl" for="registerArea" style="display:none;font-size:0.78rem;font-weight:700;color:var(--text-muted);margin:4px 2px -6px;">活動地域</label>
       <select id="registerArea" data-area-select data-ph="活動地域を選択"
-        style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;-webkit-appearance:none;appearance:none;"><option value="">活動地域を選択</option></select>
+        style="padding:14px 18px;border-radius:14px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;-webkit-appearance:none;appearance:none;"><option value="">活動地域を選択</option></select>
       <label class="pe-lbl" for="registerUpRuby" style="display:none;font-size:0.78rem;font-weight:700;color:var(--text-muted);margin:4px 2px -6px;">UPルビー</label>
       <input id="registerUpRuby" type="text" placeholder="UPルビー"
-        style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
+        style="padding:14px 18px;border-radius:14px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
       <label class="pe-lbl" for="registerUpBd" style="display:none;font-size:0.78rem;font-weight:700;color:var(--text-muted);margin:4px 2px -6px;">UPBD</label>
       <input id="registerUpBd" type="text" placeholder="UPBD"
-        style="padding:14px 16px;border-radius:12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
+        style="padding:14px 18px;border-radius:14px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:1rem;width:100%;outline:none;">
 
       <!-- 個人情報保護方針・利用規約（NAVIGATORと共通。同意は次の画面で行う） -->
       <p id="nameConsentNote" style="font-size:0.8rem;color:var(--text-muted);line-height:1.7;margin:0;">
@@ -531,7 +582,7 @@
       </p>
 
       <button id="startBtn" onclick="saveName()"
-        style="padding:14px;border-radius:12px;border:none;background:var(--primary);color:var(--on-accent);font-size:1rem;font-weight:700;cursor:pointer;transition:opacity 0.2s;"
+        style="padding:15px;border-radius:999px;border:none;letter-spacing:0.12em;background:var(--cta-bg);color:var(--cta-fg);font-size:1rem;font-weight:700;cursor:pointer;transition:opacity 0.2s;"
         onmouseenter="" onfocus="">登録して始める</button>
       <button id="nameCancelBtn" onclick="cancelProfileEdit()" style="display:none;padding:12px;border-radius:12px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:0.95rem;cursor:pointer;">キャンセル</button>
       <p id="nameError" style="color:var(--danger);font-size:0.85rem;text-align:center;min-height:20px;"></p>
@@ -543,10 +594,7 @@
 <div id="mainScreen" style="display:none;">
   <header>
     <div class="header-top">
-      <div class="logo">
-        Attack list
-        <span class="stat-line"><span id="totalCount">0</span>人 ・ 進行中 <span id="activeCount">0</span> ・ 成約 <span id="wonCount">0</span></span>
-      </div>
+      <div class="logo">attack list</div>
       <div class="header-icons">
         <button class="icon-btn" onclick="openUpdatesModal()" aria-label="お知らせ" title="お知らせ">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
@@ -570,6 +618,11 @@
   </header>
 
   <div class="toolbar">
+    <div class="stat-card">
+      <div><b id="totalCount">0</b><span>リスト</span></div>
+      <div><b id="activeCount">0</b><span>進行中</span></div>
+      <div><b id="wonCount" class="won">0</b><span>成約</span></div>
+    </div>
     <label class="search-pill">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <input type="text" id="searchInput1" placeholder="名前・仕事・住所でさがす" oninput="renderList()">
@@ -666,6 +719,7 @@
 
   <button class="fab" onclick="openAddModal()" aria-label="追加" title="追加">
     <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    <span>追加</span>
   </button>
 </div>
 
@@ -1068,10 +1122,10 @@ let authMode = 'login';
 window.setAuthMode = (mode) => {
   authMode = mode;
   const isLogin = mode === 'login';
-  document.getElementById('tabLogin').style.background = isLogin ? 'var(--accent)' : 'transparent';
-  document.getElementById('tabLogin').style.color = isLogin ? 'var(--on-accent)' : 'var(--text-muted)';
-  document.getElementById('tabSignup').style.background = isLogin ? 'transparent' : 'var(--accent)';
-  document.getElementById('tabSignup').style.color = isLogin ? 'var(--text-muted)' : 'var(--on-accent)';
+  document.getElementById('tabLogin').style.background = isLogin ? 'var(--tab-login-bg)' : 'transparent';
+  document.getElementById('tabLogin').style.color = isLogin ? 'var(--tab-login-fg)' : 'var(--text-muted)';
+  document.getElementById('tabSignup').style.background = isLogin ? 'transparent' : 'var(--tab-signup-bg)';
+  document.getElementById('tabSignup').style.color = isLogin ? 'var(--text-muted)' : 'var(--tab-signup-fg)';
   document.getElementById('authSubmitBtn').textContent = isLogin ? 'ログイン' : '新規アカウントを作成';
   document.getElementById('authModeDesc').textContent = isLogin
     ? 'メールアドレスとパスワードでログイン'
@@ -1971,6 +2025,26 @@ function handleShareLink() {
   acceptShareCode(code, true);
 }
 
+// ===== 状態の進み具合（カードを開いたときの上部） =====
+const STATUS_FLOW = ['未着手','連絡中','CT予定','CT済み','つながった','体感済み','BPC済み','ユーザー'];
+function statusFlowHtml(p, canEdit) {
+  const cur = p.status || '未着手';
+  const idx = STATUS_FLOW.indexOf(cur);
+  let bar = '', note = '';
+  if (cur === 'NG') {
+    note = 'NG';
+  } else {
+    for (let k = 1; k < STATUS_FLOW.length; k++) bar += `<span class="${k <= idx ? 'on' : ''}"></span>`;
+    const next = STATUS_FLOW[idx + 1];
+    note = next ? `${escHtml(cur)} ・ 次は「${escHtml(next)}」` : `${escHtml(cur)} ・ ゴール`;
+  }
+  const chips = canEdit
+    ? `<div class="st-chips">${STATUS_FLOW.concat('NG').map(s =>
+        `<button type="button" class="st-chip status-${s}${s === cur ? ' on' : ''}" onclick="event.stopPropagation();${s === cur ? '' : `changeStatus('${p.id}','${s}')`}">${s}</button>`).join('')}</div>`
+    : '';
+  return `<div class="flow">${bar ? `<div class="flow-bar">${bar}</div>` : ''}<div class="flow-note">${note}</div>${chips}</div>`;
+}
+
 function positionLabel(p) {
   if (p==='↑') return '<span class="pos-badge pos-up">↑</span>';
   if (p==='↓') return '<span class="pos-badge pos-down">↓</span>';
@@ -2148,6 +2222,7 @@ window.renderList = function() {
         </div>
       </div>
       <div class="card-detail${openCards.has(p.id)?' open':''}" id="detail-${p.id}">
+        ${statusFlowHtml(p, canEdit)}
         <div class="detail-grid">
           ${p.friends?detailItem('友だち',escHtml(p.friends)):''}
           ${p.type?detailItem('４つのタイプ',escHtml(p.type)):''}
@@ -4018,6 +4093,41 @@ function famTreeLayout() {
   const order = [];
   const visit = id => ms.filter(c => c.of === id).forEach(c => { if (!order.includes(c)) { order.push(c); visit(c.id); } });
   visit('_me');
+  // 親子のまとまり（同じ親の子どもたち）。線を引くのと、横に並べるときに家ごとにまとめるのに使う
+  const groups = new Map(), couples = [];
+  const group = (ps, c) => {
+    const key = ps.map(p => p.id).sort().join('|') || 'none:' + c.id;
+    if (!groups.has(key)) groups.set(key, { key, ps, cs: [] });
+    const g = groups.get(key);
+    if (!g.cs.includes(c)) g.cs.push(c);
+  };
+  [...nodes.values()].forEach(n => {
+    const ps = parentsOf(n.id).map(p => nodes.get(p.id));
+    if (ps.length) {
+      group(ps, n);
+      ps.forEach(p => ms.filter(c => c.of === p.id && 'SD'.includes(tok(c))).forEach(c => group(ps, nodes.get(c.id))));
+      if (ps.length === 2) couples.push([ps[0], ps[1], 'couple', true]);
+    }
+  });
+  ms.forEach(c => {
+    const t = tok(c), A = nodes.get(c.of) || me;
+    if ((t === 'S' || t === 'D') && !(A.m && 'FM'.includes(tok(A.m)))) group([A, partnerOf(A.id)].filter(Boolean), nodes.get(c.id));
+  });
+  const blockOf = new Map();
+  groups.forEach(g => g.cs.forEach(c => blockOf.set(c.id, g)));
+  const avg = a => a.reduce((t, v) => t + v, 0) / a.length;
+  // その人が入る「家」（親子のまとまり）。パートナーと「その他」の人は、つながっている人の家に入れる
+  const blockFor = n => {
+    let x = n;
+    for (let k = 0; k < 6; k++) {
+      const g = blockOf.get(x.id);
+      if (g) return { key: g.key, center: g.ps.length ? avg(g.ps.map(p => p.x)) : avg(g.cs.map(c => c.ideal ?? c.x)) };
+      if (x.m && 'BGO'.includes(tok(x.m))) { x = nodes.get(x.m.of) || me; continue; }
+      break;
+    }
+    return { key: 'own:' + x.id, center: x.ideal ?? x.x };
+  };
+  nodes.forEach(n => { if (n.x == null) n.x = 0; });   // 並び順によっては、まだ位置が決まっていない人を参照するため
   const place = () => {
     order.forEach(m => {
       const n = nodes.get(m.id), A = nodes.get(m.of) || me, t = tok(m);
@@ -4059,36 +4169,20 @@ function famTreeLayout() {
     [...nodes.values()].forEach(n => { (rows[n.gen] = rows[n.gen] || []).push(n); });
     Object.values(rows).forEach(row => {
       row.forEach(n => { if (n.me) n.ideal = n.x; });
-      row.sort((a, b) => a.ideal - b.ideal || (a.i ?? -1) - (b.i ?? -1));
+      // 家ごとにまとめて並べる（自分の兄弟の間に、いとこが入り込まないように）
+      const bk = new Map(row.map(n => [n, blockFor(n)]));
+      row.sort((a, b) => bk.get(a).center - bk.get(b).center || (bk.get(a).key < bk.get(b).key ? -1 : bk.get(a).key > bk.get(b).key ? 1 : 0)
+        || a.ideal - b.ideal || (a.i ?? -1) - (b.i ?? -1));
       row.forEach((n, k) => { n.x = k ? Math.max(n.ideal, row[k - 1].x + 1) : n.ideal; });
       const back = row.reduce((t, n) => t + (n.x - n.ideal), 0) / row.length;
       row.forEach(n => { n.x -= back; });
     });
   };
-  place(); place();
+  place(); place(); place();
   // 線
-  const lines = [], dotted = [];
-  const groups = new Map();
-  const group = (ps, c) => {
-    const key = ps.map(p => p.id).sort().join('|') || 'none:' + c.id;
-    if (!groups.has(key)) groups.set(key, { ps, cs: [] });
-    const g = groups.get(key);
-    if (!g.cs.includes(c)) g.cs.push(c);
-  };
-  [...nodes.values()].forEach(n => {
-    const ps = parentsOf(n.id).map(p => nodes.get(p.id));
-    if (ps.length) {
-      group(ps, n);
-      ps.forEach(p => ms.filter(c => c.of === p.id && 'SD'.includes(tok(c))).forEach(c => group(ps, nodes.get(c.id))));
-      if (ps.length === 2) lines.push([ps[0], ps[1], 'couple', true]);
-    }
-  });
+  const lines = [...couples], dotted = [];
   ms.forEach(c => {
     const t = tok(c), A = nodes.get(c.of) || me;
-    if ((t === 'S' || t === 'D') && !(A.m && 'FM'.includes(tok(A.m)))) {
-      const P = partnerOf(A.id);
-      group([A, P].filter(Boolean), nodes.get(c.id));
-    }
     if (t === 'B' || t === 'G') lines.push([A, nodes.get(c.id), 'couple', c.married]);
     if (t === 'O') dotted.push([A, nodes.get(c.id)]);
   });
@@ -4513,10 +4607,20 @@ function famCopyFallback(text, done) {
 // アップデートしたら先頭に { version, date, items } を追記する（先頭の version が表示バージョンになる）
 const UPDATES = [
   {
-    version: 'v19',
+    version: 'v20',
     date: '2026/11/28',
     items: [
       'アプリをよくするために、使われ方（開いた日・開いた回数・使った時間・データを読んだ回数）を記録するようにしました。リストの中身（人の名前など）は記録しません',
+    ],
+  },
+  {
+    version: 'v19',
+    date: '2026/11/21',
+    items: [
+      '画面のデザインを新しくしました。ピンク・クリーム・チョコの落ち着いた色合いで、余白を広くとって見やすくしています（ダークモードも新しい色合いに対応）',
+      '人の状態（未着手〜ユーザー）は、色が濃いほどゴールに近い並びにしました',
+      'カードを開くと、上に進み具合のバーと「次は◯◯」が出ます。下に並ぶボタンをタップするだけで状態を進められます',
+      '人数・進行中・成約の数を、上の大きな数字で見られるようにしました。追加ボタンは画面下のまん中です',
     ],
   },
   {
@@ -4692,7 +4796,7 @@ document.getElementById('appVersion').textContent = APP_VERSION;
 function applyTheme(dark) {
   document.documentElement.classList.toggle('dark-mode', dark);
   document.getElementById('themeToggleBtn').textContent = dark ? 'ライトモードにする' : 'ダークモードにする';
-  document.querySelector('meta[name="theme-color"]').setAttribute('content', dark ? '#1C1917' : '#FAF7F5');
+  document.querySelector('meta[name="theme-color"]').setAttribute('content', dark ? '#1B1618' : '#F3F3F3');
 }
 window.toggleTheme = () => {
   const dark = !document.documentElement.classList.contains('dark-mode');
