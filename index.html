@@ -1184,11 +1184,21 @@ const RC = (() => {
       setDoc(doc(db, 'readStats', d, 'u', uid + '_al'), data, { merge: true }).catch(() => {});
     } catch (e) {}
   };
+  // 最後に ATTACK LIST を開いた日（users/{uid}.alSeenAt）。NAVIGATOR の利用状況の「7日開いていない人」に使う。書くのは30分に1回まで
+  let seenAt = 0;
+  const seen = () => {
+    try {
+      const uid = currentUser && currentUser.uid, ms = document.getElementById('mainScreen');
+      if (!uid || !db || !ms || ms.style.display === 'none' || Date.now() - seenAt < 1800000) return;
+      seenAt = Date.now();
+      setDoc(doc(db, 'users', uid), { alSeenAt: new Date().toISOString() }, { merge: true }).catch(() => {});
+    } catch (e) {}
+  };
   let started = false;
   const start = () => {
     if (started) return; started = true;
-    opAdd('起動'); setInterval(poll, 2000); setInterval(flush, 600000);
-    document.addEventListener('visibilitychange', () => { if (document.hidden) flush(); else opAdd('起動'); });
+    opAdd('起動'); setInterval(poll, 2000); setInterval(flush, 600000); setInterval(seen, 60000); setTimeout(seen, 8000);
+    document.addEventListener('visibilitychange', () => { if (document.hidden) flush(); else { opAdd('起動'); seen(); } });
     window.addEventListener('pagehide', flush);
   };
   return { add, kp, qk, start, flush, _st: st };
