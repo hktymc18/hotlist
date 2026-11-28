@@ -1054,7 +1054,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, setPersistence, browserLocalPersistence, browserSessionPersistence, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, confirmPasswordReset, verifyPasswordResetCode, onAuthStateChanged, signOut }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, getDocs, getDocsFromCache, getDoc, setDoc, addDoc, updateDoc, deleteDoc, deleteField, onSnapshot, query, where, serverTimestamp, Timestamp }
+import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, collection, doc, getDocs as fsGetDocs0, getDocsFromCache, getDoc as fsGetDoc0, setDoc, addDoc, updateDoc, deleteDoc, deleteField, onSnapshot as fsOnSnapshot0, query, where, serverTimestamp, Timestamp, increment }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 // ===== Firebase設定 =====
@@ -1186,6 +1186,103 @@ window.resetPassword = async () => {
 };
 
 // ===== 画面切り替えヘルパー =====
+// ===== 📊 使われ方の記録（NAVIGATOR のアカウント管理「📊 利用状況」で ATTACK LIST だけの数を見るため） =====
+//   NAVIGATOR・受付と同じ readStats/{日本時間の日付}/u/{uid}_al に、1人1日1件で足し込む（10分ごとと画面を閉じた時）。
+//   記録すること：読み取りの回数（「画面 | 読んだ場所」ごと）・開いた回数（op）・画面が出ていた時間（sec・hr・ts）。中身（名前など）は記録しない。
+//   読み取りの数え方は NAVIGATOR と同じ目安：1件の読み込み＝1、検索・一覧＝返ってきた数（0件でも1）、見張りは最初は返ってきた数・そのあとは変わった数。端末の控えから出した分は数えない。
+const RC = (() => {
+  const st = { pend: {}, n: 0, op: {}, opn: 0, last: null, sec: 0, hr: {}, ts: {} }, MAXK = 90;
+  const ymd = () => new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10).replace(/-/g, '');
+  const kp = (p) => String(p || '').split('/').filter((_, i) => i % 2 === 0).join('/');
+  const qk = (q) => {
+    try { if (q && q.type === 'collection' && q.path) return kp(q.path); const d = q && q._query; if (d) return d.collectionGroup ? '**/' + d.collectionGroup : kp(d.path.canonicalString()); } catch (e) {}
+    return '?';
+  };
+  const isOpen = (id) => { const e = document.getElementById(id); return !!(e && e.classList.contains('open')); };
+  const VIEWS = [['editModal', 'edit'], ['cdEditor', 'cdata'], ['memoEditor', 'memo'], ['fmSheet', 'family'], ['fmScreen', 'family'], ['mbScreen', 'members'], ['ldScreen', 'leader'],
+    ['teEditor', 'template'], ['shareModal', 'share'], ['updatesModal', 'updates'], ['pickModal', 'pick'], ['syncModal', 'sync'], ['deleteModal', 'delete']];
+  // 今の画面の名前（ログイン前・プロフィールの画面は 'login'＝時間に数えない）
+  const tag = () => {
+    const ms = document.getElementById('mainScreen');
+    if (!currentUser || !ms || ms.style.display === 'none') return 'login';
+    for (const [id, k] of VIEWS) if (isOpen(id)) return k;
+    return (viewingUserId && viewingUserId !== currentUser.uid) ? 'list_other' : 'list'; // 自分のリストも viewingUserId に自分が入る
+  };
+  const opAdd = (k) => { k = String(k || '').replace(/[\s.]/g, '_').slice(0, 60); if (!k || k === 'login') return; st.op[k] = (st.op[k] || 0) + 1; st.opn++; };
+  const poll = () => {
+    if (document.hidden) return;
+    const t = tag();
+    if (t !== st.last) { st.last = t; opAdd(t); }
+    if (t === 'login') return;
+    const h = ('0' + new Date(Date.now() + 9 * 3600000).getUTCHours()).slice(-2);
+    st.sec += 2; st.hr[h] = (st.hr[h] || 0) + 2;
+    st.ts[t] = (st.ts[t] || 0) + 2;
+  };
+  const add = (k, n) => {
+    if (!n) return;
+    let t = '-'; try { t = tag(); } catch (e) {}
+    const key = (t + '|' + k).replace(/[\s.]/g, '_').slice(0, 80);
+    st.pend[key] = (st.pend[key] || 0) + n; st.n += n;
+  };
+  const flush = () => {
+    try {
+      const uid = currentUser && currentUser.uid;
+      if (!uid || !db || (!st.n && !st.opn && !st.sec)) return; // ATTACK LIST はログインして使うので、ログイン前の分は次に送る
+      const d = ymd(), by = {}; let other = 0;
+      Object.keys(st.pend).sort((a, b) => st.pend[b] - st.pend[a]).forEach((k, i) => { if (i < MAXK) by[k] = increment(st.pend[k]); else other += st.pend[k]; });
+      if (other) by['その他'] = increment(other);
+      const data = { uid, app: 'al', d, n: increment(st.n), by, at: new Date().toISOString(), ver: 2 };
+      if (st.opn) { const op = {}; Object.keys(st.op).slice(0, 50).forEach((k) => { op[k] = increment(st.op[k]); }); data.op = op; }
+      if (st.sec) { const hr = {}, ts = {}; Object.keys(st.hr).forEach((k) => { hr[k] = increment(st.hr[k]); }); Object.keys(st.ts).slice(0, 50).forEach((k) => { ts[k] = increment(st.ts[k]); }); data.sec = increment(st.sec); data.hr = hr; data.ts = ts; }
+      st.pend = {}; st.n = 0; st.op = {}; st.opn = 0; st.sec = 0; st.hr = {}; st.ts = {};
+      setDoc(doc(db, 'readStats', d, 'u', uid + '_al'), data, { merge: true }).catch(() => {});
+    } catch (e) {}
+  };
+  // 最後に ATTACK LIST を開いた日（users/{uid}.alSeenAt）。NAVIGATOR の利用状況の「7日開いていない人」に使う。書くのは30分に1回まで
+  let seenAt = 0;
+  const seen = () => {
+    try {
+      const uid = currentUser && currentUser.uid, ms = document.getElementById('mainScreen');
+      if (!uid || !db || !ms || ms.style.display === 'none' || Date.now() - seenAt < 1800000) return;
+      seenAt = Date.now();
+      setDoc(doc(db, 'users', uid), { alSeenAt: new Date().toISOString() }, { merge: true }).catch(() => {});
+    } catch (e) {}
+  };
+  let started = false;
+  const start = () => {
+    if (started) return; started = true;
+    opAdd('起動'); setInterval(poll, 2000); setInterval(flush, 600000); setInterval(seen, 60000); setTimeout(seen, 8000);
+    document.addEventListener('visibilitychange', () => { if (document.hidden) flush(); else { opAdd('起動'); seen(); } });
+    window.addEventListener('pagehide', flush);
+  };
+  return { add, kp, qk, start, flush, _st: st };
+})();
+// 読み取りの関数を包んで数える（使う側はいつもの getDoc・getDocs・onSnapshot のまま）
+function getDoc(ref, ...a) {
+  return fsGetDoc0(ref, ...a).then((s) => { try { if (!(s.metadata && s.metadata.fromCache)) RC.add(RC.kp(ref && ref.path), 1); } catch (e) {} return s; });
+}
+function getDocs(q, ...a) {
+  return fsGetDocs0(q, ...a).then((s) => { try { if (!(s.metadata && s.metadata.fromCache)) RC.add(RC.qk(q), Math.max(1, s.size || 0)); } catch (e) {} return s; });
+}
+function onSnapshot(target, ...a) {
+  const isDoc = !!(target && target.type === 'document');
+  const k = isDoc ? RC.kp(target.path) : RC.qk(target);
+  let first = true;
+  const count = (s) => {
+    try {
+      if (s.metadata && s.metadata.fromCache) return;
+      if (isDoc) RC.add(k, 1);
+      else { RC.add(k, first ? Math.max(1, s.size || 0) : (s.docChanges ? s.docChanges().length : 0)); first = false; }
+    } catch (e) {}
+  };
+  for (let i = 0; i < a.length; i++) {
+    if (typeof a[i] === 'function') { const f = a[i]; a[i] = function (s) { count(s); return f.apply(this, arguments); }; break; }
+    if (a[i] && typeof a[i].next === 'function') { const o = a[i], nx = o.next; a[i] = Object.assign({}, o, { next: (s) => { count(s); return nx.call(o, s); } }); break; }
+  }
+  return fsOnSnapshot0(target, ...a);
+}
+RC.start();
+
 function showScreen(name) {
   ['loginScreen','nameScreen','mainScreen','resetScreen'].forEach(id => {
     document.getElementById(id).style.display = 'none';
@@ -4509,6 +4606,13 @@ function famCopyFallback(text, done) {
 // ===== バージョン＆お知らせ =====
 // アップデートしたら先頭に { version, date, items } を追記する（先頭の version が表示バージョンになる）
 const UPDATES = [
+  {
+    version: 'v20',
+    date: '2026/11/28',
+    items: [
+      'アプリをよくするために、使われ方（開いた日・開いた回数・使った時間・データを読んだ回数）を記録するようにしました。リストの中身（人の名前など）は記録しません',
+    ],
+  },
   {
     version: 'v19',
     date: '2026/11/21',
